@@ -13,6 +13,7 @@ export default function Login({ status, canResetPassword }) {
         remember: false,
     });
 
+    // あ
     const submit = (e) => {
         e.preventDefault();
 
