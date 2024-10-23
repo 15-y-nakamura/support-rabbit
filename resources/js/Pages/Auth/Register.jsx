@@ -8,9 +8,11 @@ import { Head, Link, useForm } from '@inertiajs/react';
 export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
+        login_id: '',
         email: '',
         password: '',
         password_confirmation: '',
+        birthday: '',
     });
 
     const submit = (e) => {
@@ -41,6 +43,22 @@ export default function Register() {
                     />
 
                     <InputError message={errors.name} className="mt-2" />
+                </div>
+
+                <div className="mt-4">
+                    <InputLabel htmlFor="login_id" value="ログインID" />
+
+                    <TextInput
+                        id="login_id"
+                        name="login_id"
+                        value={data.email}
+                        className="mt-1 block w-full"
+                        autoComplete="login_id"
+                        onChange={(e) => setData('login_id', e.target.value)}
+                        required
+                    />
+
+                    <InputError message={errors.login_id} className="mt-2" />
                 </div>
 
                 <div className="mt-4">
@@ -102,16 +120,31 @@ export default function Register() {
                     />
                 </div>
 
+                <div className="mt-4">
+                    <InputLabel htmlFor="birthday" value="生年月日" />
+
+                    <TextInput
+                        id="birthday"
+                        type="date"
+                        name="birthday"
+                        value={data.birthday}
+                        className="mt-1 block w-full"
+                        onChange={(e) => setData('birthday', e.target.value)}
+                    />
+
+                    <InputError message={errors.birthday} className="mt-2" />
+                </div>
+
                 <div className="mt-4 flex items-center justify-end">
                     <Link
                         href={route('login')}
                         className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
-                        既に登録済みですか？
+                        すでにアカウントをお持ちですか？
                     </Link>
 
                     <PrimaryButton className="ms-4" disabled={processing}>
-                        新規登録
+                        登録
                     </PrimaryButton>
                 </div>
             </form>
