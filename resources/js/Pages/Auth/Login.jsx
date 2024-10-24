@@ -33,7 +33,7 @@ export default function Login({ status, canResetPassword }) {
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="login_id" value="ログインID" />
+                    <InputLabel htmlFor="login_id" value="ユーザID" />
 
                     <TextInput
                         id="login_id"
