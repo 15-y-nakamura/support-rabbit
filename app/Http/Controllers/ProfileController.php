@@ -21,6 +21,7 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            'user' => $request->user()->only('login_id', 'nickname', 'email', 'birthday'), // 必要なフィールドを取得
         ]);
     }
 
@@ -29,15 +30,31 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        // $request->user()->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // if ($request->user()->isDirty('email')) {
+        //     $request->user()->email_verified_at = null;
+        // }
+
+        // $request->user()->save();
+
+        // return Redirect::route('profile.edit');
+
+        $user = $request->user();
+
+        // フォームのバリデーション済みデータを反映
+        $user->fill($request->validated());
+
+        // メールアドレスが変更された場合、認証状態をリセット
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        // ユーザー情報の保存
+        $user->save();
 
-        return Redirect::route('profile.edit');
+        // 成功メッセージをセッションに追加
+        return Redirect::route('profile.edit')->with('status', 'プロフィールが更新されました。');
     }
 
     /**
@@ -58,6 +75,7 @@ class ProfileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return Redirect::to('/');
+        // return Redirect::to('/');
+        return Redirect::to('/')->with('status', 'アカウントが削除されました。');
     }
 }
