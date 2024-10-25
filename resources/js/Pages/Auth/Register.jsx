@@ -51,7 +51,7 @@ export default function Register() {
                     <TextInput
                         id="login_id"
                         name="login_id"
-                        value={data.email}
+                        value={data.login_id}
                         className="mt-1 block w-full"
                         autoComplete="login_id"
                         onChange={(e) => setData('login_id', e.target.value)}
