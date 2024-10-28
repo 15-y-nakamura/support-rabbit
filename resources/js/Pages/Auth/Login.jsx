@@ -89,10 +89,13 @@ export default function Login({ status, canResetPassword }) {
                             ユーザID・パスワードを忘れた方はこちら
                         </Link>
                     )}
-
                     <PrimaryButton className="ms-4" disabled={processing}>
                         ログイン
                     </PrimaryButton>
+                    {/* テスト用の追加ボタン */}
+                    <button className="ms-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                        テストボタン
+                    </button>
                 </div>
             </form>
         </GuestLayout>
