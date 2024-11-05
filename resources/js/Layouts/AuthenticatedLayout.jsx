@@ -43,20 +43,20 @@ export default function AuthenticatedLayout({ header, children }) {
                                     icon="/img/schedule-icon.png"
                                     label="本日の予定"
                                 />
-                                <Divider />
+                                <VerticalDivider />
                                 <NavItem
                                     href="/weather"
                                     icon="/img/weather-icon.png"
                                     label="天気"
                                 />
-                                <Divider />
+                                <VerticalDivider />
                                 <NavItem
                                     href="/connection"
                                     icon="/img/connection-icon.png"
                                     label="接続"
                                     className="ms-8"
                                 />
-                                <Divider />
+                                <VerticalDivider />
                             </div>
                             <UserDropdown user={user} />
                         </div>
@@ -65,7 +65,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                 onClick={toggleNavigationDropdown}
                                 className="inline-flex items-center justify-center rounded-md p-3 text-gray-800 transition duration-150 ease-in-out focus:outline-none"
                             >
-                                <DropdownIcon />
+                                {showingNavigationDropdown ? (
+                                    <CloseIcon />
+                                ) : (
+                                    <DropdownIcon />
+                                )}
                             </button>
                         </div>
                     </div>
@@ -93,17 +97,27 @@ function NavItem({ href, icon, label, className }) {
             href={href}
             className={`text-lg text-gray-800 flex flex-col items-center ${className}`}
         >
-            <img src={icon} alt={`${label} Icon`} className="h-6 w-6 mb-1" />
+            <img
+                src={icon}
+                alt={`${label} Icon`}
+                className="h-icon-size w-icon-size mb-1"
+            />
             {label}
         </Link>
     );
 }
 
-function Divider() {
+function VerticalDivider() {
     return <div className="h-6 border-l-2 border-white"></div>;
 }
 
 function UserDropdown({ user }) {
+    const [open, setOpen] = useState(false);
+
+    const toggleDropdown = () => {
+        setOpen((prevState) => !prevState);
+    };
+
     return (
         <div className="relative ms-6">
             <Dropdown>
@@ -111,23 +125,75 @@ function UserDropdown({ user }) {
                     <span className="inline-flex rounded-md">
                         <button
                             type="button"
+                            onClick={toggleDropdown}
                             className="inline-flex items-center rounded-md bg-transparent px-4 py-3 text-lg leading-5 text-gray-800 transition duration-150 ease-in-out focus:outline-none"
                         >
                             {user.name}
-                            <DropdownIcon />
+                            <div className="flex flex-col items-center ms-2">
+                                <img
+                                    src="/img/menu-icon.png"
+                                    alt="Menu Icon"
+                                    className="h-icon-size w-icon-size mb-1"
+                                />
+                                <span className="text-icon-text text-gray-800">
+                                    メニュー
+                                </span>
+                            </div>
                         </button>
                     </span>
                 </Dropdown.Trigger>
                 <Dropdown.Content>
-                    <Dropdown.Link href={route("profile.edit")}>
-                        Profile
+                    <Dropdown.Link
+                        href={route("profile.edit")}
+                        className="flex items-center py-2"
+                    >
+                        <img
+                            src="/img/profile-icon.png"
+                            alt="Profile Icon"
+                            className="h-icon-size w-icon-size mr-2"
+                        />
+                        <div className="flex flex-col">
+                            <span>{user.nickname}</span>
+                            <span>{user.id}</span>
+                        </div>
                     </Dropdown.Link>
+                    <Divider />
+                    <Dropdown.Link
+                        href="/calendar"
+                        className="flex items-center py-2"
+                    >
+                        <img
+                            src="/img/calendar-icon.png"
+                            alt="Calendar Icon"
+                            className="h-icon-size w-icon-size mr-2"
+                        />
+                        カレンダー
+                    </Dropdown.Link>
+                    <Divider />
+                    <Dropdown.Link
+                        href="/chat"
+                        className="flex items-center py-2"
+                    >
+                        <img
+                            src="/img/chat-icon.png"
+                            alt="Chat Icon"
+                            className="h-icon-size w-icon-size mr-2"
+                        />
+                        お喋り
+                    </Dropdown.Link>
+                    <Divider />
                     <Dropdown.Link
                         href={route("logout")}
                         method="post"
                         as="button"
+                        className="flex items-center py-2"
                     >
-                        Log Out
+                        <img
+                            src="/img/logout-icon.png"
+                            alt="Logout Icon"
+                            className="h-icon-size w-icon-size mr-2"
+                        />
+                        ログアウト
                     </Dropdown.Link>
                 </Dropdown.Content>
             </Dropdown>
@@ -137,58 +203,131 @@ function UserDropdown({ user }) {
 
 function DropdownIcon() {
     return (
-        <div className="flex flex-col items-center ms-2">
+        <div className="flex flex-col items-center">
             <img
                 src="/img/dropdown-icon.png"
                 alt="Dropdown Icon"
-                className="h-6 w-6 mb-1"
+                className="h-icon-size w-icon-size"
             />
-            <span className="text-lg text-gray-800 flex flex-col items-center">
-                メニュー
-            </span>
+            <span className="text-icon-text text-gray-800">メニュー</span>
+        </div>
+    );
+}
+
+function CloseIcon() {
+    return (
+        <div className="flex flex-col items-center">
+            <img
+                src="/img/close-icon.png"
+                alt="Close Icon"
+                className="h-icon-size w-icon-size"
+            />
+            <span className="text-icon-text text-gray-800">閉じる</span>
         </div>
     );
 }
 
 function ResponsiveNavigation({ showing }) {
+    const user = usePage().props.auth.user; // ここでユーザー情報を取得
+
     return (
-        <div className={(showing ? "block" : "hidden") + " sm:hidden"}>
-            <div className="space-y-2 pb-4 pt-3">
+        <div className={(showing ? "block" : "hidden") + " sm:hidden bg-white"}>
+            <div className="space-y-4 pb-6 pt-4">
+                <ResponsiveNavLink
+                    href={route("profile.edit")}
+                    className="text-lg flex items-center"
+                >
+                    <img
+                        src="/img/profile-icon.png"
+                        alt="Profile Icon"
+                        className="h-icon-size w-icon-size mr-4"
+                    />
+                    <div className="flex flex-col">
+                        <span>{user.nickname}</span>
+                        <span>{user.id}</span>
+                    </div>
+                </ResponsiveNavLink>
+                <Divider />
                 <ResponsiveNavLink
                     href="/schedule"
-                    className="text-lg text-gray-800 flex flex-col items-center"
+                    className="text-lg flex items-center"
                 >
                     <img
                         src="/img/schedule-icon.png"
                         alt="Schedule Icon"
-                        className="h-6 w-6 mb-1"
+                        className="h-icon-size w-icon-size mr-4"
                     />
                     本日の予定
                 </ResponsiveNavLink>
+                <Divider />
                 <ResponsiveNavLink
                     href="/weather"
-                    className="text-lg text-gray-800 flex flex-col items-center"
+                    className="text-lg flex items-center"
                 >
                     <img
                         src="/img/weather-icon.png"
                         alt="Weather Icon"
-                        className="h-6 w-6 mb-1"
+                        className="h-icon-size w-icon-size mr-4"
                     />
                     天気
                 </ResponsiveNavLink>
-                <div className="mt-4 space-y-2">
-                    <ResponsiveNavLink href={route("profile.edit")}>
-                        Profile
-                    </ResponsiveNavLink>
+                <Divider />
+                <ResponsiveNavLink
+                    href="/connection"
+                    className="text-lg flex items-center"
+                >
+                    <img
+                        src="/img/connection-icon.png"
+                        alt="Connection Icon"
+                        className="h-icon-size w-icon-size mr-4"
+                    />
+                    接続
+                </ResponsiveNavLink>
+                <Divider />
+                <ResponsiveNavLink
+                    href="/calendar"
+                    className="text-lg flex items-center"
+                >
+                    <img
+                        src="/img/calendar-icon.png"
+                        alt="Calendar Icon"
+                        className="h-icon-size w-icon-size mr-4"
+                    />
+                    カレンダー
+                </ResponsiveNavLink>
+                <Divider />
+                <ResponsiveNavLink
+                    href="/chat"
+                    className="text-lg flex items-center"
+                >
+                    <img
+                        src="/img/chat-icon.png"
+                        alt="Chat Icon"
+                        className="h-icon-size w-icon-size mr-4"
+                    />
+                    お喋り
+                </ResponsiveNavLink>
+                <Divider />
+                <div className="mt-6 space-y-4">
                     <ResponsiveNavLink
                         method="post"
                         href={route("logout")}
                         as="button"
+                        className="text-lg flex items-center"
                     >
-                        Log Out
+                        <img
+                            src="/img/logout-icon.png"
+                            alt="Logout Icon"
+                            className="h-icon-size w-icon-size mr-4"
+                        />
+                        ログアウト
                     </ResponsiveNavLink>
                 </div>
             </div>
         </div>
     );
+}
+
+function Divider() {
+    return <div className="h-0.5 bg-gray-300 my-4"></div>;
 }
