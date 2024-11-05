@@ -18,6 +18,12 @@ export default {
             colors: {
                 customPink: "#F0A0A8", // ここにカスタムカラーを追加
             },
+            fontSize: {
+                "icon-text": "1rem", // アイコンのテキストサイズ
+            },
+            spacing: {
+                "icon-size": "1.5rem", // アイコンのサイズ
+            },
         },
     },
 
