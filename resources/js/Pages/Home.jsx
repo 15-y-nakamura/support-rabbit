@@ -41,7 +41,8 @@ export default function Home() {
 }
 
 function Scene() {
-    const gltf = useLoader(GLTFLoader, "/rabbit-room.glb");
+    // GLTFLoader を使ってモデルを読み込む
+    // const gltf = useLoader(GLTFLoader, "/rabbit-room.glb");
     return (
         <>
             <ambientLight intensity={0.8} />
