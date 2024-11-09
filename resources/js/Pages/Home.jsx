@@ -48,7 +48,7 @@ function Scene() {
             <directionalLight position={[5, 10, 5]} intensity={1.5} />
             <primitive
                 object={gltf.scene}
-                position={[0, -5, 0]} // モデルを少し下に移動
+                position={[0, -10, 0]} // モデルを少し下に移動
                 rotation={[0, Math.PI / 6, 0]} // 視点に合わせて軽く回転
                 scale={[1.5, 1.5, 1.5]} // モデルサイズを調整
             />
