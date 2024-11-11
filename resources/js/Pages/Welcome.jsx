@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import { Head, Link } from "@inertiajs/react";
 
 export default function Welcome({ auth, laravelVersion, phpVersion }) {
@@ -11,6 +12,15 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
             ?.classList.add("!flex-row");
         document.getElementById("background")?.classList.add("!hidden");
     };
+
+    useEffect(() => {
+        console.log("Current Route:", route().current()); // 現在のルートを表示
+        try {
+            console.log("Login Route URL:", route("login")); // 'login'ルートのURLを表示
+        } catch (error) {
+            console.error("Error with 'login' route:", error);
+        }
+    }, []);
 
     return (
         <>
