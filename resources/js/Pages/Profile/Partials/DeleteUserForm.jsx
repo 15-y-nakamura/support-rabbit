@@ -1,16 +1,13 @@
-import DangerButton from '@/Components/DangerButton';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import Modal from '@/Components/Modal';
-import SecondaryButton from '@/Components/SecondaryButton';
-import TextInput from '@/Components/TextInput';
-import { useForm } from '@inertiajs/react';
-import { useRef, useState } from 'react';
+import React, { useState, useEffect } from "react";
+import { useForm, usePage } from "@inertiajs/react";
+import InputError from "@/Components/InputError";
+import InputLabel from "@/Components/InputLabel";
+import PrimaryButton from "@/Components/PrimaryButton";
+import TextInput from "@/Components/TextInput";
 
-export default function DeleteUserForm({ className = '' }) {
+export default function DeleteUserForm({ className = "" }) {
+    const { auth } = usePage().props;
     const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
-    const passwordInput = useRef();
-
     const {
         data,
         setData,
@@ -18,10 +15,25 @@ export default function DeleteUserForm({ className = '' }) {
         processing,
         reset,
         errors,
-        clearErrors,
     } = useForm({
-        password: '',
+        password: "",
     });
+
+    useEffect(() => {
+        if (confirmingUserDeletion) {
+            axios
+                .get("/api/v2/profiles/delete")
+                .then((response) => {
+                    // 削除対象のデータを取得
+                })
+                .catch((error) => {
+                    console.error(
+                        "There was an error fetching the data!",
+                        error
+                    );
+                });
+        }
+    }, [confirmingUserDeletion]);
 
     const confirmUserDeletion = () => {
         setConfirmingUserDeletion(true);
@@ -30,85 +42,58 @@ export default function DeleteUserForm({ className = '' }) {
     const deleteUser = (e) => {
         e.preventDefault();
 
-        destroy(route('profile.destroy'), {
+        if (
+            !confirm(
+                "本当にアカウントを削除しますか？この操作は取り消せません。"
+            )
+        ) {
+            return;
+        }
+
+        destroy(route("profile.destroy"), {
             preserveScroll: true,
-            onSuccess: () => closeModal(),
-            onError: () => passwordInput.current.focus(),
-            onFinish: () => reset(),
+            onSuccess: () => reset(),
+            onError: () => reset("password"),
         });
     };
 
-    const closeModal = () => {
-        setConfirmingUserDeletion(false);
-
-        clearErrors();
-        reset();
-    };
-
     return (
-        <section className={`space-y-6 ${className}`}>
+        <section className={className}>
             <header>
                 <h2 className="text-lg font-medium text-gray-900">
-                    アカウントを削除
+                    アカウント削除
                 </h2>
 
                 <p className="mt-1 text-sm text-gray-600">
-                アカウントを削除すると、その全てのデータが永久に削除されます。アカウントを削除する前に、保存したいデータをダウンロードしてください。
+                    アカウントを削除すると、すべてのデータが完全に削除されます。
                 </p>
             </header>
 
-            <DangerButton onClick={confirmUserDeletion}>
-                アカウントを削除
-            </DangerButton>
+            <form onSubmit={deleteUser} className="mt-6 space-y-6">
+                <div>
+                    <InputLabel htmlFor="delete_password" value="パスワード" />
 
-            <Modal show={confirmingUserDeletion} onClose={closeModal}>
-                <form onSubmit={deleteUser} className="p-6">
-                    <h2 className="text-lg font-medium text-gray-900">
-                        本当に削除しますか？
-                    </h2>
+                    <TextInput
+                        id="delete_password"
+                        type="password"
+                        className="mt-1 block w-full"
+                        value={data.password}
+                        onChange={(e) => setData("password", e.target.value)}
+                        required
+                    />
 
-                    <p className="mt-1 text-sm text-gray-600">
-                    アカウントを削除すると、その全てのデータが永久に削除されます。アカウントを削除するには、パスワードを入力してください。
-                    </p>
+                    <InputError message={errors.password} className="mt-2" />
+                </div>
 
-                    <div className="mt-6">
-                        <InputLabel
-                            htmlFor="password"
-                            value="Password"
-                            className="sr-only"
-                        />
-
-                        <TextInput
-                            id="password"
-                            type="password"
-                            name="password"
-                            ref={passwordInput}
-                            value={data.password}
-                            onChange={(e) =>
-                                setData('password', e.target.value)
-                            }
-                            className="mt-1 block w-3/4"
-                            isFocused
-                            placeholder="パスワード"
-                        />
-
-                        <InputError
-                            message={errors.password}
-                            className="mt-2"
-                        />
-                    </div>
-
-                    <div className="mt-6 flex justify-end">
-                        <SecondaryButton onClick={closeModal}>
-                            キャンセル
-                        </SecondaryButton>
-
-                        <DangerButton className="ms-3" disabled={processing}>
-                            アカウントを削除
-                        </DangerButton>
-                    </div>
-                </form>
-            </Modal>
+                <div className="flex items-center gap-4">
+                    <PrimaryButton
+                        onClick={confirmUserDeletion}
+                        disabled={processing}
+                    >
+                        アカウント削除
+                    </PrimaryButton>
+                </div>
+            </form>
         </section>
     );
 }
