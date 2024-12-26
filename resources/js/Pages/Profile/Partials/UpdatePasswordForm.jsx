@@ -1,12 +1,12 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import { Transition } from '@headlessui/react';
-import { useForm } from '@inertiajs/react';
-import { useRef } from 'react';
+import InputError from "@/Components/InputError";
+import InputLabel from "@/Components/InputLabel";
+import PrimaryButton from "@/Components/PrimaryButton";
+import TextInput from "@/Components/TextInput";
+import { Transition } from "@headlessui/react";
+import { useForm } from "@inertiajs/react";
+import { useRef } from "react";
 
-export default function UpdatePasswordForm({ className = '' }) {
+export default function UpdatePasswordForm({ className = "" }) {
     const passwordInput = useRef();
     const currentPasswordInput = useRef();
 
@@ -19,25 +19,25 @@ export default function UpdatePasswordForm({ className = '' }) {
         processing,
         recentlySuccessful,
     } = useForm({
-        current_password: '',
-        password: '',
-        password_confirmation: '',
+        current_password: "",
+        password: "",
+        password_confirmation: "",
     });
 
     const updatePassword = (e) => {
         e.preventDefault();
 
-        put(route('password.update'), {
+        put("/api/v2/profile/password", {
             preserveScroll: true,
             onSuccess: () => reset(),
             onError: (errors) => {
                 if (errors.password) {
-                    reset('password', 'password_confirmation');
+                    reset("password", "password_confirmation");
                     passwordInput.current.focus();
                 }
 
                 if (errors.current_password) {
-                    reset('current_password');
+                    reset("current_password");
                     currentPasswordInput.current.focus();
                 }
             },
@@ -52,23 +52,23 @@ export default function UpdatePasswordForm({ className = '' }) {
                 </h2>
 
                 <p className="mt-1 text-sm text-gray-600">
-                アカウントを安全に保つために、長くランダムなパスワードを使用してください。
+                    アカウントを安全に保つために、長くランダムなパスワードを使用してください。
                 </p>
             </header>
 
             <form onSubmit={updatePassword} className="mt-6 space-y-6">
                 <div>
                     <InputLabel
-                        htmlFor="current_password"
+                        htmlFor="current_password_update"
                         value="現在のパスワード"
                     />
 
                     <TextInput
-                        id="current_password"
+                        id="current_password_update"
                         ref={currentPasswordInput}
                         value={data.current_password}
                         onChange={(e) =>
-                            setData('current_password', e.target.value)
+                            setData("current_password", e.target.value)
                         }
                         type="password"
                         className="mt-1 block w-full"
@@ -82,13 +82,16 @@ export default function UpdatePasswordForm({ className = '' }) {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="password" value="新しいパスワード" />
+                    <InputLabel
+                        htmlFor="new_password"
+                        value="新しいパスワード"
+                    />
 
                     <TextInput
-                        id="password"
+                        id="new_password"
                         ref={passwordInput}
                         value={data.password}
-                        onChange={(e) => setData('password', e.target.value)}
+                        onChange={(e) => setData("password", e.target.value)}
                         type="password"
                         className="mt-1 block w-full"
                         autoComplete="new-password"
@@ -99,15 +102,15 @@ export default function UpdatePasswordForm({ className = '' }) {
 
                 <div>
                     <InputLabel
-                        htmlFor="password_confirmation"
+                        htmlFor="password_confirmation_update"
                         value="パスワードの確認"
                     />
 
                     <TextInput
-                        id="password_confirmation"
+                        id="password_confirmation_update"
                         value={data.password_confirmation}
                         onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
+                            setData("password_confirmation", e.target.value)
                         }
                         type="password"
                         className="mt-1 block w-full"
@@ -130,9 +133,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-sm text-gray-600">
-                            保存しました。
-                        </p>
+                        <p className="text-sm text-gray-600">保存しました。</p>
                     </Transition>
                 </div>
             </form>
