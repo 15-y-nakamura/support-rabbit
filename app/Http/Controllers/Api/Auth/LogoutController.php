@@ -24,6 +24,6 @@ class LogoutController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return APIResponse::success();
+        return redirect('/')->with('status', 'ログアウトしました。');
     }
 }

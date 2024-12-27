@@ -4,7 +4,9 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { Transition } from "@headlessui/react";
 import { useForm } from "@inertiajs/react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 export default function UpdatePasswordForm({ className = "" }) {
     const passwordInput = useRef();
@@ -23,6 +25,11 @@ export default function UpdatePasswordForm({ className = "" }) {
         password: "",
         password_confirmation: "",
     });
+
+    const [currentPasswordType, setCurrentPasswordType] = useState("password");
+    const [newPasswordType, setNewPasswordType] = useState("password");
+    const [passwordConfirmationType, setPasswordConfirmationType] =
+        useState("password");
 
     const updatePassword = (e) => {
         e.preventDefault();
@@ -62,19 +69,35 @@ export default function UpdatePasswordForm({ className = "" }) {
                         htmlFor="current_password_update"
                         value="現在のパスワード"
                     />
-
-                    <TextInput
-                        id="current_password_update"
-                        ref={currentPasswordInput}
-                        value={data.current_password}
-                        onChange={(e) =>
-                            setData("current_password", e.target.value)
-                        }
-                        type="password"
-                        className="mt-1 block w-full"
-                        autoComplete="current-password"
-                    />
-
+                    <div className="relative">
+                        <TextInput
+                            id="current_password_update"
+                            ref={currentPasswordInput}
+                            value={data.current_password}
+                            onChange={(e) =>
+                                setData("current_password", e.target.value)
+                            }
+                            type={currentPasswordType}
+                            className="mt-1 block w-full"
+                            autoComplete="current-password"
+                            placeholder="現在のパスワード"
+                        />
+                        {currentPasswordType === "password" ? (
+                            <VisibilityOffIcon
+                                onClick={() => setCurrentPasswordType("text")}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
+                                style={{ fontSize: 32, height: "100%" }}
+                            />
+                        ) : (
+                            <VisibilityIcon
+                                onClick={() =>
+                                    setCurrentPasswordType("password")
+                                }
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
+                                style={{ fontSize: 32, height: "100%" }}
+                            />
+                        )}
+                    </div>
                     <InputError
                         message={errors.current_password}
                         className="mt-2"
@@ -86,17 +109,33 @@ export default function UpdatePasswordForm({ className = "" }) {
                         htmlFor="new_password"
                         value="新しいパスワード"
                     />
-
-                    <TextInput
-                        id="new_password"
-                        ref={passwordInput}
-                        value={data.password}
-                        onChange={(e) => setData("password", e.target.value)}
-                        type="password"
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                    />
-
+                    <div className="relative">
+                        <TextInput
+                            id="new_password"
+                            ref={passwordInput}
+                            value={data.password}
+                            onChange={(e) =>
+                                setData("password", e.target.value)
+                            }
+                            type={newPasswordType}
+                            className="mt-1 block w-full"
+                            autoComplete="new-password"
+                            placeholder="新しいパスワード（8〜12文字）"
+                        />
+                        {newPasswordType === "password" ? (
+                            <VisibilityOffIcon
+                                onClick={() => setNewPasswordType("text")}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
+                                style={{ fontSize: 32, height: "100%" }}
+                            />
+                        ) : (
+                            <VisibilityIcon
+                                onClick={() => setNewPasswordType("password")}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
+                                style={{ fontSize: 32, height: "100%" }}
+                            />
+                        )}
+                    </div>
                     <InputError message={errors.password} className="mt-2" />
                 </div>
 
@@ -105,18 +144,36 @@ export default function UpdatePasswordForm({ className = "" }) {
                         htmlFor="password_confirmation_update"
                         value="パスワードの確認"
                     />
-
-                    <TextInput
-                        id="password_confirmation_update"
-                        value={data.password_confirmation}
-                        onChange={(e) =>
-                            setData("password_confirmation", e.target.value)
-                        }
-                        type="password"
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                    />
-
+                    <div className="relative">
+                        <TextInput
+                            id="password_confirmation_update"
+                            value={data.password_confirmation}
+                            onChange={(e) =>
+                                setData("password_confirmation", e.target.value)
+                            }
+                            type={passwordConfirmationType}
+                            className="mt-1 block w-full"
+                            autoComplete="new-password"
+                            placeholder="パスワード確認"
+                        />
+                        {passwordConfirmationType === "password" ? (
+                            <VisibilityOffIcon
+                                onClick={() =>
+                                    setPasswordConfirmationType("text")
+                                }
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
+                                style={{ fontSize: 32, height: "100%" }}
+                            />
+                        ) : (
+                            <VisibilityIcon
+                                onClick={() =>
+                                    setPasswordConfirmationType("password")
+                                }
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
+                                style={{ fontSize: 32, height: "100%" }}
+                            />
+                        )}
+                    </div>
                     <InputError
                         message={errors.password_confirmation}
                         className="mt-2"

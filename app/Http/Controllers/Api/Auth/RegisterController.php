@@ -17,7 +17,7 @@ use Exception;
 class RegisterController extends Controller
 {
     /**
-     * Display the registration view.
+     * 登録画面を表示します。
      */
     public function create(): Response
     {
@@ -25,9 +25,7 @@ class RegisterController extends Controller
     }
 
     /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * 登録リクエストを処理します。
      */
     public function store(Request $request)
     {
@@ -58,9 +56,7 @@ class RegisterController extends Controller
     }
 
     /**
-     * Handle an incoming API registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * API登録リクエストを処理します。
      */
     public function signup(Request $request)
     {

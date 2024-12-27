@@ -14,25 +14,35 @@ export default function AuthenticatedLayout({ header, children }) {
         setShowingNavigationDropdown((prevState) => !prevState);
     };
 
+    const isProfilePage = usePage().url === "/profile";
+
     return (
         <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-customPink">
+            <nav className="border-b border-gray-100 bg-customPink shadow-md">
                 <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-10">
                     <div className="flex h-24 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
-                                <Link href="/home">
+                                <Link
+                                    href="/home"
+                                    className="flex flex-col items-center"
+                                >
                                     <img
                                         src="/img/logo.png"
                                         alt="Logo"
                                         className="block h-16 w-auto fill-current text-gray-800"
                                     />
+                                    {isProfilePage && (
+                                        <div className="text-sm text-gray-800">
+                                            ホームに戻る
+                                        </div>
+                                    )}
                                 </Link>
                                 <Link
-                                    href="/home"
-                                    className="ml-4 text-xl text-gray-800"
+                                    href={isProfilePage ? "/profile" : "/home"}
+                                    className="ml-4 text-xl font-normal text-gray-800"
                                 >
-                                    ホーム
+                                    {isProfilePage ? "プロフィール" : "ホーム"}
                                 </Link>
                             </div>
                         </div>
@@ -95,7 +105,7 @@ function NavItem({ href, icon, label, className }) {
     return (
         <Link
             href={href}
-            className={`text-lg text-gray-800 flex flex-col items-center ${className}`}
+            className={`text-lg font-normal text-gray-800 flex flex-col items-center ${className}`}
         >
             <img
                 src={icon}
@@ -154,7 +164,7 @@ function UserDropdown({ user }) {
                         />
                         <div className="flex flex-col">
                             <span>{user.nickname}</span>
-                            <span>{user.id}</span>
+                            <span>{user.login_id}</span>
                         </div>
                     </Dropdown.Link>
                     <Divider />
@@ -235,7 +245,7 @@ function ResponsiveNavigation({ showing }) {
             <div className="space-y-4 pb-6 pt-4">
                 <ResponsiveNavLink
                     href={route("profile.edit")}
-                    className="text-lg flex items-center"
+                    className="text-lg font-normal flex items-center"
                 >
                     <img
                         src="/img/profile-icon.png"
@@ -244,13 +254,13 @@ function ResponsiveNavigation({ showing }) {
                     />
                     <div className="flex flex-col">
                         <span>{user.nickname}</span>
-                        <span>{user.id}</span>
+                        <span>{user.login_id}</span>
                     </div>
                 </ResponsiveNavLink>
                 <Divider />
                 <ResponsiveNavLink
                     href="/schedule"
-                    className="text-lg flex items-center"
+                    className="text-lg font-normal flex items-center"
                 >
                     <img
                         src="/img/schedule-icon.png"
@@ -262,7 +272,7 @@ function ResponsiveNavigation({ showing }) {
                 <Divider />
                 <ResponsiveNavLink
                     href="/weather"
-                    className="text-lg flex items-center"
+                    className="text-lg font-normal flex items-center"
                 >
                     <img
                         src="/img/weather-icon.png"
@@ -274,7 +284,7 @@ function ResponsiveNavigation({ showing }) {
                 <Divider />
                 <ResponsiveNavLink
                     href="/connection"
-                    className="text-lg flex items-center"
+                    className="text-lg font-normal flex items-center"
                 >
                     <img
                         src="/img/connection-icon.png"
@@ -286,7 +296,7 @@ function ResponsiveNavigation({ showing }) {
                 <Divider />
                 <ResponsiveNavLink
                     href="/calendar"
-                    className="text-lg flex items-center"
+                    className="text-lg font-normal flex items-center"
                 >
                     <img
                         src="/img/calendar-icon.png"
@@ -298,7 +308,7 @@ function ResponsiveNavigation({ showing }) {
                 <Divider />
                 <ResponsiveNavLink
                     href="/chat"
-                    className="text-lg flex items-center"
+                    className="text-lg font-normal flex items-center"
                 >
                     <img
                         src="/img/chat-icon.png"
@@ -313,7 +323,7 @@ function ResponsiveNavigation({ showing }) {
                         method="post"
                         href={route("logout")}
                         as="button"
-                        className="text-lg flex items-center"
+                        className="text-lg font-normal flex items-center"
                     >
                         <img
                             src="/img/logout-icon.png"
