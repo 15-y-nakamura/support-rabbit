@@ -80,6 +80,7 @@ export default function DeleteUserForm({ className = "" }) {
                         value={data.password}
                         onChange={(e) => setData("password", e.target.value)}
                         required
+                        placeholder="パスワード"
                     />
 
                     <InputError message={errors.password} className="mt-2" />
@@ -89,6 +90,7 @@ export default function DeleteUserForm({ className = "" }) {
                     <PrimaryButton
                         onClick={confirmUserDeletion}
                         disabled={processing}
+                        className="bg-red-600 hover:bg-red-800"
                     >
                         アカウント削除
                     </PrimaryButton>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, usePage } from "@inertiajs/react";
+import { Head, usePage, Link } from "@inertiajs/react";
 import DeleteUserForm from "./Partials/DeleteUserForm";
 import UpdatePasswordForm from "./Partials/UpdatePasswordForm";
 import UpdateProfileInformationForm from "./Partials/UpdateProfileInformationForm";
@@ -30,8 +30,8 @@ export default function Edit() {
 
         axios
             .put(
-                "/api/v2/profiles",
-                { nickname, email, birthday: formatDate(birthday), login_id }, // putメソッドを使用
+                "/v2/profiles",
+                { nickname, email, birthday: formatDate(birthday), login_id },
                 {
                     withCredentials: true,
                     headers: {
@@ -58,7 +58,7 @@ export default function Edit() {
 
         axios
             .put(
-                "/api/v2/profile/password", // putメソッドを使用
+                "/v2/profiles/password",
                 { currentPassword, newPassword },
                 {
                     withCredentials: true,
@@ -84,16 +84,13 @@ export default function Edit() {
         }
 
         axios
-            .post(
-                "/api/v2/profile/destroy",
-                { password },
-                {
-                    withCredentials: true,
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            )
+            .delete("/v2/profiles", {
+                data: { password },
+                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
             .then((response) => {
                 setStatus("Account deleted successfully");
             })
@@ -108,23 +105,17 @@ export default function Edit() {
     }
 
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Profile
-                </h2>
-            }
-        >
+        <AuthenticatedLayout>
             <Head title="Profile" />
 
-            <div className="py-12">
+            <div className="py-12 bg-[#FFF6EA]">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         <UpdateProfileInformationForm
                             mustVerifyEmail={mustVerifyEmail}
                             status={status}
                             className="max-w-xl"
-                            onUpdateProfile={handleUpdateProfile} // login_idを渡す
+                            onUpdateProfile={handleUpdateProfile}
                         />
                     </div>
 

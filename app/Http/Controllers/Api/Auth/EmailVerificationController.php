@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
+use Illuminate\Auth\Events\Verified;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+
 
 class EmailVerificationController extends Controller
 {
     /**
-     * メール認証を処理します。
+     * メールアドレスの確認を処理します。
      */
     public function verifyEmail(EmailVerificationRequest $request)
     {
@@ -26,7 +29,7 @@ class EmailVerificationController extends Controller
     }
 
     /**
-     * メール認証通知の再送信を処理します。
+     * メールアドレス確認通知を再送信します。
      */
     public function resendVerificationEmail(Request $request)
     {

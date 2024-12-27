@@ -49,6 +49,7 @@ export default function UpdateProfileInformation({
                         defaultValue={data.login_id} // valueからdefaultValueに変更
                         onChange={(e) => setData("login_id", e.target.value)}
                         required
+                        placeholder="ユーザID"
                     />
 
                     <InputError className="mt-2" message={errors.login_id} />
@@ -65,6 +66,7 @@ export default function UpdateProfileInformation({
                         required
                         isFocused
                         autoComplete="nickname"
+                        placeholder="ニックネーム"
                     />
 
                     <InputError className="mt-2" message={errors.nickname} />
@@ -81,6 +83,7 @@ export default function UpdateProfileInformation({
                         onChange={(e) => setData("email", e.target.value)}
                         required
                         autoComplete="username"
+                        placeholder="メールアドレス"
                     />
 
                     <InputError className="mt-2" message={errors.email} />
@@ -96,6 +99,7 @@ export default function UpdateProfileInformation({
                         defaultValue={data.birthday} // valueからdefaultValueに変更
                         onChange={(e) => setData("birthday", e.target.value)}
                         autoComplete="birthday"
+                        placeholder="yyyy/mm/dd"
                     />
 
                     <InputError className="mt-2" message={errors.birthday} />
@@ -132,7 +136,12 @@ export default function UpdateProfileInformation({
                 )}
 
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>保存</PrimaryButton>
+                    <PrimaryButton
+                        className="bg-gray-700"
+                        disabled={processing}
+                    >
+                        保存
+                    </PrimaryButton>
 
                     <Transition
                         show={recentlySuccessful}
