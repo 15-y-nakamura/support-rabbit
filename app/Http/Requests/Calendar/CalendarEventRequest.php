@@ -24,8 +24,6 @@ class CalendarEventRequest extends FormRequest
             'notification' => 'nullable|string|max:255',
             'is_recurring' => 'boolean',
             'recurrence_type' => 'required|in:none,weekday,weekend,weekly,monthly,yearly',
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180',
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
         ];

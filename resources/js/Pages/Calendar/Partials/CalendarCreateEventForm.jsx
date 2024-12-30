@@ -20,6 +20,7 @@ export default function CalendarCreateEventForm({
     const [tags, setTags] = useState([]);
     const [selectedTag, setSelectedTag] = useState(null);
     const [isTagListOpen, setIsTagListOpen] = useState(false);
+    const [loadingTags, setLoadingTags] = useState(false);
 
     const defaultTags = [
         { id: 1, name: "お出かけ", color: "#FF0000" },
@@ -30,7 +31,12 @@ export default function CalendarCreateEventForm({
         { id: 6, name: "自由時間", color: "#00FFFF" },
     ];
 
+    useEffect(() => {
+        fetchTags();
+    }, []);
+
     const fetchTags = async () => {
+        setLoadingTags(true);
         try {
             const response = await axios.get("/api/v2/calendar/tags");
             setTags([...defaultTags, ...response.data.tags]);
@@ -38,6 +44,8 @@ export default function CalendarCreateEventForm({
             console.error("Error fetching tags:", error);
             // デフォルトタグのみを設定
             setTags(defaultTags);
+        } finally {
+            setLoadingTags(false);
         }
     };
 
@@ -84,94 +92,132 @@ export default function CalendarCreateEventForm({
     };
 
     const handleTagButtonClick = () => {
-        if (!isTagListOpen) {
-            fetchTags();
-        }
         setIsTagListOpen(!isTagListOpen);
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex flex-col">
-                <label className="mb-1 font-bold">予定名</label>
+        <form
+            onSubmit={handleSubmit}
+            className="space-y-4 max-w-md mx-auto p-4 sm:max-w-2xl"
+        >
+            <div className="flex flex-col space-y-2">
+                <label className="font-bold">予定名</label>
                 <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
-                    className="p-2 border border-gray-300 rounded"
+                    className="p-2 border border-gray-300 rounded w-full"
                 />
             </div>
-            <div className="flex space-x-4">
-                <div className="flex flex-col w-1/2">
-                    <label className="mb-1 font-bold">開始日時</label>
+            <hr className="my-4" />
+            <div className="flex flex-col md:flex-row md:space-x-4">
+                <div className="flex flex-col flex-1 space-y-2">
+                    <label className="font-bold">開始日時</label>
                     <input
                         type="datetime-local"
                         value={startTime}
                         onChange={(e) => setStartTime(e.target.value)}
                         required
-                        className={`p-2 border border-gray-300 rounded ${
+                        className={`p-2 border border-gray-300 rounded w-full ${
                             allDay ? "bg-gray-200" : ""
                         }`}
                         disabled={allDay}
                     />
                 </div>
-                <div className="flex flex-col w-1/2">
-                    <label className="mb-1 font-bold">終了日時</label>
+                <div className="flex flex-col flex-1 space-y-2">
+                    <label className="font-bold">終了日時</label>
                     <input
                         type="datetime-local"
                         value={endTime}
                         onChange={(e) => setEndTime(e.target.value)}
-                        className={`p-2 border border-gray-300 rounded ${
+                        className={`p-2 border border-gray-300 rounded w-full ${
                             allDay ? "bg-gray-200" : ""
                         }`}
                         disabled={allDay}
                     />
                 </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col space-y-2">
                 <label className="font-bold">繰り返し設定</label>
-                <input
-                    type="checkbox"
-                    checked={isRecurring}
-                    onChange={(e) => setIsRecurring(e.target.checked)}
-                />
-                {isRecurring && (
-                    <select
-                        value={recurrenceType}
-                        onChange={(e) => setRecurrenceType(e.target.value)}
-                        className="p-2 border border-gray-300 rounded w-40"
-                    >
-                        <option value="none">なし</option>
-                        <option value="weekday">平日</option>
-                        <option value="weekend">週末</option>
-                        <option value="weekly">毎週</option>
-                        <option value="monthly">毎月</option>
-                        <option value="yearly">毎年</option>
-                    </select>
-                )}
+                <div className="flex items-center space-x-4">
+                    <input
+                        type="checkbox"
+                        checked={isRecurring}
+                        onChange={(e) => setIsRecurring(e.target.checked)}
+                        className="align-middle"
+                    />
+                    {isRecurring && (
+                        <select
+                            value={recurrenceType}
+                            onChange={(e) => setRecurrenceType(e.target.value)}
+                            className="p-2 border border-gray-300 rounded w-32"
+                        >
+                            <option value="none">なし</option>
+                            <option value="weekday">平日</option>
+                            <option value="weekend">週末</option>
+                            <option value="weekly">毎週</option>
+                            <option value="monthly">毎月</option>
+                            <option value="yearly">毎年</option>
+                        </select>
+                    )}
+                </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col space-y-2">
                 <label className="font-bold">終日設定</label>
-                <input
-                    type="checkbox"
-                    checked={allDay}
-                    onChange={(e) => setAllDay(e.target.checked)}
-                />
-                {allDay && (
-                    <div className="flex flex-col">
-                        <label className="mb-1 font-bold">日付</label>
-                        <input
-                            type="date"
-                            value={allDayDate}
-                            onChange={(e) => setAllDayDate(e.target.value)}
-                            className="p-2 border border-gray-300 rounded"
-                        />
-                    </div>
-                )}
+                <div className="flex items-center space-x-4">
+                    <input
+                        type="checkbox"
+                        checked={allDay}
+                        onChange={(e) => setAllDay(e.target.checked)}
+                        className="align-middle"
+                    />
+                    {allDay && (
+                        <div className="flex items-center space-x-4">
+                            <label className="font-bold">日付</label>
+                            <input
+                                type="date"
+                                value={allDayDate}
+                                onChange={(e) => setAllDayDate(e.target.value)}
+                                className="p-2 border border-gray-300 rounded"
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
-            <div className="flex flex-col">
-                <label className="mb-1 font-bold">タグ</label>
+            <div className="flex flex-col space-y-2">
+                <label className="font-bold">通知</label>
+                <select
+                    value={notification}
+                    onChange={(e) => setNotification(e.target.value)}
+                    className="p-2 border border-gray-300 rounded w-32"
+                >
+                    <option value="none">なし</option>
+                    <option value="10minutes">10分前</option>
+                    <option value="1hour">1時間前</option>
+                </select>
+            </div>
+            <hr className="my-4" />
+            <div className="flex flex-col space-y-2">
+                <label className="font-bold">場所</label>
+                <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="p-2 border border-gray-300 rounded w-full"
+                />
+            </div>
+            <div className="flex flex-col space-y-2">
+                <label className="font-bold">リンク</label>
+                <input
+                    type="url"
+                    value={link}
+                    onChange={(e) => setLink(e.target.value)}
+                    className="p-2 border border-gray-300 rounded w-full"
+                />
+            </div>
+            <div className="flex flex-col space-y-2">
+                <label className="font-bold">タグ</label>
                 {selectedTag ? (
                     <div className="mt-2 flex items-center space-x-2">
                         <div
@@ -190,49 +236,61 @@ export default function CalendarCreateEventForm({
                     </div>
                 ) : (
                     <div className="mt-2 flex items-center space-x-2">
-                        <div className="p-2 border border-gray-300 rounded text-gray-700">
+                        <span className="text-gray-700">
                             タグが選択されていません
-                        </div>
+                        </span>
                         <button
                             type="button"
                             onClick={handleTagButtonClick}
-                            className="bg-customPink text-white p-2 rounded shadow-md"
+                            className="p-2 rounded shadow-md"
                         >
-                            タグを表示
+                            <img
+                                src="/img/tag-icon.png"
+                                alt="タグを表示"
+                                className="w-6 h-6"
+                            />
                         </button>
                     </div>
                 )}
                 {isTagListOpen && (
                     <div className="mt-2 p-2 border border-gray-300 rounded">
-                        <ul>
-                            {tags.map((tag) => (
-                                <li
-                                    key={tag.id}
-                                    className="flex items-center space-x-2"
-                                >
-                                    <div
-                                        className="w-4 h-4 rounded"
-                                        style={{ backgroundColor: tag.color }}
-                                    ></div>
-                                    <button
-                                        type="button"
-                                        className="text-black underline"
-                                        onClick={() => handleTagSelect(tag)}
+                        {loadingTags ? (
+                            <div className="flex items-center justify-center">
+                                <div className="loader">Loading...</div>
+                            </div>
+                        ) : (
+                            <ul>
+                                {tags.map((tag) => (
+                                    <li
+                                        key={tag.id}
+                                        className="flex items-center space-x-2"
                                     >
-                                        {tag.name}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
+                                        <div
+                                            className="w-4 h-4 rounded"
+                                            style={{
+                                                backgroundColor: tag.color,
+                                            }}
+                                        ></div>
+                                        <button
+                                            type="button"
+                                            className="text-black underline"
+                                            onClick={() => handleTagSelect(tag)}
+                                        >
+                                            {tag.name}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                 )}
             </div>
-            <div className="flex flex-col note">
-                <label className="mb-1 font-bold">メモ</label>
+            <div className="flex flex-col space-y-2">
+                <label className="font-bold">メモ</label>
                 <textarea
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    className="p-2 border border-gray-300 rounded text"
+                    className="p-2 border border-gray-300 rounded w-full"
                 />
             </div>
             <button

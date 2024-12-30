@@ -61,16 +61,20 @@ export default function CalendarTagSelectButton({ onTagSelected }) {
             <button
                 type="button"
                 onClick={() => setIsModalOpen(true)}
-                className="bg-[#FFA742] text-white p-2 rounded shadow-md"
+                className="p-2 rounded shadow-md"
             >
-                タグを選択
+                <img
+                    src="/img/tag-create-icon.png"
+                    alt="タグを作成"
+                    className="w-6 h-6"
+                />
             </button>
             <CalendarModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
             >
                 <div className="flex flex-col space-y-4">
-                    <h2 className="text-lg font-bold">タグを選択</h2>
+                    <h2 className="text-lg font-bold">タグ一覧</h2>
                     <div className="grid grid-cols-3 gap-2">
                         {tags.slice(0, 12).map((tag) => (
                             <button
@@ -84,6 +88,7 @@ export default function CalendarTagSelectButton({ onTagSelected }) {
                             </button>
                         ))}
                     </div>
+                    <hr className="w-full border-t border-gray-300 my-4" />
                     <h2 className="text-lg font-bold">新しいタグを作成</h2>
                     <div className="flex flex-col space-y-2">
                         <input
@@ -118,7 +123,7 @@ export default function CalendarTagSelectButton({ onTagSelected }) {
                         <button
                             type="button"
                             onClick={handleTagCreate}
-                            className="bg-customPink text-white p-2 rounded shadow-md"
+                            className="bg-customPink text-white p-2 rounded shadow-md w-full"
                         >
                             作成
                         </button>

@@ -26,8 +26,6 @@ class CreateCalendarEventsTable extends Migration
             $table->string('notification')->nullable();
             $table->boolean('is_recurring')->default(false); // 繰り返し設定のフラグ
             $table->enum('recurrence_type', ['none', 'weekday', 'weekend', 'weekly', 'monthly', 'yearly'])->default('none'); // 繰り返しの種類
-            $table->decimal('latitude', 10, 7)->nullable(); // 緯度
-            $table->decimal('longitude', 10, 7)->nullable(); // 経度
             $table->timestamps();
         });
     }

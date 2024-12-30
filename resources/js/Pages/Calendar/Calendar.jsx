@@ -5,9 +5,9 @@ import axios from "axios";
 import CalendarCreateEventForm from "./Partials/CalendarCreateEventForm";
 import CalendarUpdateEventForm from "./Partials/CalendarUpdateEventForm";
 import CalendarDeleteEventButton from "./Partials/CalendarDeleteEventButton";
-import CalendarSearchEventForm from "./Partials/CalendarSearchEventForm";
 import CalendarTagSelectButton from "./Partials/CalendarTagSelectButton";
 import CalendarModal from "./Partials/CalendarModal";
+import DateChangeModal from "./Partials/DateChangeModal";
 
 export default function Calendar() {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -15,6 +15,7 @@ export default function Calendar() {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedTag, setSelectedTag] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDateModalOpen, setIsDateModalOpen] = useState(false);
 
     useEffect(() => {
         fetchEvents();
@@ -160,6 +161,10 @@ export default function Calendar() {
         }
     };
 
+    const handleDateChange = (year, month) => {
+        setCurrentDate(new Date(year, month - 1, 1));
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="カレンダー" />
@@ -176,7 +181,7 @@ export default function Calendar() {
                                 <div className="flex items-center space-x-2 max-sm:space-x-1">
                                     <input
                                         type="text"
-                                        placeholder="検索"
+                                        placeholder="タグ検索"
                                         className="w-64 p-2 border border-gray-300 rounded-l-md max-sm:w-40 max-sm:p-1"
                                         value={searchQuery}
                                         onChange={(e) =>
@@ -221,7 +226,10 @@ export default function Calendar() {
                                     >
                                         &lt;
                                     </button>
-                                    <div className="text-xl font-bold text-pink-500 max-sm:text-lg">
+                                    <div
+                                        className="text-xl font-bold text-pink-500 max-sm:text-lg cursor-pointer"
+                                        onClick={() => setIsDateModalOpen(true)}
+                                    >
                                         {currentDate.toLocaleString("ja-JP", {
                                             year: "numeric",
                                             month: "long",
@@ -245,6 +253,11 @@ export default function Calendar() {
                                             .slice(0, 16)}
                                     />
                                 </CalendarModal>
+                                <DateChangeModal
+                                    isOpen={isDateModalOpen}
+                                    onClose={() => setIsDateModalOpen(false)}
+                                    onDateChange={handleDateChange}
+                                />
                                 <div className="grid grid-cols-7 gap-2 w-full text-center text-pink-500 font-bold">
                                     <div>日</div>
                                     <div>月</div>

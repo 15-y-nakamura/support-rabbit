@@ -44,8 +44,6 @@ class CalendarEventController extends Controller
                     'notification' => $event->notification,
                     'is_recurring' => $event->is_recurring,
                     'recurrence_type' => $event->recurrence_type,
-                    'latitude' => $event->latitude, // 緯度
-                    'longitude' => $event->longitude, // 経度
                     'tags' => $event->tags->pluck('id'),
                 ];
             });
@@ -91,8 +89,6 @@ class CalendarEventController extends Controller
                 'notification' => $event->notification,
                 'is_recurring' => $event->is_recurring,
                 'recurrence_type' => $event->recurrence_type,
-                'latitude' => $event->latitude, // 緯度
-                'longitude' => $event->longitude, // 経度
                 'tags' => $event->tags->pluck('id'),
             ]);
         } catch (\Exception $e) {
