@@ -7,6 +7,7 @@ import { useState } from "react";
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
+    const currentUrl = usePage().url;
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
@@ -14,11 +15,11 @@ export default function AuthenticatedLayout({ header, children }) {
         setShowingNavigationDropdown((prevState) => !prevState);
     };
 
-    const isProfilePage = usePage().url === "/profile";
+    const isHomePage = currentUrl === "/home";
 
     return (
         <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-customPink shadow-md">
+            <nav className="border-b border-gray-100 bg-customPink">
                 <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-10">
                     <div className="flex h-24 justify-between">
                         <div className="flex">
@@ -32,17 +33,17 @@ export default function AuthenticatedLayout({ header, children }) {
                                         alt="Logo"
                                         className="block h-16 w-auto fill-current text-gray-800"
                                     />
-                                    {isProfilePage && (
-                                        <div className="text-sm text-gray-800">
+                                    {!isHomePage && (
+                                        <span className="text-sm text-gray-800">
                                             ホームに戻る
-                                        </div>
+                                        </span>
                                     )}
                                 </Link>
                                 <Link
-                                    href={isProfilePage ? "/profile" : "/home"}
-                                    className="ml-4 text-xl font-normal text-gray-800"
+                                    href="/home"
+                                    className="ml-4 text-xl text-gray-800"
                                 >
-                                    {isProfilePage ? "プロフィール" : "ホーム"}
+                                    ホーム
                                 </Link>
                             </div>
                         </div>
@@ -105,7 +106,7 @@ function NavItem({ href, icon, label, className }) {
     return (
         <Link
             href={href}
-            className={`text-lg font-normal text-gray-800 flex flex-col items-center ${className}`}
+            className={`text-lg text-gray-800 flex flex-col items-center ${className}`}
         >
             <img
                 src={icon}
@@ -238,14 +239,14 @@ function CloseIcon() {
 }
 
 function ResponsiveNavigation({ showing }) {
-    const user = usePage().props.auth.user; // ここでユーザー情報を取得
+    const user = usePage().props.auth.user;
 
     return (
         <div className={(showing ? "block" : "hidden") + " sm:hidden bg-white"}>
             <div className="space-y-4 pb-6 pt-4">
                 <ResponsiveNavLink
                     href={route("profile.edit")}
-                    className="text-lg font-normal flex items-center"
+                    className="text-lg flex items-center"
                 >
                     <img
                         src="/img/profile-icon.png"
@@ -260,7 +261,7 @@ function ResponsiveNavigation({ showing }) {
                 <Divider />
                 <ResponsiveNavLink
                     href="/schedule"
-                    className="text-lg font-normal flex items-center"
+                    className="text-lg flex items-center"
                 >
                     <img
                         src="/img/schedule-icon.png"
@@ -272,7 +273,7 @@ function ResponsiveNavigation({ showing }) {
                 <Divider />
                 <ResponsiveNavLink
                     href="/weather"
-                    className="text-lg font-normal flex items-center"
+                    className="text-lg flex items-center"
                 >
                     <img
                         src="/img/weather-icon.png"
@@ -284,7 +285,7 @@ function ResponsiveNavigation({ showing }) {
                 <Divider />
                 <ResponsiveNavLink
                     href="/connection"
-                    className="text-lg font-normal flex items-center"
+                    className="text-lg flex items-center"
                 >
                     <img
                         src="/img/connection-icon.png"
@@ -296,7 +297,7 @@ function ResponsiveNavigation({ showing }) {
                 <Divider />
                 <ResponsiveNavLink
                     href="/calendar"
-                    className="text-lg font-normal flex items-center"
+                    className="text-lg flex items-center"
                 >
                     <img
                         src="/img/calendar-icon.png"
@@ -308,7 +309,7 @@ function ResponsiveNavigation({ showing }) {
                 <Divider />
                 <ResponsiveNavLink
                     href="/chat"
-                    className="text-lg font-normal flex items-center"
+                    className="text-lg flex items-center"
                 >
                     <img
                         src="/img/chat-icon.png"
@@ -323,7 +324,7 @@ function ResponsiveNavigation({ showing }) {
                         method="post"
                         href={route("logout")}
                         as="button"
-                        className="text-lg font-normal flex items-center"
+                        className="text-lg flex items-center"
                     >
                         <img
                             src="/img/logout-icon.png"

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateUserTokensTable extends Migration
+class CreateCalendarEventTagTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,10 @@ class CreateUserTokensTable extends Migration
      */
     public function up()
     {
-        Schema::create('user_tokens', function (Blueprint $table) {
+        Schema::create('calendar_event_tag', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('token', 255)->unique();
-            $table->dateTime('expiration_time');
+            $table->foreignId('event_id')->constrained('calendar_events')->onDelete('cascade');
+            $table->foreignId('tag_id')->constrained('calendar_tags')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -29,6 +28,6 @@ class CreateUserTokensTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('user_tokens');
+        Schema::dropIfExists('calendar_event_tag');
     }
 }

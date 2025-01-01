@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Profile\ProfileController;
+use App\Http\Controllers\Api\Calendar\CalendarTagController;
+use App\Http\Controllers\Api\Calendar\CalendarEventController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -23,7 +25,7 @@ Route::get('/home', function () {
 // ゲスト専用ルート
 Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'create'])->name('login');
-    Route::post('register', [RegisterController::class, 'store']);
+    Route::post('register', [RegisterController::class, 'store'])->name('register'); // ここでregisterルートを定義
     Route::post('api/register', [RegisterController::class, 'signup']);
     Route::post('login', [LoginController::class, 'login']);
 
@@ -57,4 +59,14 @@ Route::middleware('auth')->group(function () {
 
     Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::get('profile/show', [ProfileController::class, 'show'])->name('profile.show');
+
+    Route::get('calendar', function () {
+        return Inertia::render('Calendar/Calendar');
+    })->name('calendar');
+
+    Route::put('api/v2/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::post('api/v2/calendar/tags', [CalendarTagController::class, 'store'])->name('calendar.tags.store');
+
+    Route::post('api/v2/calendar/events', [CalendarEventController::class, 'store'])->name('calendar.events.store');
 });

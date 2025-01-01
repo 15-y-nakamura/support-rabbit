@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useForm } from "@inertiajs/react";
+import { useForm, Link } from "@inertiajs/react";
 import InputLabel from "@/Components/InputLabel";
 import TextInput from "@/Components/TextInput";
 import InputError from "@/Components/InputError";
@@ -156,7 +156,13 @@ export default function RegisterForm() {
                     className="mt-2"
                 />
             </div>
-            <div className="mt-4 flex items-center justify-end">
+            <div className="mt-4 flex items-center justify-between">
+                <Link
+                    href={route("login")}
+                    className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                >
+                    既にアカウントをお持ちの方はこちら
+                </Link>
                 <PrimaryButton
                     className="ml-4 bg-gray-700"
                     disabled={processing}

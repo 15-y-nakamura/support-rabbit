@@ -14,15 +14,30 @@ export default {
         extend: {
             fontFamily: {
                 sans: ["Figtree", ...defaultTheme.fontFamily.sans],
+                comic: ["Comic Sans MS", "cursive", "sans-serif"],
             },
             colors: {
-                customPink: "#F0A0A8", // ここにカスタムカラーを追加
+                customPink: "#F0A0A8",
+                cream: "#FFF8E7",
+                pink: {
+                    50: "#FFF1F3",
+                    200: "#FFC1C8",
+                    500: "#F78FB3",
+                },
+                customGreen: "#65BC8B",
             },
             fontSize: {
-                "icon-text": "1rem", // アイコンのテキストサイズ
+                "icon-text": "1rem",
             },
             spacing: {
-                "icon-size": "1.5rem", // アイコンのサイズ
+                "icon-size": "1.5rem",
+            },
+            screens: {
+                "max-sm": { max: "639px" },
+                "max-md": { max: "767px" },
+                "max-lg": { max: "1023px" },
+                "max-xl": { max: "1279px" },
+                "max-2xl": { max: "1535px" },
             },
         },
     },
