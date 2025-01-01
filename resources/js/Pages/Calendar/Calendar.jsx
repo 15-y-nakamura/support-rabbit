@@ -3,8 +3,7 @@ import { Head } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import CalendarCreateEventForm from "./Partials/CalendarCreateEventForm";
-import CalendarUpdateEventForm from "./Partials/CalendarUpdateEventForm";
-import CalendarDeleteEventButton from "./Partials/CalendarDeleteEventButton";
+import CalendarEventDetailForm from "./Partials/CalendarEventDetailForm";
 import CalendarTagSelectButton from "./Partials/CalendarTagSelectButton";
 import CalendarModal from "./Partials/CalendarModal";
 import DateChangeModal from "./Partials/DateChangeModal";
@@ -16,6 +15,10 @@ export default function Calendar() {
     const [selectedTag, setSelectedTag] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+    const [selectedDateEvents, setSelectedDateEvents] = useState([]);
+    const [notification, setNotification] = useState(null);
+    const [selectedEvents, setSelectedEvents] = useState([]);
+    const [selectedEvent, setSelectedEvent] = useState(null);
 
     useEffect(() => {
         fetchEvents();
@@ -35,6 +38,7 @@ export default function Calendar() {
     const handleEventCreated = (newEvent) => {
         setEvents([...events, newEvent]);
         setIsModalOpen(false); // モーダルを閉じる
+        setNotification("イベントが正常に作成されました。");
     };
 
     const handleEventUpdated = (updatedEvent) => {
@@ -43,10 +47,15 @@ export default function Calendar() {
                 event.id === updatedEvent.id ? updatedEvent : event
             )
         );
+        setNotification("イベントが正常に更新されました。");
     };
 
     const handleEventDeleted = (deletedEventId) => {
         setEvents(events.filter((event) => event.id !== deletedEventId));
+        setSelectedDateEvents(
+            selectedDateEvents.filter((event) => event.id !== deletedEventId)
+        );
+        setNotification("イベントが正常に削除されました。");
     };
 
     const handleSearch = (query) => {
@@ -55,6 +64,39 @@ export default function Calendar() {
 
     const handleTagSelected = (tagId) => {
         setSelectedTag(tagId);
+    };
+
+    const handleDateClick = (date) => {
+        const dayEvents = events.filter(
+            (event) =>
+                event.start_time &&
+                new Date(event.start_time).toDateString() ===
+                    date.toDateString()
+        );
+        setSelectedDateEvents(dayEvents);
+    };
+
+    const handleEventSelect = (eventId) => {
+        setSelectedEvents((prevSelected) =>
+            prevSelected.includes(eventId)
+                ? prevSelected.filter((id) => id !== eventId)
+                : [...prevSelected, eventId]
+        );
+    };
+
+    const handleDeleteSelectedEvents = () => {
+        selectedEvents.forEach((eventId) => handleEventDeleted(eventId));
+        setSelectedEvents([]);
+    };
+
+    const handleEventDetail = (event) => {
+        setSelectedEvent(event);
+        setIsModalOpen(true);
+    };
+
+    const handleCreateEvent = () => {
+        setSelectedEvent(null);
+        setIsModalOpen(true);
     };
 
     const renderCalendar = () => {
@@ -94,30 +136,48 @@ export default function Calendar() {
 
         for (let i = 1; i <= daysInMonth; i++) {
             const dayEvents = events.filter(
-                (event) => new Date(event.start_time).getDate() === i
+                (event) =>
+                    event.start_time &&
+                    new Date(event.start_time).toDateString() ===
+                        new Date(
+                            currentDate.getFullYear(),
+                            currentDate.getMonth(),
+                            i
+                        ).toDateString()
             );
+
             days.push(
                 <div
-                    className="calendar-day text-gray-800 font-bold bg-pink-50 hover:bg-pink-200 rounded-md"
+                    className="calendar-day text-gray-800 font-bold bg-white hover:bg-gray-200 rounded-md"
                     key={`current-${i}`}
+                    onClick={() =>
+                        handleDateClick(
+                            new Date(
+                                currentDate.getFullYear(),
+                                currentDate.getMonth(),
+                                i
+                            )
+                        )
+                    }
+                    style={{
+                        minHeight: "48px", // 縦幅をさらに縮める
+                        padding: "2px",
+                        margin: "2px",
+                        width: "calc(100% - 4px)",
+                    }}
                 >
-                    {i}
-                    {dayEvents.map((event) => (
+                    <div className="text-sm">{i}</div>
+                    {dayEvents.slice(0, 2).map((event) => (
                         <div
                             key={event.id}
-                            className="event bg-blue-200 p-1 mt-1 rounded"
+                            className="text-xs bg-blue-200 rounded mt-1 px-1 truncate"
                         >
                             {event.title}
-                            <CalendarUpdateEventForm
-                                event={event}
-                                onEventUpdated={handleEventUpdated}
-                            />
-                            <CalendarDeleteEventButton
-                                eventId={event.id}
-                                onEventDeleted={handleEventDeleted}
-                            />
                         </div>
                     ))}
+                    {dayEvents.length > 2 && (
+                        <div className="text-xs text-gray-500">...他</div>
+                    )}
                 </div>
             );
         }
@@ -168,97 +228,47 @@ export default function Calendar() {
     return (
         <AuthenticatedLayout>
             <Head title="カレンダー" />
-            <div className="py-12 bg-cream">
+            <div className="py-2 bg-cream min-h-screen">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-4">
-                        <div className="p-6 bg-white border-b border-gray-200">
-                            <div className="flex justify-between items-center w-full mb-4">
-                                <img
-                                    src={getSeasonIcon()}
-                                    alt="Season Icon"
-                                    className="h-12 w-12 mr-4 max-sm:h-10 max-sm:w-10"
-                                />
-                                <div className="flex items-center space-x-2 max-sm:space-x-1">
-                                    <input
-                                        type="text"
-                                        placeholder="タグ検索"
-                                        className="w-64 p-2 border border-gray-300 rounded-l-md max-sm:w-40 max-sm:p-1"
-                                        value={searchQuery}
-                                        onChange={(e) =>
-                                            setSearchQuery(e.target.value)
-                                        }
-                                    />
+                    <div className="flex flex-col lg:flex-row">
+                        <div className="w-full lg:w-1/3 mb-4 lg:mb-0">
+                            <div className="bg-white shadow-md rounded-lg p-2">
+                                <div className="flex justify-between items-center w-full p-2 bg-cream rounded-lg mb-2">
                                     <button
-                                        className="bg-[#FFA742] text-white p-2 rounded-r-md max-sm:p-1"
-                                        onClick={() =>
-                                            handleSearch(searchQuery)
-                                        }
-                                    >
-                                        検索
-                                    </button>
-                                    <CalendarTagSelectButton
-                                        onTagSelected={handleTagSelected}
-                                    />
-                                </div>
-                                <button
-                                    className="bg-[#80ACCF] text-white p-2 rounded-full shadow-md ml-4 max-sm:p-1"
-                                    onClick={() => setIsModalOpen(true)}
-                                    style={{
-                                        width: "40px",
-                                        height: "40px",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                    }}
-                                >
-                                    ＋
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6 bg-white border-b border-gray-200">
-                            <div className="flex flex-col items-center font-comic">
-                                <div className="flex justify-between items-center w-full p-4 bg-cream rounded-lg mb-4">
-                                    <button
-                                        className="bg-pink-200 p-2 rounded-md text-white font-bold shadow-md max-sm:p-1"
+                                        className="bg-pink-200 p-1 rounded-md text-white font-bold shadow-md max-sm:p-1"
                                         onClick={handlePrevMonth}
                                     >
                                         &lt;
                                     </button>
-                                    <div
-                                        className="text-xl font-bold text-pink-500 max-sm:text-lg cursor-pointer"
-                                        onClick={() => setIsDateModalOpen(true)}
-                                    >
-                                        {currentDate.toLocaleString("ja-JP", {
-                                            year: "numeric",
-                                            month: "long",
-                                        })}
+                                    <div className="flex items-center space-x-2">
+                                        <div
+                                            className="text-lg font-bold text-pink-500 max-sm:text-md cursor-pointer"
+                                            onClick={() =>
+                                                setIsDateModalOpen(true)
+                                            }
+                                        >
+                                            {currentDate.toLocaleString(
+                                                "ja-JP",
+                                                {
+                                                    year: "numeric",
+                                                    month: "long",
+                                                }
+                                            )}
+                                        </div>
+                                        <img
+                                            src={getSeasonIcon()}
+                                            alt="Season Icon"
+                                            className="h-6 w-6 max-sm:h-4 max-sm:w-4"
+                                        />
                                     </div>
                                     <button
-                                        className="bg-pink-200 p-2 rounded-md text-white font-bold shadow-md max-sm:p-1"
+                                        className="bg-pink-200 p-1 rounded-md text-white font-bold shadow-md max-sm:p-1"
                                         onClick={handleNextMonth}
                                     >
                                         &gt;
                                     </button>
                                 </div>
-                                <CalendarModal
-                                    isOpen={isModalOpen}
-                                    onClose={() => setIsModalOpen(false)}
-                                >
-                                    <CalendarCreateEventForm
-                                        onEventCreated={handleEventCreated}
-                                        selectedDate={currentDate
-                                            .toISOString()
-                                            .slice(0, 16)}
-                                    />
-                                </CalendarModal>
-                                <DateChangeModal
-                                    isOpen={isDateModalOpen}
-                                    onClose={() => setIsDateModalOpen(false)}
-                                    onDateChange={handleDateChange}
-                                />
-                                <div className="grid grid-cols-7 gap-2 w-full text-center text-pink-500 font-bold">
+                                <div className="grid grid-cols-7 gap-1 text-center text-pink-500 font-bold">
                                     <div>日</div>
                                     <div>月</div>
                                     <div>火</div>
@@ -267,11 +277,11 @@ export default function Calendar() {
                                     <div>金</div>
                                     <div>土</div>
                                 </div>
-                                <div className="grid grid-cols-7 gap-2 w-full mt-4">
+                                <div className="grid grid-cols-7 gap-1 mt-2 bg-cream">
                                     {renderCalendar().map((day, index) => (
                                         <div
                                             key={index}
-                                            className="flex justify-center items-center h-12 cursor-pointer"
+                                            className="flex justify-center items-center h-15 cursor-pointer"
                                         >
                                             {day}
                                         </div>
@@ -279,9 +289,168 @@ export default function Calendar() {
                                 </div>
                             </div>
                         </div>
+                        <div className="w-full lg:w-2/3 pl-0 lg:pl-2">
+                            <div
+                                className="bg-white shadow-md rounded-lg p-2 h-full mb-4 w-full"
+                                style={{
+                                    width: "800px",
+                                    height: "460px",
+                                    maxWidth: "100%",
+                                }}
+                            >
+                                <div className="flex flex-col space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center space-x-1 max-sm:space-x-1">
+                                            <input
+                                                type="text"
+                                                placeholder="タグ検索"
+                                                className="w-48 p-1 border border-gray-300 rounded-l-md max-sm:w-32 max-sm:p-1"
+                                                value={searchQuery}
+                                                onChange={(e) =>
+                                                    setSearchQuery(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                            <button
+                                                className="bg-[#FFA742] text-white p-1 rounded-r-md max-sm:p-1"
+                                                onClick={() =>
+                                                    handleSearch(searchQuery)
+                                                }
+                                            >
+                                                検索
+                                            </button>
+                                            <CalendarTagSelectButton
+                                                onTagSelected={
+                                                    handleTagSelected
+                                                }
+                                            />
+                                        </div>
+                                        <button
+                                            className="bg-[#80ACCF] text-white p-1 rounded-full shadow-md max-sm:p-1"
+                                            onClick={handleCreateEvent}
+                                            style={{
+                                                width: "30px",
+                                                height: "30px",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                            }}
+                                        >
+                                            ＋
+                                        </button>
+                                    </div>
+                                    <div className="mt-2 p-2 bg-white border border-gray-300 rounded shadow-md w-full h-64">
+                                        {selectedDateEvents.length > 0 ? (
+                                            <>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <h2 className="text-lg font-bold">
+                                                        予定一覧
+                                                    </h2>
+                                                    <button
+                                                        className="bg-red-500 text-white p-2 rounded shadow-md"
+                                                        onClick={
+                                                            handleDeleteSelectedEvents
+                                                        }
+                                                    >
+                                                        選択した予定を削除
+                                                    </button>
+                                                </div>
+                                                <ul>
+                                                    {selectedDateEvents.map(
+                                                        (event) => (
+                                                            <li
+                                                                key={event.id}
+                                                                className="mb-1 flex items-center justify-between"
+                                                            >
+                                                                <div className="flex items-center">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={selectedEvents.includes(
+                                                                            event.id
+                                                                        )}
+                                                                        onChange={() =>
+                                                                            handleEventSelect(
+                                                                                event.id
+                                                                            )
+                                                                        }
+                                                                        className="mr-2"
+                                                                    />
+                                                                    <span className="font-bold">
+                                                                        {new Date(
+                                                                            event.start_time
+                                                                        ).toLocaleTimeString(
+                                                                            "ja-JP",
+                                                                            {
+                                                                                hour: "2-digit",
+                                                                                minute: "2-digit",
+                                                                            }
+                                                                        )}
+                                                                    </span>{" "}
+                                                                    -{" "}
+                                                                    {
+                                                                        event.title
+                                                                    }
+                                                                </div>
+                                                                <div className="flex items-center space-x-2">
+                                                                    <button
+                                                                        className="text-blue-500 underline"
+                                                                        onClick={() =>
+                                                                            handleEventDetail(
+                                                                                event
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        詳細
+                                                                    </button>
+                                                                </div>
+                                                            </li>
+                                                        )
+                                                    )}
+                                                </ul>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <h2 className="text-lg font-bold mb-2">
+                                                    予定一覧
+                                                </h2>
+                                                <p>登録されていません。</p>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    {notification && (
+                        <div className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded shadow-md">
+                            {notification}
+                        </div>
+                    )}
                 </div>
             </div>
+            <CalendarModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            >
+                {selectedEvent ? (
+                    <CalendarEventDetailForm
+                        event={selectedEvent}
+                        onEventUpdated={handleEventUpdated}
+                        onEventDeleted={handleEventDeleted}
+                    />
+                ) : (
+                    <CalendarCreateEventForm
+                        onEventCreated={handleEventCreated}
+                        selectedDate={currentDate.toISOString().slice(0, 16)}
+                    />
+                )}
+            </CalendarModal>
+            <DateChangeModal
+                isOpen={isDateModalOpen}
+                onClose={() => setIsDateModalOpen(false)}
+                onDateChange={handleDateChange}
+            />
         </AuthenticatedLayout>
     );
 }

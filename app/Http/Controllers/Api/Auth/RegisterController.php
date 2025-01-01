@@ -49,10 +49,8 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        return Inertia::render('Auth/RegisterSuccess', [
-            'message' => 'User registered successfully',
-            'user' => $user
-        ]);
+        // 登録成功時に/homeにリダイレクト
+        return redirect()->route('home');
     }
 
     /**

@@ -9,12 +9,12 @@ export default function CalendarTagSelectButton({ onTagSelected }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const defaultTags = [
-        { id: 1, name: "お出かけ", color: "#FF0000" },
-        { id: 2, name: "仕事", color: "#00FF00" },
-        { id: 3, name: "勉強", color: "#0000FF" },
-        { id: 4, name: "家事", color: "#FFFF00" },
-        { id: 5, name: "健康", color: "#FF00FF" },
-        { id: 6, name: "自由時間", color: "#00FFFF" },
+        { id: "default-1", name: "お出かけ", color: "#FF0000" },
+        { id: "default-2", name: "仕事", color: "#00FF00" },
+        { id: "default-3", name: "勉強", color: "#0000FF" },
+        { id: "default-4", name: "家事", color: "#FFFF00" },
+        { id: "default-5", name: "健康", color: "#FF00FF" },
+        { id: "default-6", name: "自由時間", color: "#00FFFF" },
     ];
 
     useEffect(() => {

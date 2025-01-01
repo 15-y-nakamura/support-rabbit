@@ -24,6 +24,7 @@ export default {
                     200: "#FFC1C8",
                     500: "#F78FB3",
                 },
+                customGreen: "#65BC8B",
             },
             fontSize: {
                 "icon-text": "1rem",
