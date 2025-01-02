@@ -65,7 +65,7 @@ class CalendarEventController extends Controller
                 $event->tags()->sync($validated['tags']);
             }
 
-            return response()->json(['message' => 'イベントが作成されました'], 201);
+            return response()->json(['message' => 'イベントが作成されました', 'event' => $event], 201);
         } catch (\Exception $e) {
             return response(['error' => $e->getMessage()], 500);
         }

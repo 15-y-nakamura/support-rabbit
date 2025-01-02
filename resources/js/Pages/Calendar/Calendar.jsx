@@ -67,12 +67,14 @@ export default function Calendar() {
     };
 
     const handleDateClick = (date) => {
-        const dayEvents = events.filter(
-            (event) =>
-                event.start_time &&
-                new Date(event.start_time).toDateString() ===
-                    date.toDateString()
-        );
+        const dayEvents = events.filter((event) => {
+            const eventStart = new Date(event.start_time);
+            const eventEnd = new Date(event.end_time || event.start_time);
+            return (
+                eventStart.toDateString() === date.toDateString() ||
+                eventEnd.toDateString() === date.toDateString()
+            );
+        });
         setSelectedDateEvents(dayEvents);
     };
 
@@ -84,9 +86,20 @@ export default function Calendar() {
         );
     };
 
-    const handleDeleteSelectedEvents = () => {
-        selectedEvents.forEach((eventId) => handleEventDeleted(eventId));
-        setSelectedEvents([]);
+    const handleDeleteSelectedEvents = async () => {
+        try {
+            await Promise.all(
+                selectedEvents.map((eventId) =>
+                    axios.delete(`/api/v2/calendar/events/${eventId}`)
+                )
+            );
+            selectedEvents.forEach((eventId) => {
+                handleEventDeleted(eventId);
+            });
+            setSelectedEvents([]);
+        } catch (error) {
+            console.error("Error deleting events:", error);
+        }
     };
 
     const handleEventDetail = (event) => {
@@ -135,16 +148,52 @@ export default function Calendar() {
         }
 
         for (let i = 1; i <= daysInMonth; i++) {
-            const dayEvents = events.filter(
-                (event) =>
-                    event.start_time &&
-                    new Date(event.start_time).toDateString() ===
-                        new Date(
-                            currentDate.getFullYear(),
-                            currentDate.getMonth(),
-                            i
-                        ).toDateString()
+            const currentDay = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                i
             );
+
+            const dayEvents = events.filter((event) => {
+                const eventStart = new Date(event.start_time);
+                const eventEnd = new Date(event.end_time || event.start_time);
+
+                if (event.recurrence_type === "weekday") {
+                    return (
+                        eventStart <= currentDay &&
+                        currentDay <= eventEnd &&
+                        currentDay.getDay() >= 1 &&
+                        currentDay.getDay() <= 5
+                    );
+                }
+
+                if (event.recurrence_type === "weekend") {
+                    return (
+                        eventStart <= currentDay &&
+                        currentDay <= eventEnd &&
+                        (currentDay.getDay() === 0 || currentDay.getDay() === 6)
+                    );
+                }
+
+                if (event.recurrence_type === "weekly") {
+                    return (
+                        eventStart <= currentDay &&
+                        currentDay <= eventEnd &&
+                        event.recurrence_days &&
+                        event.recurrence_days.includes(currentDay.getDay())
+                    );
+                }
+
+                return (
+                    eventStart.toDateString() === currentDay.toDateString() ||
+                    eventEnd.toDateString() === currentDay.toDateString()
+                );
+            });
+
+            const markerColor =
+                dayEvents.length > 0 && dayEvents[0].tag
+                    ? dayEvents[0].tag.color
+                    : "#F78FB3"; // デフォルトカラー
 
             days.push(
                 <div
@@ -167,17 +216,20 @@ export default function Calendar() {
                     }}
                 >
                     <div className="text-sm">{i}</div>
-                    {dayEvents.slice(0, 2).map((event) => (
-                        <div
-                            key={event.id}
-                            className="text-xs bg-blue-200 rounded mt-1 px-1 truncate"
-                        >
-                            {event.title}
-                        </div>
-                    ))}
-                    {dayEvents.length > 2 && (
-                        <div className="text-xs text-gray-500">...他</div>
-                    )}
+                    {dayEvents.map((event) => {
+                        const eventColor = event.tag
+                            ? event.tag.color
+                            : "#F78FB3"; // デフォルトカラー
+                        return (
+                            <div
+                                key={`${event.id}-${i}`}
+                                className="text-xs rounded mt-1 px-1 truncate"
+                                style={{ backgroundColor: eventColor }}
+                            >
+                                {event.title}
+                            </div>
+                        );
+                    })}
                 </div>
             );
         }
@@ -379,6 +431,17 @@ export default function Calendar() {
                                                                     <span className="font-bold">
                                                                         {new Date(
                                                                             event.start_time
+                                                                        ).toLocaleTimeString(
+                                                                            "ja-JP",
+                                                                            {
+                                                                                hour: "2-digit",
+                                                                                minute: "2-digit",
+                                                                            }
+                                                                        )}
+                                                                        {" - "}
+                                                                        {new Date(
+                                                                            event.end_time ||
+                                                                                event.start_time
                                                                         ).toLocaleTimeString(
                                                                             "ja-JP",
                                                                             {
