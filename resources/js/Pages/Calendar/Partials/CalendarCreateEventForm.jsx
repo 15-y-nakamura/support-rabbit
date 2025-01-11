@@ -16,7 +16,7 @@ export default function CalendarCreateEventForm({
     const [isRecurring, setIsRecurring] = useState(false);
     const [recurrenceType, setRecurrenceType] = useState("none");
     const [allDay, setAllDay] = useState(false);
-    const [allDayDate, setAllDayDate] = useState(selectedDate);
+    const [allDayDate, setAllDayDate] = useState(selectedDate.split("T")[0]);
     const [notification, setNotification] = useState("none");
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
@@ -61,18 +61,36 @@ export default function CalendarCreateEventForm({
             const eventStartTime = allDay ? `${allDayDate}T00:00` : startTime;
             const eventEndTime = allDay ? `${allDayDate}T23:59` : endTime;
 
+            const recurrenceData = isRecurring
+                ? {
+                      recurrence_type: recurrenceType,
+                      recurrence_days:
+                          recurrenceType === "weekly" ? recurrenceDays : null,
+                      recurrence_date: ["monthly", "yearly"].includes(
+                          recurrenceType
+                      )
+                          ? recurrenceDate
+                          : null,
+                      recurrence_start_time: startTime
+                          .split("T")[1]
+                          .slice(0, 5),
+                      recurrence_end_time: endTime.split("T")[1].slice(0, 5),
+                  }
+                : {
+                      recurrence_type: "none",
+                      recurrence_days: null,
+                      recurrence_date: null,
+                      recurrence_start_time: null,
+                      recurrence_end_time: null,
+                  };
+
             const response = await axios.post("/api/v2/calendar/events", {
                 title,
                 description,
                 start_time: eventStartTime,
                 end_time: eventEndTime,
                 is_recurring: isRecurring,
-                recurrence_type: recurrenceType,
-                recurrence_days:
-                    recurrenceType === "weekly" ? recurrenceDays : null,
-                recurrence_date: ["monthly", "yearly"].includes(recurrenceType)
-                    ? recurrenceDate
-                    : null,
+                ...recurrenceData,
                 all_day: allDay,
                 all_day_date: allDay ? allDayDate : null,
                 notification,
@@ -81,6 +99,85 @@ export default function CalendarCreateEventForm({
                 note,
                 tag_id: selectedTag ? selectedTag.id : null,
             });
+
+            const eventId = response.data.event.id;
+            console.log("Created event ID:", eventId);
+
+            if (isRecurring) {
+                switch (recurrenceType) {
+                    case "weekday":
+                        await axios.post("/api/v2/calendar/weekday-events", {
+                            event_id: eventId,
+                            title,
+                            description,
+                            start_time: eventStartTime,
+                            end_time: eventEndTime,
+                            all_day: allDay,
+                            location,
+                            link,
+                            notification,
+                        });
+                        break;
+                    case "weekend":
+                        await axios.post("/api/v2/calendar/events", {
+                            event_id: eventId,
+                            title,
+                            description,
+                            start_time: eventStartTime,
+                            end_time: eventEndTime,
+                            all_day: allDay,
+                            location,
+                            link,
+                            notification,
+                        });
+                        break;
+                    case "weekly":
+                        await axios.post("/api/v2/calendar/weekly_events", {
+                            event_id: eventId,
+                            recurrence_days: recurrenceDays,
+                            title,
+                            description,
+                            start_time: eventStartTime,
+                            end_time: eventEndTime,
+                            all_day: allDay,
+                            location,
+                            link,
+                            notification,
+                        });
+                        break;
+                    case "monthly":
+                        await axios.post("/api/v2/calendar/monthly_events", {
+                            event_id: eventId,
+                            recurrence_date: recurrenceDate,
+                            title,
+                            description,
+                            start_time: eventStartTime,
+                            end_time: eventEndTime,
+                            all_day: allDay,
+                            location,
+                            link,
+                            notification,
+                        });
+                        break;
+                    case "yearly":
+                        await axios.post("/api/v2/calendar/yearly_events", {
+                            event_id: eventId,
+                            recurrence_date: recurrenceDate,
+                            title,
+                            description,
+                            start_time: eventStartTime,
+                            end_time: eventEndTime,
+                            all_day: allDay,
+                            location,
+                            link,
+                            notification,
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            }
+
             onEventCreated(response.data.event);
             setTitle("");
             setDescription("");
@@ -89,7 +186,7 @@ export default function CalendarCreateEventForm({
             setIsRecurring(false);
             setRecurrenceType("none");
             setAllDay(false);
-            setAllDayDate(selectedDate);
+            setAllDayDate(selectedDate.split("T")[0]);
             setNotification("none");
             setLocation("");
             setLink("");
@@ -236,10 +333,12 @@ export default function CalendarCreateEventForm({
                         <label className="font-bold">開始時刻</label>
                         <input
                             type="time"
-                            value={startTime.split("T")[1]}
+                            value={startTime.split("T")[1].slice(0, 5)}
                             onChange={(e) =>
                                 setStartTime(
-                                    `${recurrenceDate}T${e.target.value}`
+                                    `${startTime.split("T")[0]}T${
+                                        e.target.value
+                                    }`
                                 )
                             }
                             className="p-2 border border-gray-300 rounded"
@@ -247,10 +346,10 @@ export default function CalendarCreateEventForm({
                         <label className="font-bold">終了時刻</label>
                         <input
                             type="time"
-                            value={endTime.split("T")[1]}
+                            value={endTime.split("T")[1].slice(0, 5)}
                             onChange={(e) =>
                                 setEndTime(
-                                    `${recurrenceDate}T${e.target.value}`
+                                    `${endTime.split("T")[0]}T${e.target.value}`
                                 )
                             }
                             className="p-2 border border-gray-300 rounded"
@@ -262,10 +361,12 @@ export default function CalendarCreateEventForm({
                         <label className="font-bold">開始時刻</label>
                         <input
                             type="time"
-                            value={startTime.split("T")[1]}
+                            value={startTime.split("T")[1].slice(0, 5)}
                             onChange={(e) =>
                                 setStartTime(
-                                    `${recurrenceDate}T${e.target.value}`
+                                    `${startTime.split("T")[0]}T${
+                                        e.target.value
+                                    }`
                                 )
                             }
                             className="p-2 border border-gray-300 rounded"
@@ -273,10 +374,10 @@ export default function CalendarCreateEventForm({
                         <label className="font-bold">終了時刻</label>
                         <input
                             type="time"
-                            value={endTime.split("T")[1]}
+                            value={endTime.split("T")[1].slice(0, 5)}
                             onChange={(e) =>
                                 setEndTime(
-                                    `${recurrenceDate}T${e.target.value}`
+                                    `${endTime.split("T")[0]}T${e.target.value}`
                                 )
                             }
                             className="p-2 border border-gray-300 rounded"
@@ -295,7 +396,7 @@ export default function CalendarCreateEventForm({
                         <label className="font-bold">開始時刻</label>
                         <input
                             type="time"
-                            value={startTime.split("T")[1]}
+                            value={startTime.split("T")[1].slice(0, 5)}
                             onChange={(e) =>
                                 setStartTime(
                                     `${recurrenceDate}T${e.target.value}`
@@ -306,7 +407,7 @@ export default function CalendarCreateEventForm({
                         <label className="font-bold">終了時刻</label>
                         <input
                             type="time"
-                            value={endTime.split("T")[1]}
+                            value={endTime.split("T")[1].slice(0, 5)}
                             onChange={(e) =>
                                 setEndTime(
                                     `${recurrenceDate}T${e.target.value}`

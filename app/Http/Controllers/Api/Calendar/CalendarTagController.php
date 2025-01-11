@@ -6,6 +6,7 @@ use App\Models\Tag;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Calendar\CalendarTagRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CalendarTagController extends Controller
 {
@@ -22,7 +23,9 @@ class CalendarTagController extends Controller
             $tags = $result->get();
             return response()->json(['tags' => $tags]);
         } catch (\Exception $e) {
-            return response([], 500);
+            // エラーメッセージをログに記録
+            Log::error('Error fetching tags: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 

@@ -7,6 +7,7 @@ import CalendarEventDetailForm from "./Partials/CalendarEventDetailForm";
 import CalendarTagSelectButton from "./Partials/CalendarTagSelectButton";
 import CalendarModal from "./Partials/CalendarModal";
 import DateChangeModal from "./Partials/DateChangeModal";
+import CalendarGrid from "./Partials/CalendarGrid";
 
 export default function Calendar() {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -19,6 +20,7 @@ export default function Calendar() {
     const [notification, setNotification] = useState(null);
     const [selectedEvents, setSelectedEvents] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
     useEffect(() => {
         fetchEvents();
@@ -30,6 +32,12 @@ export default function Calendar() {
                 params: { searchQuery, tagId: selectedTag },
             });
             setEvents(response.data.events);
+
+            const weekdayResponse = await fetch(
+                "/api/v2/calendar/weekday-events"
+            );
+            const weekdayData = await weekdayResponse.json();
+            setEvents((prevEvents) => [...prevEvents, ...weekdayData]);
         } catch (error) {
             console.error("Error fetching events:", error);
         }
@@ -37,7 +45,7 @@ export default function Calendar() {
 
     const handleEventCreated = (newEvent) => {
         setEvents([...events, newEvent]);
-        setIsModalOpen(false); // モーダルを閉じる
+        setIsModalOpen(false);
         setNotification("イベントが正常に作成されました。");
     };
 
@@ -87,16 +95,28 @@ export default function Calendar() {
     };
 
     const handleDeleteSelectedEvents = async () => {
+        setShowDeleteConfirmation(true);
+    };
+
+    const handleDelete = async (deleteAll) => {
         try {
             await Promise.all(
-                selectedEvents.map((eventId) =>
-                    axios.delete(`/api/v2/calendar/events/${eventId}`)
-                )
+                selectedEvents.map((eventId) => {
+                    const event = events.find((e) => e.id === eventId);
+                    const url =
+                        event.recurrence_type === "weekday"
+                            ? `/api/v2/calendar/weekday_events/${eventId}`
+                            : `/api/v2/calendar/events/${eventId}`;
+                    return axios.delete(
+                        url + (deleteAll ? "?delete_all=true" : "")
+                    );
+                })
             );
             selectedEvents.forEach((eventId) => {
                 handleEventDeleted(eventId);
             });
             setSelectedEvents([]);
+            setShowDeleteConfirmation(false);
         } catch (error) {
             console.error("Error deleting events:", error);
         }
@@ -112,142 +132,6 @@ export default function Calendar() {
         setIsModalOpen(true);
     };
 
-    const renderCalendar = () => {
-        const daysInMonth = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth() + 1,
-            0
-        ).getDate();
-        const firstDayIndex = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            1
-        ).getDay();
-        const lastDayIndex = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            daysInMonth
-        ).getDay();
-        const prevLastDay = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            0
-        ).getDate();
-
-        const days = [];
-
-        for (let x = firstDayIndex; x > 0; x--) {
-            days.push(
-                <div
-                    className="calendar-day prev-month text-gray-400"
-                    key={`prev-${x}`}
-                >
-                    {prevLastDay - x + 1}
-                </div>
-            );
-        }
-
-        for (let i = 1; i <= daysInMonth; i++) {
-            const currentDay = new Date(
-                currentDate.getFullYear(),
-                currentDate.getMonth(),
-                i
-            );
-
-            const dayEvents = events.filter((event) => {
-                const eventStart = new Date(event.start_time);
-                const eventEnd = new Date(event.end_time || event.start_time);
-
-                if (event.recurrence_type === "weekday") {
-                    return (
-                        eventStart <= currentDay &&
-                        currentDay <= eventEnd &&
-                        currentDay.getDay() >= 1 &&
-                        currentDay.getDay() <= 5
-                    );
-                }
-
-                if (event.recurrence_type === "weekend") {
-                    return (
-                        eventStart <= currentDay &&
-                        currentDay <= eventEnd &&
-                        (currentDay.getDay() === 0 || currentDay.getDay() === 6)
-                    );
-                }
-
-                if (event.recurrence_type === "weekly") {
-                    return (
-                        eventStart <= currentDay &&
-                        currentDay <= eventEnd &&
-                        event.recurrence_days &&
-                        event.recurrence_days.includes(currentDay.getDay())
-                    );
-                }
-
-                return (
-                    eventStart.toDateString() === currentDay.toDateString() ||
-                    eventEnd.toDateString() === currentDay.toDateString()
-                );
-            });
-
-            const markerColor =
-                dayEvents.length > 0 && dayEvents[0].tag
-                    ? dayEvents[0].tag.color
-                    : "#F78FB3"; // デフォルトカラー
-
-            days.push(
-                <div
-                    className="calendar-day text-gray-800 font-bold bg-white hover:bg-gray-200 rounded-md"
-                    key={`current-${i}`}
-                    onClick={() =>
-                        handleDateClick(
-                            new Date(
-                                currentDate.getFullYear(),
-                                currentDate.getMonth(),
-                                i
-                            )
-                        )
-                    }
-                    style={{
-                        minHeight: "48px", // 縦幅をさらに縮める
-                        padding: "2px",
-                        margin: "2px",
-                        width: "calc(100% - 4px)",
-                    }}
-                >
-                    <div className="text-sm">{i}</div>
-                    {dayEvents.map((event) => {
-                        const eventColor = event.tag
-                            ? event.tag.color
-                            : "#F78FB3"; // デフォルトカラー
-                        return (
-                            <div
-                                key={`${event.id}-${i}`}
-                                className="text-xs rounded mt-1 px-1 truncate"
-                                style={{ backgroundColor: eventColor }}
-                            >
-                                {event.title}
-                            </div>
-                        );
-                    })}
-                </div>
-            );
-        }
-
-        for (let j = 1; j <= 6 - lastDayIndex; j++) {
-            days.push(
-                <div
-                    className="calendar-day next-month text-gray-400"
-                    key={`next-${j}`}
-                >
-                    {j}
-                </div>
-            );
-        }
-
-        return days;
-    };
-
     const handlePrevMonth = () => {
         setCurrentDate(
             new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
@@ -261,7 +145,7 @@ export default function Calendar() {
     };
 
     const getSeasonIcon = () => {
-        const month = currentDate.getMonth() + 1; // JavaScriptの月は0から始まるため+1
+        const month = currentDate.getMonth() + 1;
         if (month >= 3 && month <= 5) {
             return "/img/spring-icon.png"; // 春
         } else if (month >= 6 && month <= 8) {
@@ -330,14 +214,11 @@ export default function Calendar() {
                                     <div>土</div>
                                 </div>
                                 <div className="grid grid-cols-7 gap-1 mt-2 bg-cream">
-                                    {renderCalendar().map((day, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex justify-center items-center h-15 cursor-pointer"
-                                        >
-                                            {day}
-                                        </div>
-                                    ))}
+                                    <CalendarGrid
+                                        currentDate={currentDate}
+                                        events={events}
+                                        handleDateClick={handleDateClick}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -508,6 +389,45 @@ export default function Calendar() {
                         selectedDate={currentDate.toISOString().slice(0, 16)}
                     />
                 )}
+            </CalendarModal>
+            <CalendarModal
+                isOpen={showDeleteConfirmation}
+                onClose={() => setShowDeleteConfirmation(false)}
+            >
+                <div className="p-4">
+                    <button
+                        type="button"
+                        onClick={() => setShowDeleteConfirmation(false)}
+                        className="absolute top-0 right-0 mt-2 mr-2 text-gray-600"
+                    >
+                        &times;
+                    </button>
+                    <p className="text-red-700">
+                        {selectedEvents.some(
+                            (eventId) =>
+                                events.find((event) => event.id === eventId)
+                                    ?.recurrence_type
+                        )
+                            ? "このデータのみ削除しますか？それとも他の繰り返しデータも削除しますか？"
+                            : "このデータを削除しますか？"}
+                    </p>
+                    <div className="flex justify-between mt-4">
+                        <button
+                            type="button"
+                            onClick={() => handleDelete(false)}
+                            className="bg-red-500 text-white p-2 rounded"
+                        >
+                            このデータのみ削除
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleDelete(true)}
+                            className="bg-red-700 text-white p-2 rounded"
+                        >
+                            他のデータも削除
+                        </button>
+                    </div>
+                </div>
             </CalendarModal>
             <DateChangeModal
                 isOpen={isDateModalOpen}

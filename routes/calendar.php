@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Calendar\CalendarEventController;
 use App\Http\Controllers\Api\Calendar\CalendarTagController;
 use App\Http\Controllers\Api\Notice\NoticeController;
+use App\Http\Controllers\Api\Calendar\WeekdayEventsController;
 
 Route::prefix('v2')->group(function () {
     // カレンダーイベントのルート
