@@ -66,23 +66,6 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
             const eventStart = new Date(event.start_time);
             const eventEnd = new Date(event.end_time || event.start_time);
 
-            console.log(
-                `Checking event: ${event.title} on ${currentDay.toDateString()}`
-            );
-
-            if (event.recurrence_type === "weekday") {
-                return weekdayEvents.some((weekdayEvent) => {
-                    const weekdayEventStart = new Date(weekdayEvent.start_time);
-                    const weekdayEventEnd = new Date(
-                        weekdayEvent.end_time || weekdayEvent.start_time
-                    );
-                    return (
-                        weekdayEventStart <= currentDay &&
-                        currentDay <= weekdayEventEnd
-                    );
-                });
-            }
-
             if (event.recurrence_type === "weekend") {
                 return (
                     eventStart <= currentDay &&
@@ -106,24 +89,30 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
             );
         });
 
+        // weekdayEvents からもイベントを追加
+        const weekdayDayEvents = weekdayEvents.filter((event) => {
+            const eventStart = new Date(event.start_time);
+            const eventEnd = new Date(event.end_time || event.start_time);
+            return (
+                eventStart <= currentDay &&
+                currentDay <= eventEnd &&
+                currentDay.getDay() !== 0 &&
+                currentDay.getDay() !== 6
+            );
+        });
+
+        const allDayEvents = [...dayEvents, ...weekdayDayEvents];
+
         const markerColor =
-            dayEvents.length > 0 && dayEvents[0].tag
-                ? dayEvents[0].tag.color
+            allDayEvents.length > 0 && allDayEvents[0].tag
+                ? allDayEvents[0].tag.color
                 : "#F78FB3"; // デフォルトカラー
 
         days.push(
             <div
                 className="calendar-day text-gray-800 font-bold bg-white hover:bg-gray-200 rounded-md"
                 key={`current-${currentDate.getMonth()}-${i}`}
-                onClick={() =>
-                    handleDateClick(
-                        new Date(
-                            currentDate.getFullYear(),
-                            currentDate.getMonth(),
-                            i
-                        )
-                    )
-                }
+                onClick={() => handleDateClick(currentDay)}
                 style={{
                     minHeight: "48px", // 縦幅をさらに縮める
                     padding: "2px",
@@ -132,7 +121,7 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
                 }}
             >
                 <div className="text-sm">{i}</div>
-                {dayEvents.map((event) => {
+                {allDayEvents.map((event) => {
                     const eventColor = event.tag ? event.tag.color : "#F78FB3"; // デフォルトカラー
                     return (
                         <div

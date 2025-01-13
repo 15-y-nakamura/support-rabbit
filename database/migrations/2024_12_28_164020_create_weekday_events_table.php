@@ -24,6 +24,7 @@ class CreateWeekdayEventsTable extends Migration
             $table->string('location')->nullable();
             $table->string('link')->nullable();
             $table->string('notification')->nullable();
+            $table->enum('recurrence_type', ['none', 'weekday', 'weekend', 'weekly', 'monthly', 'yearly'])->default('none'); // 繰り返しの種類
             $table->timestamps();
         });
     }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import CalendarModal from "./CalendarModal"; // モーダルコンポーネントのインポートパスを修正
+import CalendarDeleteConfirmationModal from "./CalendarDeleteConfirmationModal"; // 追加
 
 export default function CalendarEventDetailForm({
     event,
@@ -423,53 +424,13 @@ export default function CalendarEventDetailForm({
                         )}
                     </div>
                     {showDeleteConfirmation && (
-                        <div className="mt-4 p-4 border border-red-500 rounded bg-red-100 relative">
-                            <button
-                                type="button"
-                                onClick={() => setShowDeleteConfirmation(false)}
-                                className="absolute top-0 right-0 mt-2 mr-2 text-gray-600"
-                            >
-                                &times;
-                            </button>
-                            {isRecurring ? (
-                                <>
-                                    <p className="text-red-700">
-                                        このデータのみ削除しますか？それとも他の繰り返しデータも削除しますか？
-                                    </p>
-                                    <div className="flex justify-between mt-4">
-                                        <button
-                                            type="button"
-                                            onClick={() => handleDelete(false)}
-                                            className="bg-red-500 text-white p-2 rounded"
-                                        >
-                                            このデータのみ削除
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleDelete(true)}
-                                            className="bg-red-700 text-white p-2 rounded"
-                                        >
-                                            他のデータも削除
-                                        </button>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <p className="text-red-700">
-                                        削除してもよろしいですか？
-                                    </p>
-                                    <div className="flex justify-center mt-4">
-                                        <button
-                                            type="button"
-                                            onClick={() => handleDelete(false)}
-                                            className="bg-red-500 text-white p-2 rounded"
-                                        >
-                                            削除
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                        <CalendarDeleteConfirmationModal
+                            isOpen={showDeleteConfirmation}
+                            onClose={() => setShowDeleteConfirmation(false)}
+                            onDelete={handleDelete}
+                            isRecurring={isRecurring}
+                            recurrenceType={recurrenceType} // 追加
+                        />
                     )}
                 </div>
             )}

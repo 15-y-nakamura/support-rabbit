@@ -8,6 +8,7 @@ import CalendarTagSelectButton from "./Partials/CalendarTagSelectButton";
 import CalendarModal from "./Partials/CalendarModal";
 import DateChangeModal from "./Partials/DateChangeModal";
 import CalendarGrid from "./Partials/CalendarGrid";
+import CalendarDeleteConfirmationModal from "./Partials/CalendarDeleteConfirmationModal"; // 追加
 
 export default function Calendar() {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -105,7 +106,7 @@ export default function Calendar() {
                     const event = events.find((e) => e.id === eventId);
                     const url =
                         event.recurrence_type === "weekday"
-                            ? `/api/v2/calendar/weekday_events/${eventId}`
+                            ? `/api/v2/calendar/weekday-events/${eventId}`
                             : `/api/v2/calendar/events/${eventId}`;
                     return axios.delete(
                         url + (deleteAll ? "?delete_all=true" : "")
@@ -121,6 +122,56 @@ export default function Calendar() {
             console.error("Error deleting events:", error);
         }
     };
+
+    const handleDeleteSingle = async () => {
+        try {
+            await Promise.all(
+                selectedEvents.map((eventId) => {
+                    const event = events.find((e) => e.id === eventId);
+                    const url =
+                        event.recurrence_type === "weekday"
+                            ? `/api/v2/calendar/weekday-events/${eventId}`
+                            : `/api/v2/calendar/events/${eventId}`;
+                    return axios.delete(url);
+                })
+            );
+            selectedEvents.forEach((eventId) => {
+                handleEventDeleted(eventId);
+            });
+            setSelectedEvents([]);
+            setShowDeleteConfirmation(false);
+        } catch (error) {
+            console.error("Error deleting events:", error);
+        }
+    };
+
+    // 選択されたイベントが weekday イベントとそれ以外のイベントが混在しているかどうかを判定
+    const isMixedSelection = (() => {
+        let hasWeekdayEvent = false;
+        let hasNonWeekdayEvent = false;
+
+        for (let i = 0; i < selectedEvents.length; i++) {
+            const eventId = selectedEvents[i];
+            const event = events.find((event) => event.id === eventId);
+
+            if (event) {
+                if (event.recurrence_type === "weekday") {
+                    console.log("Weekday event found");
+                    hasWeekdayEvent = true;
+                } else {
+                    console.log("Non-weekday event found");
+                    hasNonWeekdayEvent = true;
+                }
+
+                // 両方のタイプが見つかったら、早期にループを終了
+                if (hasWeekdayEvent && hasNonWeekdayEvent) {
+                    return true;
+                }
+            }
+        }
+
+        return hasWeekdayEvent && hasNonWeekdayEvent;
+    })();
 
     const handleEventDetail = (event) => {
         setSelectedEvent(event);
@@ -281,9 +332,18 @@ export default function Calendar() {
                                                         予定一覧
                                                     </h2>
                                                     <button
-                                                        className="bg-red-500 text-white p-2 rounded shadow-md"
+                                                        className={`${
+                                                            selectedEvents.length ===
+                                                            0
+                                                                ? "bg-gray-400 cursor-not-allowed"
+                                                                : "bg-red-500"
+                                                        } text-white p-2 rounded shadow-md`}
                                                         onClick={
                                                             handleDeleteSelectedEvents
+                                                        }
+                                                        disabled={
+                                                            selectedEvents.length ===
+                                                            0
                                                         }
                                                     >
                                                         選択した予定を削除
@@ -390,45 +450,22 @@ export default function Calendar() {
                     />
                 )}
             </CalendarModal>
-            <CalendarModal
+            <CalendarDeleteConfirmationModal
                 isOpen={showDeleteConfirmation}
                 onClose={() => setShowDeleteConfirmation(false)}
-            >
-                <div className="p-4">
-                    <button
-                        type="button"
-                        onClick={() => setShowDeleteConfirmation(false)}
-                        className="absolute top-0 right-0 mt-2 mr-2 text-gray-600"
-                    >
-                        &times;
-                    </button>
-                    <p className="text-red-700">
-                        {selectedEvents.some(
-                            (eventId) =>
-                                events.find((event) => event.id === eventId)
-                                    ?.recurrence_type
-                        )
-                            ? "このデータのみ削除しますか？それとも他の繰り返しデータも削除しますか？"
-                            : "このデータを削除しますか？"}
-                    </p>
-                    <div className="flex justify-between mt-4">
-                        <button
-                            type="button"
-                            onClick={() => handleDelete(false)}
-                            className="bg-red-500 text-white p-2 rounded"
-                        >
-                            このデータのみ削除
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleDelete(true)}
-                            className="bg-red-700 text-white p-2 rounded"
-                        >
-                            他のデータも削除
-                        </button>
-                    </div>
-                </div>
-            </CalendarModal>
+                onDelete={isMixedSelection ? handleDeleteSingle : handleDelete}
+                isRecurring={selectedEvents.some(
+                    (eventId) =>
+                        events.find((event) => event.id === eventId)
+                            ?.recurrence_type
+                )}
+                recurrenceType={
+                    selectedEvents.length > 0
+                        ? events.find((event) => event.id === selectedEvents[0])
+                              ?.recurrence_type
+                        : "none"
+                }
+            />
             <DateChangeModal
                 isOpen={isDateModalOpen}
                 onClose={() => setIsDateModalOpen(false)}

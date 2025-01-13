@@ -116,6 +116,7 @@ export default function CalendarCreateEventForm({
                             location,
                             link,
                             notification,
+                            recurrence_type: recurrenceType, // 追加
                         });
                         break;
                     case "weekend":

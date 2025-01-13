@@ -32,6 +32,7 @@ class WeekdayEventsController extends Controller
                 'location' => 'nullable|string|max:255',
                 'link' => 'nullable|url|max:255',
                 'notification' => 'nullable|string|in:none,10minutes,1hour',
+                'recurrence_type' => 'required|in:none,weekday,weekend,weekly,monthly,yearly', // 繰り返しの種類のバリデーション
             ]);
 
             $startDate = new \DateTime($validatedData['start_time']);
@@ -51,6 +52,7 @@ class WeekdayEventsController extends Controller
                         'location' => $validatedData['location'],
                         'link' => $validatedData['link'],
                         'notification' => $validatedData['notification'],
+                        'recurrence_type' => $validatedData['recurrence_type'], // 繰り返しの種類の保存
                     ]);
                 }
             }

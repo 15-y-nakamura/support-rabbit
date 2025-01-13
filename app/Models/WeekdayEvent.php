@@ -20,5 +20,6 @@ class WeekdayEvent extends Model
         'location',
         'link',
         'notification',
+        'recurrence_type', // 繰り返しの種類
     ];
 }
