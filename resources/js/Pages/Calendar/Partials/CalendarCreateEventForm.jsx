@@ -7,12 +7,16 @@ export default function CalendarCreateEventForm({
 }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [startTime, setStartTime] = useState(selectedDate);
-    const [endTime, setEndTime] = useState(selectedDate);
+    const [startTime, setStartTime] = useState(
+        new Date(selectedDate).toISOString().slice(0, 16)
+    );
+    const [endTime, setEndTime] = useState(
+        new Date(selectedDate).toISOString().slice(0, 16)
+    );
     const [isRecurring, setIsRecurring] = useState(false);
     const [recurrenceType, setRecurrenceType] = useState("none");
     const [allDay, setAllDay] = useState(false);
-    const [allDayDate, setAllDayDate] = useState(selectedDate);
+    const [allDayDate, setAllDayDate] = useState(selectedDate.split("T")[0]);
     const [notification, setNotification] = useState("none");
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
@@ -21,6 +25,8 @@ export default function CalendarCreateEventForm({
     const [selectedTag, setSelectedTag] = useState(null);
     const [isTagListOpen, setIsTagListOpen] = useState(false);
     const [loadingTags, setLoadingTags] = useState(false);
+    const [recurrenceDays, setRecurrenceDays] = useState([]);
+    const [recurrenceDate, setRecurrenceDate] = useState("");
 
     const defaultTags = [
         { id: 1, name: "お出かけ", color: "#FF0000" },
@@ -52,13 +58,39 @@ export default function CalendarCreateEventForm({
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const eventStartTime = allDay ? `${allDayDate}T00:00` : startTime;
+            const eventEndTime = allDay ? `${allDayDate}T23:59` : endTime;
+
+            const recurrenceData = isRecurring
+                ? {
+                      recurrence_type: recurrenceType,
+                      recurrence_days:
+                          recurrenceType === "weekly" ? recurrenceDays : null,
+                      recurrence_date: ["monthly", "yearly"].includes(
+                          recurrenceType
+                      )
+                          ? recurrenceDate
+                          : null,
+                      recurrence_start_time: startTime
+                          .split("T")[1]
+                          .slice(0, 5),
+                      recurrence_end_time: endTime.split("T")[1].slice(0, 5),
+                  }
+                : {
+                      recurrence_type: "none",
+                      recurrence_days: null,
+                      recurrence_date: null,
+                      recurrence_start_time: null,
+                      recurrence_end_time: null,
+                  };
+
             const response = await axios.post("/api/v2/calendar/events", {
                 title,
                 description,
-                start_time: startTime,
-                end_time: endTime,
+                start_time: eventStartTime,
+                end_time: eventEndTime,
                 is_recurring: isRecurring,
-                recurrence_type: recurrenceType,
+                ...recurrenceData,
                 all_day: allDay,
                 all_day_date: allDay ? allDayDate : null,
                 notification,
@@ -67,22 +99,104 @@ export default function CalendarCreateEventForm({
                 note,
                 tag_id: selectedTag ? selectedTag.id : null,
             });
+
+            const eventId = response.data.event.id;
+            console.log("Created event ID:", eventId);
+
+            if (isRecurring) {
+                switch (recurrenceType) {
+                    case "weekday":
+                        await axios.post("/api/v2/calendar/weekday-events", {
+                            event_id: eventId,
+                            title,
+                            description,
+                            start_time: eventStartTime,
+                            end_time: eventEndTime,
+                            all_day: allDay,
+                            location,
+                            link,
+                            notification,
+                            recurrence_type: recurrenceType, // 追加
+                        });
+                        break;
+                    case "weekend":
+                        await axios.post("/api/v2/calendar/events", {
+                            event_id: eventId,
+                            title,
+                            description,
+                            start_time: eventStartTime,
+                            end_time: eventEndTime,
+                            all_day: allDay,
+                            location,
+                            link,
+                            notification,
+                        });
+                        break;
+                    case "weekly":
+                        await axios.post("/api/v2/calendar/weekly_events", {
+                            event_id: eventId,
+                            recurrence_days: recurrenceDays,
+                            title,
+                            description,
+                            start_time: eventStartTime,
+                            end_time: eventEndTime,
+                            all_day: allDay,
+                            location,
+                            link,
+                            notification,
+                        });
+                        break;
+                    case "monthly":
+                        await axios.post("/api/v2/calendar/monthly_events", {
+                            event_id: eventId,
+                            recurrence_date: recurrenceDate,
+                            title,
+                            description,
+                            start_time: eventStartTime,
+                            end_time: eventEndTime,
+                            all_day: allDay,
+                            location,
+                            link,
+                            notification,
+                        });
+                        break;
+                    case "yearly":
+                        await axios.post("/api/v2/calendar/yearly_events", {
+                            event_id: eventId,
+                            recurrence_date: recurrenceDate,
+                            title,
+                            description,
+                            start_time: eventStartTime,
+                            end_time: eventEndTime,
+                            all_day: allDay,
+                            location,
+                            link,
+                            notification,
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            }
+
             onEventCreated(response.data.event);
             setTitle("");
             setDescription("");
-            setStartTime(selectedDate);
-            setEndTime(selectedDate);
+            setStartTime(new Date(selectedDate).toISOString().slice(0, 16));
+            setEndTime(new Date(selectedDate).toISOString().slice(0, 16));
             setIsRecurring(false);
             setRecurrenceType("none");
             setAllDay(false);
-            setAllDayDate(selectedDate);
+            setAllDayDate(selectedDate.split("T")[0]);
             setNotification("none");
             setLocation("");
             setLink("");
             setNote("");
             setSelectedTag(null);
+            setRecurrenceDays([]);
+            setRecurrenceDate("");
         } catch (error) {
-            console.error("Error creating event:", error);
+            console.error("Error creating event:", error.response.data);
         }
     };
 
@@ -93,6 +207,20 @@ export default function CalendarCreateEventForm({
 
     const handleTagButtonClick = () => {
         setIsTagListOpen(!isTagListOpen);
+    };
+
+    const handleRecurrenceDayChange = (day) => {
+        setRecurrenceDays((prevDays) =>
+            prevDays.includes(day)
+                ? prevDays.filter((d) => d !== day)
+                : [...prevDays, day]
+        );
+    };
+
+    const isSubmitDisabled = () => {
+        const start = new Date(startTime);
+        const end = new Date(endTime);
+        return end < start;
     };
 
     return (
@@ -120,7 +248,7 @@ export default function CalendarCreateEventForm({
                         onChange={(e) => setStartTime(e.target.value)}
                         required
                         className={`p-2 border border-gray-300 rounded w-full ${
-                            allDay ? "bg-gray-200" : ""
+                            allDay ? "bg-gray-200 cursor-not-allowed" : ""
                         }`}
                         disabled={allDay}
                     />
@@ -132,21 +260,37 @@ export default function CalendarCreateEventForm({
                         value={endTime}
                         onChange={(e) => setEndTime(e.target.value)}
                         className={`p-2 border border-gray-300 rounded w-full ${
-                            allDay ? "bg-gray-200" : ""
+                            allDay ? "bg-gray-200 cursor-not-allowed" : ""
                         }`}
                         disabled={allDay}
                     />
                 </div>
             </div>
             <div className="flex flex-col space-y-2">
-                <label className="font-bold">繰り返し設定</label>
+                <label className="font-bold">
+                    繰り返し設定
+                    {allDay && (
+                        <span className="text-gray-400 ml-2">
+                            (現在選択できません)
+                        </span>
+                    )}
+                </label>
                 <div className="flex items-center space-x-4">
                     <input
                         type="checkbox"
                         checked={isRecurring}
-                        onChange={(e) => setIsRecurring(e.target.checked)}
+                        onChange={(e) => {
+                            setIsRecurring(e.target.checked);
+                            if (e.target.checked) {
+                                setAllDay(false);
+                            }
+                        }}
                         className="align-middle"
+                        disabled={allDay}
                     />
+                    <span className={allDay ? "text-gray-400" : ""}>
+                        繰り返し設定
+                    </span>
                     {isRecurring && (
                         <select
                             value={recurrenceType}
@@ -162,16 +306,145 @@ export default function CalendarCreateEventForm({
                         </select>
                     )}
                 </div>
+                {recurrenceType === "weekly" && (
+                    <div className="flex flex-col space-y-2">
+                        <label className="font-bold">曜日</label>
+                        <div className="flex space-x-2">
+                            {["日", "月", "火", "水", "木", "金", "土"].map(
+                                (day, index) => (
+                                    <label
+                                        key={index}
+                                        className="flex items-center space-x-1"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            value={index}
+                                            checked={recurrenceDays.includes(
+                                                index
+                                            )}
+                                            onChange={() =>
+                                                handleRecurrenceDayChange(index)
+                                            }
+                                        />
+                                        <span>{day}</span>
+                                    </label>
+                                )
+                            )}
+                        </div>
+                        <label className="font-bold">開始時刻</label>
+                        <input
+                            type="time"
+                            value={startTime.split("T")[1].slice(0, 5)}
+                            onChange={(e) =>
+                                setStartTime(
+                                    `${startTime.split("T")[0]}T${
+                                        e.target.value
+                                    }`
+                                )
+                            }
+                            className="p-2 border border-gray-300 rounded"
+                        />
+                        <label className="font-bold">終了時刻</label>
+                        <input
+                            type="time"
+                            value={endTime.split("T")[1].slice(0, 5)}
+                            onChange={(e) =>
+                                setEndTime(
+                                    `${endTime.split("T")[0]}T${e.target.value}`
+                                )
+                            }
+                            className="p-2 border border-gray-300 rounded"
+                        />
+                    </div>
+                )}
+                {["weekday", "weekend"].includes(recurrenceType) && (
+                    <div className="flex flex-col space-y-2">
+                        <label className="font-bold">開始時刻</label>
+                        <input
+                            type="time"
+                            value={startTime.split("T")[1].slice(0, 5)}
+                            onChange={(e) =>
+                                setStartTime(
+                                    `${startTime.split("T")[0]}T${
+                                        e.target.value
+                                    }`
+                                )
+                            }
+                            className="p-2 border border-gray-300 rounded"
+                        />
+                        <label className="font-bold">終了時刻</label>
+                        <input
+                            type="time"
+                            value={endTime.split("T")[1].slice(0, 5)}
+                            onChange={(e) =>
+                                setEndTime(
+                                    `${endTime.split("T")[0]}T${e.target.value}`
+                                )
+                            }
+                            className="p-2 border border-gray-300 rounded"
+                        />
+                    </div>
+                )}
+                {["monthly", "yearly"].includes(recurrenceType) && (
+                    <div className="flex flex-col space-y-2">
+                        <label className="font-bold">日付</label>
+                        <input
+                            type="date"
+                            value={recurrenceDate}
+                            onChange={(e) => setRecurrenceDate(e.target.value)}
+                            className="p-2 border border-gray-300 rounded"
+                        />
+                        <label className="font-bold">開始時刻</label>
+                        <input
+                            type="time"
+                            value={startTime.split("T")[1].slice(0, 5)}
+                            onChange={(e) =>
+                                setStartTime(
+                                    `${recurrenceDate}T${e.target.value}`
+                                )
+                            }
+                            className="p-2 border border-gray-300 rounded"
+                        />
+                        <label className="font-bold">終了時刻</label>
+                        <input
+                            type="time"
+                            value={endTime.split("T")[1].slice(0, 5)}
+                            onChange={(e) =>
+                                setEndTime(
+                                    `${recurrenceDate}T${e.target.value}`
+                                )
+                            }
+                            className="p-2 border border-gray-300 rounded"
+                        />
+                    </div>
+                )}
             </div>
             <div className="flex flex-col space-y-2">
-                <label className="font-bold">終日設定</label>
+                <label className="font-bold">
+                    終日設定
+                    {isRecurring && (
+                        <span className="text-gray-400 ml-2">
+                            (現在選択できません)
+                        </span>
+                    )}
+                </label>
                 <div className="flex items-center space-x-4">
                     <input
                         type="checkbox"
                         checked={allDay}
-                        onChange={(e) => setAllDay(e.target.checked)}
+                        onChange={(e) => {
+                            setAllDay(e.target.checked);
+                            if (e.target.checked) {
+                                setIsRecurring(false);
+                                setRecurrenceType("none");
+                            }
+                        }}
                         className="align-middle"
+                        disabled={isRecurring}
                     />
+                    <span className={isRecurring ? "text-gray-400" : ""}>
+                        終日設定
+                    </span>
                     {allDay && (
                         <div className="flex items-center space-x-4">
                             <label className="font-bold">日付</label>
@@ -262,7 +535,7 @@ export default function CalendarCreateEventForm({
                             <ul>
                                 {tags.map((tag) => (
                                     <li
-                                        key={tag.id}
+                                        key={`tag-${tag.id}`}
                                         className="flex items-center space-x-2"
                                     >
                                         <div
@@ -295,7 +568,10 @@ export default function CalendarCreateEventForm({
             </div>
             <button
                 type="submit"
-                className="bg-customPink text-white p-2 rounded shadow-md"
+                className={`bg-customPink text-white p-2 rounded shadow-md ${
+                    isSubmitDisabled() ? "bg-gray-400 cursor-not-allowed" : ""
+                }`}
+                disabled={isSubmitDisabled()}
             >
                 作成
             </button>

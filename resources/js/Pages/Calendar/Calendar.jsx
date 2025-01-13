@@ -7,6 +7,8 @@ import CalendarEventDetailForm from "./Partials/CalendarEventDetailForm";
 import CalendarTagSelectButton from "./Partials/CalendarTagSelectButton";
 import CalendarModal from "./Partials/CalendarModal";
 import DateChangeModal from "./Partials/DateChangeModal";
+import CalendarGrid from "./Partials/CalendarGrid";
+import CalendarDeleteConfirmationModal from "./Partials/CalendarDeleteConfirmationModal"; // 追加
 
 export default function Calendar() {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -19,6 +21,7 @@ export default function Calendar() {
     const [notification, setNotification] = useState(null);
     const [selectedEvents, setSelectedEvents] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
     useEffect(() => {
         fetchEvents();
@@ -30,6 +33,12 @@ export default function Calendar() {
                 params: { searchQuery, tagId: selectedTag },
             });
             setEvents(response.data.events);
+
+            const weekdayResponse = await fetch(
+                "/api/v2/calendar/weekday-events"
+            );
+            const weekdayData = await weekdayResponse.json();
+            setEvents((prevEvents) => [...prevEvents, ...weekdayData]);
         } catch (error) {
             console.error("Error fetching events:", error);
         }
@@ -37,7 +46,7 @@ export default function Calendar() {
 
     const handleEventCreated = (newEvent) => {
         setEvents([...events, newEvent]);
-        setIsModalOpen(false); // モーダルを閉じる
+        setIsModalOpen(false);
         setNotification("イベントが正常に作成されました。");
     };
 
@@ -67,12 +76,14 @@ export default function Calendar() {
     };
 
     const handleDateClick = (date) => {
-        const dayEvents = events.filter(
-            (event) =>
-                event.start_time &&
-                new Date(event.start_time).toDateString() ===
-                    date.toDateString()
-        );
+        const dayEvents = events.filter((event) => {
+            const eventStart = new Date(event.start_time);
+            const eventEnd = new Date(event.end_time || event.start_time);
+            return (
+                eventStart.toDateString() === date.toDateString() ||
+                eventEnd.toDateString() === date.toDateString()
+            );
+        });
         setSelectedDateEvents(dayEvents);
     };
 
@@ -84,10 +95,83 @@ export default function Calendar() {
         );
     };
 
-    const handleDeleteSelectedEvents = () => {
-        selectedEvents.forEach((eventId) => handleEventDeleted(eventId));
-        setSelectedEvents([]);
+    const handleDeleteSelectedEvents = async () => {
+        setShowDeleteConfirmation(true);
     };
+
+    const handleDelete = async (deleteAll) => {
+        try {
+            await Promise.all(
+                selectedEvents.map((eventId) => {
+                    const event = events.find((e) => e.id === eventId);
+                    const url =
+                        event.recurrence_type === "weekday"
+                            ? `/api/v2/calendar/weekday-events/${eventId}`
+                            : `/api/v2/calendar/events/${eventId}`;
+                    return axios.delete(
+                        url + (deleteAll ? "?delete_all=true" : "")
+                    );
+                })
+            );
+            selectedEvents.forEach((eventId) => {
+                handleEventDeleted(eventId);
+            });
+            setSelectedEvents([]);
+            setShowDeleteConfirmation(false);
+        } catch (error) {
+            console.error("Error deleting events:", error);
+        }
+    };
+
+    const handleDeleteSingle = async () => {
+        try {
+            await Promise.all(
+                selectedEvents.map((eventId) => {
+                    const event = events.find((e) => e.id === eventId);
+                    const url =
+                        event.recurrence_type === "weekday"
+                            ? `/api/v2/calendar/weekday-events/${eventId}`
+                            : `/api/v2/calendar/events/${eventId}`;
+                    return axios.delete(url);
+                })
+            );
+            selectedEvents.forEach((eventId) => {
+                handleEventDeleted(eventId);
+            });
+            setSelectedEvents([]);
+            setShowDeleteConfirmation(false);
+        } catch (error) {
+            console.error("Error deleting events:", error);
+        }
+    };
+
+    // 選択されたイベントが weekday イベントとそれ以外のイベントが混在しているかどうかを判定
+    const isMixedSelection = (() => {
+        let hasWeekdayEvent = false;
+        let hasNonWeekdayEvent = false;
+
+        for (let i = 0; i < selectedEvents.length; i++) {
+            const eventId = selectedEvents[i];
+            const event = events.find((event) => event.id === eventId);
+
+            if (event) {
+                if (event.recurrence_type === "weekday") {
+                    console.log("Weekday event found");
+                    hasWeekdayEvent = true;
+                } else {
+                    console.log("Non-weekday event found");
+                    hasNonWeekdayEvent = true;
+                }
+
+                // 両方のタイプが見つかったら、早期にループを終了
+                if (hasWeekdayEvent && hasNonWeekdayEvent) {
+                    return true;
+                }
+            }
+        }
+
+        return hasWeekdayEvent && hasNonWeekdayEvent;
+    })();
 
     const handleEventDetail = (event) => {
         setSelectedEvent(event);
@@ -97,103 +181,6 @@ export default function Calendar() {
     const handleCreateEvent = () => {
         setSelectedEvent(null);
         setIsModalOpen(true);
-    };
-
-    const renderCalendar = () => {
-        const daysInMonth = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth() + 1,
-            0
-        ).getDate();
-        const firstDayIndex = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            1
-        ).getDay();
-        const lastDayIndex = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            daysInMonth
-        ).getDay();
-        const prevLastDay = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            0
-        ).getDate();
-
-        const days = [];
-
-        for (let x = firstDayIndex; x > 0; x--) {
-            days.push(
-                <div
-                    className="calendar-day prev-month text-gray-400"
-                    key={`prev-${x}`}
-                >
-                    {prevLastDay - x + 1}
-                </div>
-            );
-        }
-
-        for (let i = 1; i <= daysInMonth; i++) {
-            const dayEvents = events.filter(
-                (event) =>
-                    event.start_time &&
-                    new Date(event.start_time).toDateString() ===
-                        new Date(
-                            currentDate.getFullYear(),
-                            currentDate.getMonth(),
-                            i
-                        ).toDateString()
-            );
-
-            days.push(
-                <div
-                    className="calendar-day text-gray-800 font-bold bg-white hover:bg-gray-200 rounded-md"
-                    key={`current-${i}`}
-                    onClick={() =>
-                        handleDateClick(
-                            new Date(
-                                currentDate.getFullYear(),
-                                currentDate.getMonth(),
-                                i
-                            )
-                        )
-                    }
-                    style={{
-                        minHeight: "48px", // 縦幅をさらに縮める
-                        padding: "2px",
-                        margin: "2px",
-                        width: "calc(100% - 4px)",
-                    }}
-                >
-                    <div className="text-sm">{i}</div>
-                    {dayEvents.slice(0, 2).map((event) => (
-                        <div
-                            key={event.id}
-                            className="text-xs bg-blue-200 rounded mt-1 px-1 truncate"
-                        >
-                            {event.title}
-                        </div>
-                    ))}
-                    {dayEvents.length > 2 && (
-                        <div className="text-xs text-gray-500">...他</div>
-                    )}
-                </div>
-            );
-        }
-
-        for (let j = 1; j <= 6 - lastDayIndex; j++) {
-            days.push(
-                <div
-                    className="calendar-day next-month text-gray-400"
-                    key={`next-${j}`}
-                >
-                    {j}
-                </div>
-            );
-        }
-
-        return days;
     };
 
     const handlePrevMonth = () => {
@@ -209,7 +196,7 @@ export default function Calendar() {
     };
 
     const getSeasonIcon = () => {
-        const month = currentDate.getMonth() + 1; // JavaScriptの月は0から始まるため+1
+        const month = currentDate.getMonth() + 1;
         if (month >= 3 && month <= 5) {
             return "/img/spring-icon.png"; // 春
         } else if (month >= 6 && month <= 8) {
@@ -278,14 +265,11 @@ export default function Calendar() {
                                     <div>土</div>
                                 </div>
                                 <div className="grid grid-cols-7 gap-1 mt-2 bg-cream">
-                                    {renderCalendar().map((day, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex justify-center items-center h-15 cursor-pointer"
-                                        >
-                                            {day}
-                                        </div>
-                                    ))}
+                                    <CalendarGrid
+                                        currentDate={currentDate}
+                                        events={events}
+                                        handleDateClick={handleDateClick}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -348,9 +332,18 @@ export default function Calendar() {
                                                         予定一覧
                                                     </h2>
                                                     <button
-                                                        className="bg-red-500 text-white p-2 rounded shadow-md"
+                                                        className={`${
+                                                            selectedEvents.length ===
+                                                            0
+                                                                ? "bg-gray-400 cursor-not-allowed"
+                                                                : "bg-red-500"
+                                                        } text-white p-2 rounded shadow-md`}
                                                         onClick={
                                                             handleDeleteSelectedEvents
+                                                        }
+                                                        disabled={
+                                                            selectedEvents.length ===
+                                                            0
                                                         }
                                                     >
                                                         選択した予定を削除
@@ -379,6 +372,17 @@ export default function Calendar() {
                                                                     <span className="font-bold">
                                                                         {new Date(
                                                                             event.start_time
+                                                                        ).toLocaleTimeString(
+                                                                            "ja-JP",
+                                                                            {
+                                                                                hour: "2-digit",
+                                                                                minute: "2-digit",
+                                                                            }
+                                                                        )}
+                                                                        {" - "}
+                                                                        {new Date(
+                                                                            event.end_time ||
+                                                                                event.start_time
                                                                         ).toLocaleTimeString(
                                                                             "ja-JP",
                                                                             {
@@ -446,6 +450,22 @@ export default function Calendar() {
                     />
                 )}
             </CalendarModal>
+            <CalendarDeleteConfirmationModal
+                isOpen={showDeleteConfirmation}
+                onClose={() => setShowDeleteConfirmation(false)}
+                onDelete={isMixedSelection ? handleDeleteSingle : handleDelete}
+                isRecurring={selectedEvents.some(
+                    (eventId) =>
+                        events.find((event) => event.id === eventId)
+                            ?.recurrence_type
+                )}
+                recurrenceType={
+                    selectedEvents.length > 0
+                        ? events.find((event) => event.id === selectedEvents[0])
+                              ?.recurrence_type
+                        : "none"
+                }
+            />
             <DateChangeModal
                 isOpen={isDateModalOpen}
                 onClose={() => setIsDateModalOpen(false)}

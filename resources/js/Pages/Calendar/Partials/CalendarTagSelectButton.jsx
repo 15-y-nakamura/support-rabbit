@@ -7,6 +7,7 @@ export default function CalendarTagSelectButton({ onTagSelected }) {
     const [newTagName, setNewTagName] = useState("");
     const [newTagColor, setNewTagColor] = useState("#000000");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [loadingTags, setLoadingTags] = useState(false);
 
     const defaultTags = [
         { id: "default-1", name: "お出かけ", color: "#FF0000" },
@@ -18,19 +19,21 @@ export default function CalendarTagSelectButton({ onTagSelected }) {
     ];
 
     useEffect(() => {
-        // タグの取得
-        const fetchTags = async () => {
-            try {
-                const response = await axios.get("/api/v2/calendar/tags");
-                setTags([...defaultTags, ...response.data.tags]);
-            } catch (error) {
-                console.error("Error fetching tags:", error);
-                // デフォルトタグのみを設定
-                setTags(defaultTags);
-            }
-        };
         fetchTags();
     }, []);
+
+    const fetchTags = async () => {
+        setLoadingTags(true);
+        try {
+            const response = await axios.get("/api/v2/calendar/tags");
+            setTags([...defaultTags, ...response.data.tags]);
+        } catch (error) {
+            console.error("Error fetching tags:", error);
+            setTags(defaultTags);
+        } finally {
+            setLoadingTags(false);
+        }
+    };
 
     const handleTagCreate = async () => {
         if (tags.length >= 12) {

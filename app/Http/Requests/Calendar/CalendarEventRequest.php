@@ -16,8 +16,8 @@ class CalendarEventRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'start_time' => 'required|date',
-            'end_time' => 'nullable|date',
+            'start_time' => 'required|date_format:Y-m-d\TH:i',
+            'end_time' => 'nullable|date_format:Y-m-d\TH:i|after_or_equal:start_time',
             'all_day' => 'boolean',
             'location' => 'nullable|string|max:255',
             'link' => 'nullable|url|max:255',
@@ -26,6 +26,11 @@ class CalendarEventRequest extends FormRequest
             'recurrence_type' => 'required|in:none,weekday,weekend,weekly,monthly,yearly',
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
+            'recurrence_dates' => 'nullable|array',
+            'recurrence_days' => 'nullable|array',
+            'recurrence_start_time' => 'nullable|date_format:H:i',
+            'recurrence_end_time' => 'nullable|date_format:H:i',
+            'tag_id' => 'nullable|exists:calendar_tags,id',
         ];
     }
 }

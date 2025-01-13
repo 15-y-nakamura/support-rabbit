@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import CalendarModal from "./CalendarModal"; // モーダルコンポーネントのインポートパスを修正
+import CalendarDeleteConfirmationModal from "./CalendarDeleteConfirmationModal"; // 追加
 
 export default function CalendarEventDetailForm({
     event,
@@ -13,6 +15,18 @@ export default function CalendarEventDetailForm({
     const [isRecurring, setIsRecurring] = useState(event.is_recurring || false);
     const [recurrenceType, setRecurrenceType] = useState(
         event.recurrence_type || "none"
+    );
+    const [recurrenceDays, setRecurrenceDays] = useState(
+        event.recurrence_days || []
+    );
+    const [recurrenceDates, setRecurrenceDates] = useState(
+        event.recurrence_dates || []
+    );
+    const [recurrenceStartTime, setRecurrenceStartTime] = useState(
+        event.recurrence_start_time || ""
+    );
+    const [recurrenceEndTime, setRecurrenceEndTime] = useState(
+        event.recurrence_end_time || ""
     );
     const [allDay, setAllDay] = useState(event.all_day || false);
     const [allDayDate, setAllDayDate] = useState(
@@ -29,14 +43,15 @@ export default function CalendarEventDetailForm({
     const [isTagListOpen, setIsTagListOpen] = useState(false);
     const [loadingTags, setLoadingTags] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
     const defaultTags = [
-        { id: 1, name: "お出かけ", color: "#FF0000" },
-        { id: 2, name: "仕事", color: "#00FF00" },
-        { id: 3, name: "勉強", color: "#0000FF" },
-        { id: 4, name: "家事", color: "#FFFF00" },
-        { id: 5, name: "健康", color: "#FF00FF" },
-        { id: 6, name: "自由時間", color: "#00FFFF" },
+        { id: "default-1", name: "お出かけ", color: "#FF0000" },
+        { id: "default-2", name: "仕事", color: "#00FF00" },
+        { id: "default-3", name: "勉強", color: "#0000FF" },
+        { id: "default-4", name: "家事", color: "#FFFF00" },
+        { id: "default-5", name: "健康", color: "#FF00FF" },
+        { id: "default-6", name: "自由時間", color: "#00FFFF" },
     ];
 
     useEffect(() => {
@@ -68,6 +83,10 @@ export default function CalendarEventDetailForm({
                     end_time: endTime,
                     is_recurring: isRecurring,
                     recurrence_type: recurrenceType,
+                    recurrence_days: recurrenceDays,
+                    recurrence_dates: recurrenceDates,
+                    recurrence_start_time: recurrenceStartTime,
+                    recurrence_end_time: recurrenceEndTime,
                     all_day: allDay,
                     all_day_date: allDay ? allDayDate : null,
                     notification,
@@ -84,10 +103,17 @@ export default function CalendarEventDetailForm({
         }
     };
 
-    const handleDelete = async () => {
+    const handleDelete = async (deleteAll) => {
         try {
-            await axios.delete(`/api/v2/calendar/events/${event.id}`);
+            if (deleteAll) {
+                await axios.delete(
+                    `/api/v2/calendar/events/${event.id}?delete_all=true`
+                );
+            } else {
+                await axios.delete(`/api/v2/calendar/events/${event.id}`);
+            }
             onEventDeleted(event.id);
+            setShowDeleteConfirmation(false); // 確認メッセージを非表示にする
         } catch (error) {
             console.error("Error deleting event:", error);
         }
@@ -100,6 +126,22 @@ export default function CalendarEventDetailForm({
 
     const handleTagButtonClick = () => {
         setIsTagListOpen(!isTagListOpen);
+    };
+
+    const handleRecurrenceDayChange = (day) => {
+        setRecurrenceDays((prevDays) =>
+            prevDays.includes(day)
+                ? prevDays.filter((d) => d !== day)
+                : [...prevDays, day]
+        );
+    };
+
+    const handleRecurrenceDateChange = (date) => {
+        setRecurrenceDates((prevDates) =>
+            prevDates.includes(date)
+                ? prevDates.filter((d) => d !== date)
+                : [...prevDates, date]
+        );
     };
 
     return (
@@ -128,7 +170,7 @@ export default function CalendarEventDetailForm({
                                 className={`p-2 border border-gray-300 rounded w-full ${
                                     allDay ? "bg-gray-200" : ""
                                 }`}
-                                disabled={allDay}
+                                disabled={allDay || isRecurring}
                             />
                         </div>
                         <div className="flex flex-col flex-1 space-y-2">
@@ -140,62 +182,22 @@ export default function CalendarEventDetailForm({
                                 className={`p-2 border border-gray-300 rounded w-full ${
                                     allDay ? "bg-gray-200" : ""
                                 }`}
-                                disabled={allDay}
+                                disabled={allDay || isRecurring}
                             />
                         </div>
                     </div>
+                    {isRecurring && (
+                        <p className="text-gray-600">
+                            繰り返し設定が有効な場合、開始時刻と終了時刻は変更できません。
+                        </p>
+                    )}
                     <div className="flex flex-col space-y-2">
-                        <label className="font-bold">繰り返し設定</label>
-                        <div className="flex items-center space-x-4">
-                            <input
-                                type="checkbox"
-                                checked={isRecurring}
-                                onChange={(e) =>
-                                    setIsRecurring(e.target.checked)
-                                }
-                                className="align-middle"
-                            />
-                            {isRecurring && (
-                                <select
-                                    value={recurrenceType}
-                                    onChange={(e) =>
-                                        setRecurrenceType(e.target.value)
-                                    }
-                                    className="p-2 border border-gray-300 rounded w-32"
-                                >
-                                    <option value="none">なし</option>
-                                    <option value="weekday">平日</option>
-                                    <option value="weekend">週末</option>
-                                    <option value="weekly">毎週</option>
-                                    <option value="monthly">毎月</option>
-                                    <option value="yearly">毎年</option>
-                                </select>
-                            )}
-                        </div>
-                    </div>
-                    <div className="flex flex-col space-y-2">
-                        <label className="font-bold">終日設定</label>
-                        <div className="flex items-center space-x-4">
-                            <input
-                                type="checkbox"
-                                checked={allDay}
-                                onChange={(e) => setAllDay(e.target.checked)}
-                                className="align-middle"
-                            />
-                            {allDay && (
-                                <div className="flex items-center space-x-4">
-                                    <label className="font-bold">日付</label>
-                                    <input
-                                        type="date"
-                                        value={allDayDate}
-                                        onChange={(e) =>
-                                            setAllDayDate(e.target.value)
-                                        }
-                                        className="p-2 border border-gray-300 rounded"
-                                    />
-                                </div>
-                            )}
-                        </div>
+                        <label className="font-bold">説明</label>
+                        <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="p-2 border border-gray-300 rounded w-full"
+                        />
                     </div>
                     <div className="flex flex-col space-y-2">
                         <label className="font-bold">通知</label>
@@ -411,14 +413,25 @@ export default function CalendarEventDetailForm({
                         >
                             編集
                         </button>
-                        <button
-                            type="button"
-                            onClick={handleDelete}
-                            className="bg-red-500 text-white p-2 rounded"
-                        >
-                            削除
-                        </button>
+                        {!showDeleteConfirmation && (
+                            <button
+                                type="button"
+                                onClick={() => setShowDeleteConfirmation(true)}
+                                className="bg-red-500 text-white p-2 rounded"
+                            >
+                                削除
+                            </button>
+                        )}
                     </div>
+                    {showDeleteConfirmation && (
+                        <CalendarDeleteConfirmationModal
+                            isOpen={showDeleteConfirmation}
+                            onClose={() => setShowDeleteConfirmation(false)}
+                            onDelete={handleDelete}
+                            isRecurring={isRecurring}
+                            recurrenceType={recurrenceType} // 追加
+                        />
+                    )}
                 </div>
             )}
         </div>

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Event extends Model
+class CalendarEvent extends Model
 {
     use HasFactory;
 
@@ -13,6 +13,7 @@ class Event extends Model
 
     protected $fillable = [
         'user_id',
+        'event_id',
         'title',
         'description',
         'start_time',
@@ -35,5 +36,10 @@ class Event extends Model
     public function tags()
     {
         return $this->belongsToMany(Tag::class, 'calendar_event_tag');
+    }
+
+    public function weekday_events()
+    {
+        return $this->hasMany(RecurringEvent::class, 'event_id');
     }
 }
