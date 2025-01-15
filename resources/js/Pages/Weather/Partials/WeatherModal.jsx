@@ -34,9 +34,7 @@ const WeatherModal = ({ isOpen, onClose, selectedCityWeather }) => {
                 >
                     &times;
                 </button>
-                <h2 className="text-2xl font-bold text-black mb-4">
-                    5日間の天気情報
-                </h2>
+                <h2 className="text-2xl text-black mb-4">5日間の天気情報</h2>
                 <table className="table-auto w-full mb-4">
                     <thead>
                         <tr>
