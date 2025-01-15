@@ -12,6 +12,7 @@ export const initializeMap = (
     setMarkers,
     cities,
     setSelectedCity,
+    setWeatherData,
     setSelectedCityWeather,
     apiKey
 ) => {
@@ -40,6 +41,16 @@ export const initializeMap = (
     const initialMarker = L.marker([lat, lon])
         .addTo(mapInstance)
         .bindPopup("現在位置")
+        .on("click", () =>
+            handleCurrentLocationClick(
+                { lat, lon },
+                setSelectedCity,
+                setWeatherData,
+                setSelectedCityWeather,
+                mapInstance,
+                apiKey
+            )
+        )
         .openPopup();
     setMarkers((prevMarkers) => [...prevMarkers, initialMarker]);
 
@@ -80,12 +91,40 @@ export const handleCityClick = (
     }
 };
 
+export const handleCurrentLocationClick = (
+    location,
+    setSelectedCity,
+    setWeatherData,
+    setSelectedCityWeather,
+    map,
+    apiKey
+) => {
+    setSelectedCity(null);
+    fetchCurrentLocationWeatherData(
+        location.lat,
+        location.lon,
+        setWeatherData,
+        setSelectedCityWeather,
+        apiKey
+    );
+    if (map) {
+        map.setView([location.lat, location.lon], 8); // ズームレベルを2つ引く
+        L.popup({
+            offset: L.point(0, -20), // ポップアップの位置を調整
+        })
+            .setLatLng([location.lat, location.lon])
+            .setContent("現在位置")
+            .openOn(map);
+    }
+};
+
 export const handleCitySelect = (
     e,
     currentLocation,
     fetchWeatherData,
     fetchCityWeatherData,
     setSelectedCity,
+    setWeatherData,
     setSelectedCityWeather,
     map,
     cities,
@@ -93,10 +132,10 @@ export const handleCitySelect = (
 ) => {
     const cityName = e.target.value;
     if (cityName === "") {
-        handleCurrentLocationSelect(
+        handleCurrentLocationClick(
             currentLocation,
-            fetchCurrentLocationWeatherData,
             setSelectedCity,
+            setWeatherData,
             setSelectedCityWeather,
             map,
             apiKey
@@ -120,36 +159,6 @@ export const handleCitySelect = (
                     .setContent(city.name)
                     .openOn(map);
             }
-        }
-    }
-};
-
-export const handleCurrentLocationSelect = (
-    currentLocation,
-    fetchCurrentLocationWeatherData,
-    setSelectedCity,
-    setWeatherData,
-    setSelectedCityWeather,
-    map,
-    apiKey
-) => {
-    setSelectedCity(null);
-    if (currentLocation) {
-        fetchCurrentLocationWeatherData(
-            currentLocation.lat,
-            currentLocation.lon,
-            setWeatherData,
-            setSelectedCityWeather,
-            apiKey
-        );
-        if (map) {
-            map.setView([currentLocation.lat, currentLocation.lon], 8); // ズームレベルを2つ引く
-            L.popup({
-                offset: L.point(0, -20), // ポップアップの位置を調整
-            })
-                .setLatLng([currentLocation.lat, currentLocation.lon])
-                .setContent("現在位置")
-                .openOn(map);
         }
     }
 };

@@ -85,6 +85,7 @@ const Weather = () => {
                     setMarkers,
                     cities,
                     setSelectedCity,
+                    setWeatherData, // ここに追加
                     setSelectedCityWeather,
                     apiKey
                 );
@@ -98,6 +99,7 @@ const Weather = () => {
                     setMarkers,
                     cities,
                     setSelectedCity,
+                    setWeatherData, // ここに追加
                     setSelectedCityWeather,
                     apiKey
                 );
@@ -124,6 +126,7 @@ const Weather = () => {
                                             fetchWeatherData,
                                             fetchCityWeatherData,
                                             setSelectedCity,
+                                            setWeatherData,
                                             setSelectedCityWeather,
                                             map,
                                             cities,
