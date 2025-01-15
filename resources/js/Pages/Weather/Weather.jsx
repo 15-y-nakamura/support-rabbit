@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Line } from "react-chartjs-2";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -85,7 +84,7 @@ const Weather = () => {
                     setMarkers,
                     cities,
                     setSelectedCity,
-                    setWeatherData, // ここに追加
+                    setWeatherData,
                     setSelectedCityWeather,
                     apiKey
                 );
@@ -99,7 +98,7 @@ const Weather = () => {
                     setMarkers,
                     cities,
                     setSelectedCity,
-                    setWeatherData, // ここに追加
+                    setWeatherData,
                     setSelectedCityWeather,
                     apiKey
                 );
@@ -110,7 +109,7 @@ const Weather = () => {
     return (
         <AuthenticatedLayout>
             <div className="bg-cream flex items-center justify-center p-4">
-                <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl w-full mb-4">
+                <div className="bg-white rounded-lg shadow-lg p-2 max-w-4xl w-full mb-4">
                     <div className="font-sans flex flex-col md:flex-row">
                         <section className="w-full md:w-1/2 p-2">
                             <div className="mb-4">
@@ -162,7 +161,7 @@ const Weather = () => {
                                     {new Date().toLocaleDateString()}
                                 </h2>
                                 <button
-                                    className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded"
+                                    className="bg-[#80ACCF] hover:bg-blue-500 text-white py-2 px-4 rounded"
                                     onClick={() => setModalIsOpen(true)}
                                 >
                                     5日間の天気情報を見る
@@ -177,6 +176,7 @@ const Weather = () => {
                 isOpen={modalIsOpen}
                 onClose={() => setModalIsOpen(false)}
                 selectedCityWeather={selectedCityWeather}
+                selectedCity={selectedCity}
             />
         </AuthenticatedLayout>
     );

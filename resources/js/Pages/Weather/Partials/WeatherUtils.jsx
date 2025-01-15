@@ -13,14 +13,14 @@ export const fetchWeatherData = async (
     try {
         const response = await fetch(url);
         if (!response.ok) {
-            throw new Error("Failed to fetch weather data");
+            throw new Error("天気データの取得に失敗しました");
         }
         const data = await response.json();
         console.log("Weather data:", data);
         setWeatherData(data);
         setSelectedCityWeather(data);
     } catch (error) {
-        console.error("Error fetching weather data:", error);
+        console.error("天気データの取得中にエラーが発生しました:", error);
     }
 };
 
@@ -35,13 +35,12 @@ export const fetchCityWeatherData = async (
     try {
         const response = await fetch(url);
         if (!response.ok) {
-            throw new Error("Failed to fetch city weather data");
+            throw new Error("都市の天気データの取得に失敗しました");
         }
         const data = await response.json();
-        console.log("City weather data:", data);
         setSelectedCityWeather(data);
     } catch (error) {
-        console.error("Error fetching city weather data:", error);
+        console.error("都市の天気データの取得中にエラーが発生しました:", error);
     }
 };
 
@@ -57,20 +56,27 @@ export const fetchCurrentLocationWeatherData = async (
     try {
         const response = await fetch(url);
         if (!response.ok) {
-            throw new Error("Failed to fetch current location weather data");
+            throw new Error("現在位置の天気データの取得に失敗しました");
         }
         const data = await response.json();
-        console.log("Current location weather data:", data);
         setWeatherData(data);
         setSelectedCityWeather(data);
     } catch (error) {
-        console.error("Error fetching current location weather data:", error);
+        console.error(
+            "現在位置の天気データの取得中にエラーが発生しました:",
+            error
+        );
     }
 };
 
+const Loading = () => (
+    <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+        <div className="w-16 h-16 border-8 border-gray-200 border-t-pink-400 rounded-full animate-spin"></div>
+    </div>
+);
+
 export const renderWeatherInfo = (selectedCityWeather) => {
-    if (!selectedCityWeather || !selectedCityWeather.list)
-        return <p>Loading...</p>;
+    if (!selectedCityWeather || !selectedCityWeather.list) return <Loading />;
 
     // 日付ごとにグループ化された天気データを取得
     const dailyWeather = selectedCityWeather.list.reduce((acc, forecast) => {
@@ -121,20 +127,20 @@ export const renderWeatherInfo = (selectedCityWeather) => {
             {
                 label: "最高気温 (°C)",
                 data: tempMaxData,
-                borderColor: "rgba(255, 99, 132, 1)",
-                backgroundColor: "rgba(255, 99, 132, 0.2)",
+                borderColor: "#FF6384",
+                backgroundColor: "#FF638433",
             },
             {
                 label: "最低気温 (°C)",
                 data: tempMinData,
-                borderColor: "rgba(54, 162, 235, 1)",
-                backgroundColor: "rgba(54, 162, 235, 0.2)",
+                borderColor: "#36A2EB",
+                backgroundColor: "#36A2EB33",
             },
             {
                 label: "降水確率 (%)",
                 data: popData,
-                borderColor: "rgba(75, 192, 192, 1)",
-                backgroundColor: "rgba(75, 192, 192, 0.2)",
+                borderColor: "#4BC0C0",
+                backgroundColor: "#4BC0C033",
             },
         ],
     };
