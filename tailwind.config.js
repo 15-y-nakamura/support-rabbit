@@ -3,6 +3,7 @@ import forms from "@tailwindcss/forms";
 
 /** @type {import('tailwindcss').Config} */
 export default {
+    // Tailwind CSSが適用されるファイルのパスを指定
     content: [
         "./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php",
         "./storage/framework/views/*.php",
@@ -12,10 +13,12 @@ export default {
 
     theme: {
         extend: {
+            // カスタムフォントファミリーの設定
             fontFamily: {
                 sans: ["Figtree", ...defaultTheme.fontFamily.sans],
                 comic: ["Comic Sans MS", "cursive", "sans-serif"],
             },
+            // カスタムカラーの設定
             colors: {
                 customPink: "#F0A0A8",
                 cream: "#FFF8E7",
@@ -26,12 +29,15 @@ export default {
                 },
                 customGreen: "#65BC8B",
             },
+            // カスタムフォントサイズの設定
             fontSize: {
                 "icon-text": "1rem",
             },
+            // カスタムスペーシングの設定
             spacing: {
                 "icon-size": "1.5rem",
             },
+            // カスタムブレークポイントの設定
             screens: {
                 "max-sm": { max: "639px" },
                 "max-md": { max: "767px" },
@@ -42,5 +48,6 @@ export default {
         },
     },
 
+    // Tailwind CSSプラグインの設定
     plugins: [forms],
 };
