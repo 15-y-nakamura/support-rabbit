@@ -24,7 +24,7 @@
 //             >
 //                 <Canvas
 //                     camera={{
-//                         position: [0, 10, 30], // カメラをさらに後方に引いてモデル全体が見えるように配置
+//                         position: [0.5, 10, 22], // カメラをさらに後方に引いてモデル全体が見えるように配置
 //                         fov: 50, // 視野角を少し広げて、全体が見えるように調整
 //                     }}
 //                     style={{
@@ -42,22 +42,31 @@
 
 // function Scene() {
 //     // GLTFLoader を使ってモデルを読み込む
-//     // const gltf = useLoader(GLTFLoader, "/rabbit-room.glb");
+//     const gltf = useLoader(GLTFLoader, "rabbit-house.glb");
 //     return (
 //         <>
-//             <ambientLight intensity={0.8} />
-//             <directionalLight position={[5, 10, 5]} intensity={1.5} />
+//             <ambientLight intensity={1} /> {/* 照明の明るさを調整 */}
+//             <directionalLight position={[5, 10, 5]} intensity={1.5} />{" "}
+//             {/* 照明の明るさを調整 */}
+//             <spotLight
+//                 position={[10, 15, 10]}
+//                 intensity={4}
+//                 angle={0.5}
+//                 penumbra={3}
+//                 castShadow
+//             />{" "}
+//             {/* スポットライトを追加 */}
 //             <primitive
 //                 object={gltf.scene}
-//                 position={[0, -10, 0]} // モデルを少し下に移動
-//                 rotation={[0, Math.PI / 6, 0]} // 視点に合わせて軽く回転
-//                 scale={[1.5, 1.5, 1.5]} // モデルサイズを調整
+//                 position={[-16, -8, 0]} // モデルを左に移動し、少し下に移動
+//                 rotation={[-0.005, Math.PI / 10, 0]} // 視点に合わせて軽く回転し、少し上向きに調整
+//                 scale={[2, 2, 2]} // モデルサイズを調整
 //             />
 //             <OrbitControls
 //                 enablePan={false}
 //                 minPolarAngle={Math.PI / 3}
 //                 maxPolarAngle={Math.PI / 2.5} // 視点が崩れないように制限
-//                 target={[0, 0, 0]} // カメラがモデルの中心に向くように設定
+//                 target={[0, 4, 0]} // カメラがモデルの中心に向くように設定
 //             />
 //         </>
 //     );
