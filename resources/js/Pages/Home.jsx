@@ -2,7 +2,9 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { useLoader } from "@react-three/fiber";
+import * as THREE from "three"; // THREEをインポート
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { OrbitControls, Stars } from "@react-three/drei";
 import { useEffect, useState, Suspense } from "react";
 
@@ -16,6 +18,7 @@ export default function Home() {
     const [isDaytime, setIsDaytime] = useState(true);
     const [model, setModel] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [cameraPosition, setCameraPosition] = useState([0.5, 10, 22]);
 
     useEffect(() => {
         // スクロールバーを非表示にするために body のスタイルを設定
@@ -25,11 +28,34 @@ export default function Home() {
         const currentHour = new Date().getHours();
         setIsDaytime(currentHour >= 6 && currentHour < 18);
 
+        // ウィンドウの幅に応じてカメラの位置を調整
+        const handleResize = () => {
+            if (window.innerWidth < 768) {
+                setCameraPosition([0.5, 10, 30]); // スマホバージョンのときにカメラを引く
+            } else {
+                setCameraPosition([0.5, 10, 22]); // デフォルトのカメラ位置
+            }
+        };
+
+        // 初期設定とリサイズイベントリスナーの追加
+        handleResize();
+        window.addEventListener("resize", handleResize);
+
+        // Three.jsのレンダラーを作成
+        const renderer = new THREE.WebGLRenderer();
+
         // モデルの事前読み込み
         const loader = new GLTFLoader();
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath(
+            "https://www.gstatic.com/draco/v1/decoders/"
+        );
+        loader.setDRACOLoader(dracoLoader);
+
         loader.load(
-            "rabbit-house.glb",
+            "rabbit-room-compressed.glb",
             (gltf) => {
+                console.log("Model loaded successfully", gltf);
                 setModel(gltf);
                 setLoading(false);
             },
@@ -43,6 +69,7 @@ export default function Home() {
         return () => {
             // コンポーネントがアンマウントされたときに元に戻す
             document.body.style.overflow = "auto";
+            window.removeEventListener("resize", handleResize);
         };
     }, []);
 
@@ -55,7 +82,7 @@ export default function Home() {
                 {loading && <Loading />}
                 <Canvas
                     camera={{
-                        position: [0.5, 10, 22], // カメラをさらに後方に引いてモデル全体が見えるように配置
+                        position: cameraPosition, // カメラの位置を状態から取得
                         fov: 50, // 視野角を少し広げて、全体が見えるように調整
                     }}
                     style={{
@@ -65,7 +92,7 @@ export default function Home() {
                         display: loading ? "none" : "block",
                     }}
                 >
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<Loading />}>
                         {model && <Scene isDaytime={isDaytime} model={model} />}
                     </Suspense>
                 </Canvas>
@@ -77,33 +104,38 @@ export default function Home() {
 function Scene({ isDaytime, model }) {
     return (
         <>
-            <ambientLight intensity={1.6} /> {/* 照明の明るさを調整 */}
+            {/* 照明の設定 */}
+            <ambientLight intensity={1.6} /> {/* 環境光 */}
             <directionalLight position={[5, 10, 5]} intensity={1.6} />{" "}
-            {/* 照明の明るさを調整 */}
+            {/* 平行光源 */}
             <spotLight
                 position={[10, 15, 10]}
-                intensity={4.3}
-                angle={0.5}
-                penumbra={2}
+                intensity={2.0} // 光の強度を調整
+                angle={0.3} // 照射角度を調整
+                penumbra={1} // 半影の範囲を調整
                 castShadow
             />{" "}
-            {/* スポットライトを追加 */}
+            {/* スポットライト */}
+            {/* モデルの配置 */}
             <primitive
                 object={model.scene}
                 position={[-16, -8, 0]} // モデルを左に移動し、少し下に移動
                 rotation={[-0.005, Math.PI / 10, 0]} // 視点に合わせて軽く回転し、少し上向きに調整
                 scale={[2, 2, 2]} // モデルサイズを調整
             />
+            {/* カメラコントロール */}
             <OrbitControls
                 enablePan={false}
                 minPolarAngle={Math.PI / 3}
                 maxPolarAngle={Math.PI / 2.5} // 視点が崩れないように制限
                 target={[0, 4, 0]} // カメラがモデルの中心に向くように設定
+                maxAzimuthAngle={Math.PI / 4} // カメラの水平回転の最大角度を設定
+                minAzimuthAngle={-Math.PI / 4} // カメラの水平回転の最小角度を設定
             />
+            {/* 星空の追加 */}
             {!isDaytime && (
                 <Stars radius={100} depth={50} count={5000} factor={6} fade />
-            )}{" "}
-            {/* 星空を追加 */}
+            )}
         </>
     );
 }
