@@ -45,15 +45,16 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
             currentDate.getMonth(),
             i
         );
+        currentDay.setHours(0, 0, 0, 0); // 時間部分をリセット
 
         // 予定一覧のデータをそのまま表示
         const dayEvents = events.filter((event) => {
             const eventStart = new Date(event.start_time);
             const eventEnd = new Date(event.end_time || event.start_time);
-            return (
-                eventStart.toDateString() === currentDay.toDateString() ||
-                eventEnd.toDateString() === currentDay.toDateString()
-            );
+            eventStart.setHours(0, 0, 0, 0); // 時間部分をリセット
+            eventEnd.setHours(23, 59, 59, 999); // 時間部分をリセット
+
+            return eventStart <= currentDay && eventEnd >= currentDay;
         });
 
         const markerColor =

@@ -49,7 +49,7 @@ export default function Calendar() {
     };
 
     const handleEventCreated = (newEvent) => {
-        setEvents([...events, newEvent]);
+        fetchEvents(); // イベントを再取得
         setIsModalOpen(false);
         setNotification("イベントが正常に作成されました。");
     };
@@ -64,10 +64,7 @@ export default function Calendar() {
     };
 
     const handleEventDeleted = (deletedEventId) => {
-        setEvents(events.filter((event) => event.id !== deletedEventId));
-        setSelectedDateEvents(
-            selectedDateEvents.filter((event) => event.id !== deletedEventId)
-        );
+        fetchEvents(); // イベントを再取得
         setNotification("イベントが正常に削除されました。");
     };
 
@@ -83,10 +80,11 @@ export default function Calendar() {
         const dayEvents = events.filter((event) => {
             const eventStart = new Date(event.start_time);
             const eventEnd = new Date(event.end_time || event.start_time);
-            return (
-                eventStart.toDateString() === date.toDateString() ||
-                eventEnd.toDateString() === date.toDateString()
-            );
+            eventStart.setHours(0, 0, 0, 0); // 時間部分をリセット
+            eventEnd.setHours(23, 59, 59, 999); // 時間部分をリセット
+            date.setHours(0, 0, 0, 0); // 時間部分をリセット
+
+            return eventStart <= date && eventEnd >= date;
         });
         setSelectedDateEvents(dayEvents);
     };
@@ -99,54 +97,8 @@ export default function Calendar() {
         );
     };
 
-    const handleDeleteSelectedEvents = async () => {
+    const handleDeleteSelectedEvents = () => {
         setShowDeleteConfirmation(true);
-    };
-
-    const handleDelete = async (deleteAll) => {
-        try {
-            await Promise.all(
-                selectedEvents.map((eventId) => {
-                    const event = events.find((e) => e.id === eventId);
-                    const url =
-                        event.recurrence_type === "weekday"
-                            ? `/api/v2/calendar/weekday-events/${eventId}`
-                            : `/api/v2/calendar/events/${eventId}`;
-                    return axios.delete(
-                        url + (deleteAll ? "?delete_all=true" : "")
-                    );
-                })
-            );
-            selectedEvents.forEach((eventId) => {
-                handleEventDeleted(eventId);
-            });
-            setSelectedEvents([]);
-            setShowDeleteConfirmation(false);
-        } catch (error) {
-            console.error("Error deleting events:", error);
-        }
-    };
-
-    const handleDeleteSingle = async () => {
-        try {
-            await Promise.all(
-                selectedEvents.map((eventId) => {
-                    const event = events.find((e) => e.id === eventId);
-                    const url =
-                        event.recurrence_type === "weekday"
-                            ? `/api/v2/calendar/weekday-events/${eventId}`
-                            : `/api/v2/calendar/events/${eventId}`;
-                    return axios.delete(url);
-                })
-            );
-            selectedEvents.forEach((eventId) => {
-                handleEventDeleted(eventId);
-            });
-            setSelectedEvents([]);
-            setShowDeleteConfirmation(false);
-        } catch (error) {
-            console.error("Error deleting events:", error);
-        }
     };
 
     // 選択されたイベントが weekday イベントとそれ以外のイベントが混在しているかどうかを判定
@@ -309,18 +261,13 @@ export default function Calendar() {
             <CalendarDeleteConfirmationModal
                 isOpen={showDeleteConfirmation}
                 onClose={() => setShowDeleteConfirmation(false)}
-                onDelete={isMixedSelection ? handleDeleteSingle : handleDelete}
-                isRecurring={selectedEvents.some(
-                    (eventId) =>
-                        events.find((event) => event.id === eventId)
-                            ?.recurrence_type
-                )}
-                recurrenceType={
-                    selectedEvents.length > 0
-                        ? events.find((event) => event.id === selectedEvents[0])
-                              ?.recurrence_type
-                        : "none"
-                }
+                selectedEvents={selectedEvents}
+                events={events}
+                handleEventDeleted={handleEventDeleted}
+                setSelectedEvents={setSelectedEvents}
+                setShowDeleteConfirmation={setShowDeleteConfirmation}
+                isMixedSelection={isMixedSelection}
+                fetchEvents={fetchEvents} // fetchEvents関数を渡す
             />
             <DateChangeModal
                 isOpen={isDateModalOpen}

@@ -13,6 +13,7 @@ Route::prefix('v2')->group(function () {
     Route::get('calendar/events/{id}', [CalendarEventController::class, 'show']);
     Route::put('calendar/events/{id}', [CalendarEventController::class, 'update']);
     Route::delete('calendar/events/{id}', [CalendarEventController::class, 'destroy']);
+    Route::delete('calendar/events/{id}/all', [CalendarEventController::class, 'destroyAll']); // 変更
 
     // カレンダータグのルート
     Route::get('calendar/tags', [CalendarTagController::class, 'index']);
@@ -24,4 +25,8 @@ Route::prefix('v2')->group(function () {
     // 通知のルート
     Route::get('notices', [NoticeController::class, 'index']);
     Route::put('notices/read', [NoticeController::class, 'read']);
+
+    // Weekdayイベントのルート
+    Route::delete('calendar/weekday-events/{id}', [WeekdayEventsController::class, 'destroy']); // 変更
+    Route::delete('calendar/weekday-events/{id}/all', [WeekdayEventsController::class, 'destroyAll']); // 変更
 });

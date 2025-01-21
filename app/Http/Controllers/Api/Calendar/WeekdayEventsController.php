@@ -62,4 +62,30 @@ class WeekdayEventsController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function destroy(Request $req, $id)
+    {
+        try {
+            $event = WeekdayEvent::find($id);
+            if (!$event) return response(['error' => 'イベントが見つかりません'], 404);
+
+            $event->delete();
+
+            return response()->json(['message' => 'イベントが削除されました'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function destroyAll($eventId)
+    {
+        try {
+            // 繰り返しイベントを含むすべての関連イベントを削除
+            WeekdayEvent::where('event_id', $eventId)->delete();
+
+            return response()->json(['message' => 'すべての関連イベントが削除されました'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }

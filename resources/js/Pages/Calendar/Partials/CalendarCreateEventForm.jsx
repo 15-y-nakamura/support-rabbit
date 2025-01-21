@@ -48,7 +48,6 @@ export default function CalendarCreateEventForm({
             setTags([...defaultTags, ...response.data.tags]);
         } catch (error) {
             console.error("Error fetching tags:", error);
-            // デフォルトタグのみを設定
             setTags(defaultTags);
         } finally {
             setLoadingTags(false);
@@ -116,7 +115,7 @@ export default function CalendarCreateEventForm({
                             location,
                             link,
                             notification,
-                            recurrence_type: recurrenceType, // 追加
+                            recurrence_type: recurrenceType,
                         });
                         break;
                     case "weekend":
@@ -196,7 +195,10 @@ export default function CalendarCreateEventForm({
             setRecurrenceDays([]);
             setRecurrenceDate("");
         } catch (error) {
-            console.error("Error creating event:", error.response.data);
+            console.error(
+                "Error creating event:",
+                error.response?.data || error.message
+            );
         }
     };
 
