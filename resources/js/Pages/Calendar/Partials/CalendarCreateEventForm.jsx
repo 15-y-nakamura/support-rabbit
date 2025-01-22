@@ -28,15 +28,6 @@ export default function CalendarCreateEventForm({
     const [recurrenceDays, setRecurrenceDays] = useState([]);
     const [recurrenceDate, setRecurrenceDate] = useState("");
 
-    const defaultTags = [
-        { id: 1, name: "お出かけ", color: "#FF0000" },
-        { id: 2, name: "仕事", color: "#00FF00" },
-        { id: 3, name: "勉強", color: "#0000FF" },
-        { id: 4, name: "家事", color: "#FFFF00" },
-        { id: 5, name: "健康", color: "#FF00FF" },
-        { id: 6, name: "自由時間", color: "#00FFFF" },
-    ];
-
     useEffect(() => {
         fetchTags();
     }, []);
@@ -45,10 +36,9 @@ export default function CalendarCreateEventForm({
         setLoadingTags(true);
         try {
             const response = await axios.get("/api/v2/calendar/tags");
-            setTags([...defaultTags, ...response.data.tags]);
+            setTags(response.data.tags);
         } catch (error) {
-            console.error("Error fetching tags:", error);
-            setTags(defaultTags);
+            console.error("タグの取得中にエラーが発生しました:", error);
         } finally {
             setLoadingTags(false);
         }
@@ -83,6 +73,22 @@ export default function CalendarCreateEventForm({
                       recurrence_end_time: null,
                   };
 
+            console.log("送信データ:", {
+                title,
+                description,
+                start_time: eventStartTime,
+                end_time: eventEndTime,
+                is_recurring: isRecurring,
+                ...recurrenceData,
+                all_day: allDay,
+                all_day_date: allDay ? allDayDate : null,
+                notification,
+                location,
+                link,
+                note,
+                tag_id: selectedTag ? selectedTag.id : null,
+            });
+
             const response = await axios.post("/api/v2/calendar/events", {
                 title,
                 description,
@@ -99,8 +105,8 @@ export default function CalendarCreateEventForm({
                 tag_id: selectedTag ? selectedTag.id : null,
             });
 
+            console.log("作成されたイベント:", response.data.event);
             const eventId = response.data.event.id;
-            console.log("Created event ID:", eventId);
 
             if (isRecurring) {
                 switch (recurrenceType) {
@@ -196,13 +202,14 @@ export default function CalendarCreateEventForm({
             setRecurrenceDate("");
         } catch (error) {
             console.error(
-                "Error creating event:",
+                "イベントの作成中にエラーが発生しました:",
                 error.response?.data || error.message
             );
         }
     };
 
     const handleTagSelect = (tag) => {
+        console.log("タグが選択されました:", tag);
         setSelectedTag(tag);
         setIsTagListOpen(false);
     };

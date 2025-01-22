@@ -74,8 +74,9 @@ class CalendarEventController extends Controller
 
             $event = CalendarEvent::create(array_merge($validated, ['user_id' => $req->user()->id]));
 
-            if (isset($validated['tags'])) {
-                $event->tags()->sync($validated['tags']);
+            if (isset($validated['tag_id'])) {
+                $event->tag_id = $validated['tag_id'];
+                $event->save();
             }
 
             return response()->json(['message' => 'イベントが作成されました', 'event' => $event], 201);
@@ -123,8 +124,9 @@ class CalendarEventController extends Controller
 
             $event->update($validated);
 
-            if (isset($validated['tags'])) {
-                $event->tags()->sync($validated['tags']);
+            if (isset($validated['tag_id'])) {
+                $event->tag_id = $validated['tag_id'];
+                $event->save();
             }
 
             return response()->json(['message' => 'イベントが更新されました'], 200);

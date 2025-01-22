@@ -1,7 +1,83 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 export default function CalendarGrid({ currentDate, events, handleDateClick }) {
     const [selectedDate, setSelectedDate] = useState(null);
+    const [tags, setTags] = useState([]);
+    const [calendarEvents, setCalendarEvents] = useState([]);
+    const [weekdayEvents, setWeekdayEvents] = useState([]);
+
+    useEffect(() => {
+        fetchTags();
+        fetchCalendarEvents();
+        fetchWeekdayEvents();
+    }, []);
+
+    const fetchTags = async () => {
+        try {
+            const response = await axios.get("/api/v2/calendar/tags");
+            setTags(response.data.tags);
+            console.log("タグが取得されました:", response.data.tags);
+        } catch (error) {
+            console.error("タグの取得中にエラーが発生しました:", error);
+        }
+    };
+
+    const fetchCalendarEvents = async () => {
+        try {
+            const response = await axios.get("/api/v2/calendar/events");
+            setCalendarEvents(response.data.events);
+            console.log(
+                "カレンダーイベントが取得されました:",
+                response.data.events
+            );
+        } catch (error) {
+            console.error(
+                "カレンダーイベントの取得中にエラーが発生しました:",
+                error
+            );
+        }
+    };
+
+    const fetchWeekdayEvents = async () => {
+        try {
+            const response = await axios.get("/api/v2/calendar/weekday-events");
+            setWeekdayEvents(response.data.events);
+            console.log("平日イベントが取得されました:", response.data.events);
+        } catch (error) {
+            console.error("平日イベントの取得中にエラーが発生しました:", error);
+        }
+    };
+
+    const getTagColor = (tagId) => {
+        const tag = tags.find((tag) => tag.id === tagId);
+        console.log(
+            "タグの色を取得:",
+            tagId,
+            tag ? tag.color : "デフォルトカラー"
+        );
+        return tag ? tag.color : "#F78FB3"; // デフォルトカラー
+    };
+
+    const getEventTagColor = (event) => {
+        if (event.tag_id) {
+            console.log("イベントのタグID:", event.tag_id);
+            return getTagColor(event.tag_id);
+        } else if (event.event_id) {
+            const calendarEvent = calendarEvents.find(
+                (e) => e.id === event.event_id
+            );
+            console.log(
+                "カレンダーイベントのタグID:",
+                calendarEvent ? calendarEvent.tag_id : "なし"
+            );
+            return calendarEvent && calendarEvent.tag_id
+                ? getTagColor(calendarEvent.tag_id)
+                : "#F78FB3"; // デフォルトカラー
+        } else {
+            return "#F78FB3"; // デフォルトカラー
+        }
+    };
 
     const daysInMonth = new Date(
         currentDate.getFullYear(),
@@ -59,10 +135,7 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
             return eventStart <= currentDay && eventEnd >= currentDay;
         });
 
-        const markerColor =
-            dayEvents.length > 0 && dayEvents[0].tag
-                ? dayEvents[0].tag.color
-                : "#F78FB3"; // デフォルトカラー
+        console.log("日付:", currentDay, "のイベント:", dayEvents);
 
         // 選択された日付かどうかを判定
         const isSelected =
@@ -87,7 +160,8 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
             >
                 <div className="text-sm">{i}</div>
                 {dayEvents.map((event) => {
-                    const eventColor = event.tag ? event.tag.color : "#F78FB3"; // デフォルトカラー
+                    const eventColor = getEventTagColor(event);
+                    console.log("イベントの色:", event.title, eventColor);
                     return (
                         <div
                             key={event.id}
