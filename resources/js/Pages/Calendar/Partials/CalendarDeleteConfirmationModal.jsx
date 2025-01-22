@@ -13,6 +13,7 @@ export default function CalendarDeleteConfirmationModal({
     const [deleteAll, setDeleteAll] = useState({});
     const [relatedEvents, setRelatedEvents] = useState({});
     const [showRelated, setShowRelated] = useState({});
+    const [isDeleting, setIsDeleting] = useState(false); // ローディング状態を追加
 
     useEffect(() => {
         if (isOpen) {
@@ -50,6 +51,7 @@ export default function CalendarDeleteConfirmationModal({
     };
 
     const handleDelete = async () => {
+        setIsDeleting(true); // ローディング開始
         const eventsToDelete = [...selectedEvents];
 
         for (const eventId of selectedEvents) {
@@ -115,6 +117,8 @@ export default function CalendarDeleteConfirmationModal({
         // 選択されたイベントのリセット
         setSelectedEvents([]);
         setShowDeleteConfirmation(false);
+        setIsDeleting(false); // ローディング終了
+        onClose(); // モーダルを閉じる
     };
 
     // チェックボックスの状態を切り替える関数
@@ -233,26 +237,34 @@ export default function CalendarDeleteConfirmationModal({
                     &times;
                 </button>
                 <div className="space-y-4">
-                    <p className="text-red-700 text-center">
-                        選択されたデータを削除しますか？
-                    </p>
-                    <div className="mt-4 space-y-2">
-                        {selectedEvents.map(renderEvent)}
-                    </div>
-                    <div className="flex justify-center mt-4">
-                        <button
-                            type="button"
-                            onClick={handleDelete}
-                            className={`p-2 rounded ${
-                                isDeleteDisabled
-                                    ? "bg-gray-400 cursor-not-allowed"
-                                    : "bg-red-500 text-white"
-                            }`}
-                            disabled={isDeleteDisabled}
-                        >
-                            削除
-                        </button>
-                    </div>
+                    {isDeleting ? (
+                        <div className="flex justify-center items-center">
+                            <div className="w-16 h-16 border-8 border-gray-200 border-t-pink-400 rounded-full animate-spin"></div>
+                        </div>
+                    ) : (
+                        <>
+                            <p className="text-red-700 text-center">
+                                選択されたデータを削除しますか？
+                            </p>
+                            <div className="mt-4 space-y-2">
+                                {selectedEvents.map(renderEvent)}
+                            </div>
+                            <div className="flex justify-center mt-4">
+                                <button
+                                    type="button"
+                                    onClick={handleDelete}
+                                    className={`p-2 rounded ${
+                                        isDeleteDisabled || isDeleting
+                                            ? "bg-gray-400 cursor-not-allowed"
+                                            : "bg-red-500 text-white"
+                                    }`}
+                                    disabled={isDeleteDisabled || isDeleting}
+                                >
+                                    削除
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

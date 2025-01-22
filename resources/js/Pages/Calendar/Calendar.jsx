@@ -40,7 +40,24 @@ export default function Calendar() {
                 ),
             ]);
 
-            setEvents([...eventsResponse.data.events, ...weekdayResponse]);
+            const allEvents = [
+                ...eventsResponse.data.events,
+                ...weekdayResponse,
+            ];
+            setEvents(allEvents);
+
+            // 現在選択されている日付のイベントをフィルタリングして設定
+            const dayEvents = allEvents.filter((event) => {
+                const eventStart = new Date(event.start_time);
+                const eventEnd = new Date(event.end_time || event.start_time);
+                eventStart.setHours(0, 0, 0, 0); // 時間部分をリセット
+                eventEnd.setHours(23, 59, 59, 999); // 時間部分をリセット
+                const selectedDate = new Date(currentDate);
+                selectedDate.setHours(0, 0, 0, 0); // 時間部分をリセット
+
+                return eventStart <= selectedDate && eventEnd >= selectedDate;
+            });
+            setSelectedDateEvents(dayEvents);
         } catch (error) {
             console.error("Error fetching events:", error);
         } finally {
@@ -55,11 +72,7 @@ export default function Calendar() {
     };
 
     const handleEventUpdated = (updatedEvent) => {
-        setEvents(
-            events.map((event) =>
-                event.id === updatedEvent.id ? updatedEvent : event
-            )
-        );
+        fetchEvents(); // イベントを再取得
         setNotification("イベントが正常に更新されました。");
     };
 
