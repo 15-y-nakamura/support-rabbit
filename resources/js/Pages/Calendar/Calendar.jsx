@@ -9,6 +9,7 @@ import CalendarModal from "./Partials/CalendarModal";
 import DateChangeModal from "./Partials/DateChangeModal";
 import CalendarGrid from "./Partials/CalendarGrid";
 import CalendarDeleteConfirmationModal from "./Partials/CalendarDeleteConfirmationModal";
+import CalendarEventList from "./Partials/CalendarEventList";
 
 export default function Calendar() {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -235,7 +236,7 @@ export default function Calendar() {
                                     handleTagSelected={handleTagSelected}
                                     handleCreateEvent={handleCreateEvent}
                                 />
-                                <EventList
+                                <CalendarEventList
                                     selectedDateEvents={selectedDateEvents}
                                     selectedEvents={selectedEvents}
                                     handleEventSelect={handleEventSelect}
@@ -387,88 +388,6 @@ function EventListHeader({
             >
                 ＋
             </button>
-        </div>
-    );
-}
-
-// イベントリスト部分をコンポーネント化
-function EventList({
-    selectedDateEvents,
-    selectedEvents,
-    handleEventSelect,
-    handleDeleteSelectedEvents,
-    handleEventDetail,
-}) {
-    return (
-        <div className="mt-2 p-2 bg-white border border-gray-300 rounded shadow-md w-full h-64">
-            {selectedDateEvents.length > 0 ? (
-                <>
-                    <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-lg font-bold">予定一覧</h2>
-                        <button
-                            className={`${
-                                selectedEvents.length === 0
-                                    ? "bg-gray-400 cursor-not-allowed"
-                                    : "bg-red-500"
-                            } text-white p-2 rounded shadow-md`}
-                            onClick={handleDeleteSelectedEvents}
-                            disabled={selectedEvents.length === 0}
-                        >
-                            選択した予定を削除
-                        </button>
-                    </div>
-                    <ul>
-                        {selectedDateEvents.map((event) => (
-                            <li
-                                key={event.id}
-                                className="mb-1 flex items-center justify-between"
-                            >
-                                <div className="flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedEvents.includes(
-                                            event.id
-                                        )}
-                                        onChange={() =>
-                                            handleEventSelect(event.id)
-                                        }
-                                        className="mr-2"
-                                    />
-                                    <span className="font-bold">
-                                        {new Date(
-                                            event.start_time
-                                        ).toLocaleTimeString("ja-JP", {
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                        })}
-                                        {" - "}
-                                        {new Date(
-                                            event.end_time || event.start_time
-                                        ).toLocaleTimeString("ja-JP", {
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                        })}
-                                    </span>{" "}
-                                    - {event.title}
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <button
-                                        className="text-blue-500 underline"
-                                        onClick={() => handleEventDetail(event)}
-                                    >
-                                        詳細
-                                    </button>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </>
-            ) : (
-                <>
-                    <h2 className="text-lg font-bold mb-2">予定一覧</h2>
-                    <p>登録されていません。</p>
-                </>
-            )}
         </div>
     );
 }

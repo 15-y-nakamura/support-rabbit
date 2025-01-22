@@ -19,10 +19,11 @@ export default function CalendarDeleteConfirmationModal({
     // 削除処理中かどうかを保持するステート
     const [isDeleting, setIsDeleting] = useState(false);
 
-    // モーダルが開いたときに関連イベントを取得する
+    // モーダルが開いたときに関連イベントを取得し、全てのチェックボックスにチェックを入れる
     useEffect(() => {
         if (isOpen) {
             fetchRelatedEvents();
+            initializeDeleteAll();
         }
     }, [isOpen]);
 
@@ -45,6 +46,20 @@ export default function CalendarDeleteConfirmationModal({
             }
         }
         setRelatedEvents(related);
+    };
+
+    // 全てのチェックボックスにチェックを入れる関数
+    const initializeDeleteAll = () => {
+        const initialDeleteAll = {};
+        selectedEvents.forEach((eventId) => {
+            initialDeleteAll[eventId] = true;
+            if (relatedEvents[eventId]) {
+                relatedEvents[eventId].forEach((relatedEvent) => {
+                    initialDeleteAll[relatedEvent.id] = true;
+                });
+            }
+        });
+        setDeleteAll(initialDeleteAll);
     };
 
     if (!isOpen) return null;

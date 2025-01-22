@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 
 export default function CalendarGrid({ currentDate, events, handleDateClick }) {
+    const [selectedDate, setSelectedDate] = useState(null);
+
     const daysInMonth = new Date(
         currentDate.getFullYear(),
         currentDate.getMonth() + 1,
@@ -62,11 +64,20 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
                 ? dayEvents[0].tag.color
                 : "#F78FB3"; // デフォルトカラー
 
+        // 選択された日付かどうかを判定
+        const isSelected =
+            selectedDate && selectedDate.getTime() === currentDay.getTime();
+
         days.push(
             <div
-                className="calendar-day text-gray-800 font-bold bg-white hover:bg-gray-200 rounded-md"
+                className={`calendar-day text-gray-800 font-bold bg-white hover:bg-gray-200 rounded-md ${
+                    isSelected ? "border-2 border-pink-500" : ""
+                }`}
                 key={`current-${currentDate.getMonth()}-${i}`}
-                onClick={() => handleDateClick(currentDay)}
+                onClick={() => {
+                    setSelectedDate(currentDay); // 選択された日付を状態に保存
+                    handleDateClick(currentDay); // 親コンポーネントに日付を通知
+                }}
                 style={{
                     minHeight: "48px", // 縦幅をさらに縮める
                     padding: "2px",
