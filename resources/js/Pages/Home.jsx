@@ -19,8 +19,16 @@ export default function Home() {
     const [model, setModel] = useState(null);
     const [loading, setLoading] = useState(true);
     const [cameraPosition, setCameraPosition] = useState([0.5, 10, 22]);
+    const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
+        setIsMounted(true);
+        return () => setIsMounted(false);
+    }, []);
+
+    useEffect(() => {
+        if (!isMounted) return;
+
         // スクロールバーを非表示にするために body のスタイルを設定
         document.body.style.overflow = "hidden";
 
@@ -71,7 +79,9 @@ export default function Home() {
             document.body.style.overflow = "auto";
             window.removeEventListener("resize", handleResize);
         };
-    }, []);
+    }, [isMounted]);
+
+    if (!isMounted) return null;
 
     return (
         <AuthenticatedLayout>

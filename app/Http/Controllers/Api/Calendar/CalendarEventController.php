@@ -74,8 +74,9 @@ class CalendarEventController extends Controller
 
             $event = CalendarEvent::create(array_merge($validated, ['user_id' => $req->user()->id]));
 
-            if (isset($validated['tags'])) {
-                $event->tags()->sync($validated['tags']);
+            if (isset($validated['tag_id'])) {
+                $event->tag_id = $validated['tag_id'];
+                $event->save();
             }
 
             return response()->json(['message' => 'イベントが作成されました', 'event' => $event], 201);
@@ -123,8 +124,9 @@ class CalendarEventController extends Controller
 
             $event->update($validated);
 
-            if (isset($validated['tags'])) {
-                $event->tags()->sync($validated['tags']);
+            if (isset($validated['tag_id'])) {
+                $event->tag_id = $validated['tag_id'];
+                $event->save();
             }
 
             return response()->json(['message' => 'イベントが更新されました'], 200);
@@ -142,6 +144,26 @@ class CalendarEventController extends Controller
             $event->delete();
 
             return response()->json(['message' => 'イベントが削除されました'], 200);
+        } catch (\Exception $e) {
+            return response(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function destroyAll(Request $req, $id)
+    {
+        try {
+            $event = CalendarEvent::find($id);
+            if (!$event) return response(['error' => 'イベントが見つかりません'], 404);
+
+            // 繰り返しイベントを含むすべての関連イベントを削除
+            CalendarEvent::where('recurrence_type', $event->recurrence_type)
+                ->where('recurrence_dates', $event->recurrence_dates)
+                ->delete();
+
+            // 関連するweekdayイベントも削除
+            app('App\Http\Controllers\Api\Calendar\WeekdayEventsController')->destroyAll($event->id);
+
+            return response()->json(['message' => 'すべての関連イベントが削除されました'], 200);
         } catch (\Exception $e) {
             return response(['error' => $e->getMessage()], 500);
         }
