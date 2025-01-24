@@ -69,6 +69,10 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('Weather/Weather');
     })->name('weather');
 
+    Route::get('achievement', function () {
+        return Inertia::render('Achievement/Achievement');
+    })->name('achievement');
+
     Route::put('api/v2/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 
     Route::get('api/v2/calendar/tags', [CalendarTagController::class, 'index'])->name('calendar.tags.index');

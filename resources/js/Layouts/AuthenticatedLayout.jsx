@@ -61,13 +61,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                     label="天気"
                                 />
                                 <VerticalDivider />
-                                <NavItem
-                                    href="/connection"
-                                    icon="/img/connection-icon.png"
-                                    label="接続"
-                                    className="ms-8"
-                                />
-                                <VerticalDivider />
                             </div>
                             <UserDropdown user={user} />
                         </div>
@@ -182,15 +175,15 @@ function UserDropdown({ user }) {
                     </Dropdown.Link>
                     <Divider />
                     <Dropdown.Link
-                        href="/chat"
+                        href="/achievement"
                         className="flex items-center py-2"
                     >
                         <img
-                            src="/img/chat-icon.png"
-                            alt="Chat Icon"
+                            src="/img/achievement-icon.png"
+                            alt="Achievement Icon"
                             className="h-icon-size w-icon-size mr-2"
                         />
-                        お喋り
+                        達成率
                     </Dropdown.Link>
                     <Divider />
                     <Dropdown.Link
@@ -284,18 +277,6 @@ function ResponsiveNavigation({ showing }) {
                 </ResponsiveNavLink>
                 <Divider />
                 <ResponsiveNavLink
-                    href="/connection"
-                    className="text-lg flex items-center"
-                >
-                    <img
-                        src="/img/connection-icon.png"
-                        alt="Connection Icon"
-                        className="h-icon-size w-icon-size mr-4"
-                    />
-                    接続
-                </ResponsiveNavLink>
-                <Divider />
-                <ResponsiveNavLink
                     href="/calendar"
                     className="text-lg flex items-center"
                 >
@@ -308,15 +289,15 @@ function ResponsiveNavigation({ showing }) {
                 </ResponsiveNavLink>
                 <Divider />
                 <ResponsiveNavLink
-                    href="/chat"
+                    href="/achievement"
                     className="text-lg flex items-center"
                 >
                     <img
-                        src="/img/chat-icon.png"
-                        alt="Chat Icon"
+                        src="/img/achievement-icon.png"
+                        alt="Achievement Icon"
                         className="h-icon-size w-icon-size mr-4"
                     />
-                    お喋り
+                    達成率
                 </ResponsiveNavLink>
                 <Divider />
                 <div className="mt-6 space-y-4">
