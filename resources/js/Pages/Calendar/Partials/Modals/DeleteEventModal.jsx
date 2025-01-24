@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function CalendarDeleteConfirmationModal({
+export default function DeleteEventModal({
     isOpen,
     onClose,
     selectedEvents,

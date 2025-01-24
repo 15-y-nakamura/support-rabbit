@@ -1,10 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function CalendarCreateEventForm({
-    onEventCreated,
-    selectedDate,
-}) {
+export default function CreateEventForm({ onEventCreated, selectedDate }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [startTime, setStartTime] = useState(

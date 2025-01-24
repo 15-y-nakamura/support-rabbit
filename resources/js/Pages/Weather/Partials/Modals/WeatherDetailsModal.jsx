@@ -1,6 +1,6 @@
 import React from "react";
 
-const WeatherModal = ({
+const WeatherDetailsModal = ({
     isOpen,
     onClose,
     selectedCityWeather,
@@ -193,4 +193,4 @@ const WeatherModal = ({
     );
 };
 
-export default WeatherModal;
+export default WeatherDetailsModal;

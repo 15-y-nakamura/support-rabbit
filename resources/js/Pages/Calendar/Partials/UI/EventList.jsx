@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function CalendarEventList({
+export default function EventList({
     selectedDateEvents,
     selectedEvents,
     handleEventSelect,

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import CalendarModal from "./CalendarModal"; // モーダルコンポーネントのインポートパスを修正
-import CalendarDeleteConfirmationModal from "./CalendarDeleteConfirmationModal"; // 追加
+import EventModal from "../Modals/EventModal"; // モーダルコンポーネントのインポートパスを修正
+import DeleteEventModal from "../Modals/DeleteEventModal"; // 追加
 
-export default function CalendarEventDetailForm({
+export default function EditEventForm({
     event,
     onEventUpdated,
     onEventDeleted,
@@ -424,7 +424,7 @@ export default function CalendarEventDetailForm({
                         )}
                     </div>
                     {showDeleteConfirmation && (
-                        <CalendarDeleteConfirmationModal
+                        <DeleteEventModal
                             isOpen={showDeleteConfirmation}
                             onClose={() => setShowDeleteConfirmation(false)}
                             onDelete={handleDelete}

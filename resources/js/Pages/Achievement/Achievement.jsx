@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import HeaderSidebarLayout from "@/Layouts/HeaderSidebarLayout";
 import axios from "axios";
 import { Bar } from "react-chartjs-2";
 import "chart.js/auto";
-import DateChangeModal from "./DateChangeModal";
+import ChangeDateModal from "./ChangeDateModal";
 
 const Achievement = () => {
     const [achievements, setAchievements] = useState([]);
@@ -48,7 +48,7 @@ const Achievement = () => {
     };
 
     return (
-        <AuthenticatedLayout>
+        <HeaderSidebarLayout>
             <div className="py-12 bg-cream min-h-screen">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -115,12 +115,12 @@ const Achievement = () => {
                     </div>
                 </div>
             </div>
-            <DateChangeModal
+            <ChangeDateModal
                 isOpen={isDateModalOpen}
                 onClose={() => setIsDateModalOpen(false)}
                 onDateChange={handleDateChange}
             />
-        </AuthenticatedLayout>
+        </HeaderSidebarLayout>
     );
 };
 

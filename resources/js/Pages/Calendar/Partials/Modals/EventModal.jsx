@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function CalendarModal({ isOpen, onClose, children }) {
+export default function EventModal({ isOpen, onClose, children }) {
     if (!isOpen) return null;
 
     return (

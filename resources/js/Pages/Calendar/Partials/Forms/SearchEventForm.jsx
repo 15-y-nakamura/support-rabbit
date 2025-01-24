@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function CalendarSearchEventForm({ onSearch }) {
+export default function SearchEventForm({ onSearch }) {
     const [searchQuery, setSearchQuery] = useState("");
 
     const handleSubmit = (e) => {

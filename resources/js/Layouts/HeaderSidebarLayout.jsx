@@ -5,7 +5,7 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link, usePage } from "@inertiajs/react";
 import { useState } from "react";
 
-export default function AuthenticatedLayout({ header, children }) {
+export default function HeaderSidebarLayout({ header, children }) {
     const user = usePage().props.auth.user;
     const currentUrl = usePage().url;
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
@@ -29,7 +29,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     className="flex flex-col items-center"
                                 >
                                     <img
-                                        src="/img/logo.png"
+                                        src="/img/logos/logo.png"
                                         alt="Logo"
                                         className="block h-16 w-auto fill-current text-gray-800"
                                     />
@@ -51,13 +51,13 @@ export default function AuthenticatedLayout({ header, children }) {
                             <div className="flex items-center space-x-8 sm:space-x-6">
                                 <NavItem
                                     href="/schedule"
-                                    icon="/img/schedule-icon.png"
+                                    icon="/img/icons/schedule-icon.png"
                                     label="本日の予定"
                                 />
                                 <VerticalDivider />
                                 <NavItem
                                     href="/weather"
-                                    icon="/img/weather-icon.png"
+                                    icon="/img/icons/weather-icon.png"
                                     label="天気"
                                 />
                                 <VerticalDivider />
@@ -135,7 +135,7 @@ function UserDropdown({ user }) {
                             {user.name}
                             <div className="flex flex-col items-center ms-2">
                                 <img
-                                    src="/img/menu-icon.png"
+                                    src="/img/icons/menu-icon.png"
                                     alt="Menu Icon"
                                     className="h-icon-size w-icon-size mb-1"
                                 />
@@ -152,7 +152,7 @@ function UserDropdown({ user }) {
                         className="flex items-center py-2"
                     >
                         <img
-                            src="/img/profile-icon.png"
+                            src="/img/icons/profile-icon.png"
                             alt="Profile Icon"
                             className="h-icon-size w-icon-size mr-2"
                         />
@@ -167,7 +167,7 @@ function UserDropdown({ user }) {
                         className="flex items-center py-2"
                     >
                         <img
-                            src="/img/calendar-icon.png"
+                            src="/img/icons/calendar-icon.png"
                             alt="Calendar Icon"
                             className="h-icon-size w-icon-size mr-2"
                         />
@@ -179,7 +179,7 @@ function UserDropdown({ user }) {
                         className="flex items-center py-2"
                     >
                         <img
-                            src="/img/achievement-icon.png"
+                            src="/img/icons/achievement-icon.png"
                             alt="Achievement Icon"
                             className="h-icon-size w-icon-size mr-2"
                         />
@@ -193,7 +193,7 @@ function UserDropdown({ user }) {
                         className="flex items-center py-2"
                     >
                         <img
-                            src="/img/logout-icon.png"
+                            src="/img/icons/logout-icon.png"
                             alt="Logout Icon"
                             className="h-icon-size w-icon-size mr-2"
                         />
@@ -209,7 +209,7 @@ function DropdownIcon() {
     return (
         <div className="flex flex-col items-center">
             <img
-                src="/img/dropdown-icon.png"
+                src="/img/icons/dropdown-icon.png"
                 alt="Dropdown Icon"
                 className="h-icon-size w-icon-size"
             />
@@ -222,7 +222,7 @@ function CloseIcon() {
     return (
         <div className="flex flex-col items-center">
             <img
-                src="/img/close-icon.png"
+                src="/img/icons/close-icon.png"
                 alt="Close Icon"
                 className="h-icon-size w-icon-size"
             />
@@ -242,7 +242,7 @@ function ResponsiveNavigation({ showing }) {
                     className="text-lg flex items-center"
                 >
                     <img
-                        src="/img/profile-icon.png"
+                        src="/img/icons/profile-icon.png"
                         alt="Profile Icon"
                         className="h-icon-size w-icon-size mr-4"
                     />
@@ -257,7 +257,7 @@ function ResponsiveNavigation({ showing }) {
                     className="text-lg flex items-center"
                 >
                     <img
-                        src="/img/schedule-icon.png"
+                        src="/img/icons/schedule-icon.png"
                         alt="Schedule Icon"
                         className="h-icon-size w-icon-size mr-4"
                     />
@@ -269,7 +269,7 @@ function ResponsiveNavigation({ showing }) {
                     className="text-lg flex items-center"
                 >
                     <img
-                        src="/img/weather-icon.png"
+                        src="/img/icons/weather-icon.png"
                         alt="Weather Icon"
                         className="h-icon-size w-icon-size mr-4"
                     />
@@ -281,7 +281,7 @@ function ResponsiveNavigation({ showing }) {
                     className="text-lg flex items-center"
                 >
                     <img
-                        src="/img/calendar-icon.png"
+                        src="/img/icons/calendar-icon.png"
                         alt="Calendar Icon"
                         className="h-icon-size w-icon-size mr-4"
                     />
@@ -293,7 +293,7 @@ function ResponsiveNavigation({ showing }) {
                     className="text-lg flex items-center"
                 >
                     <img
-                        src="/img/achievement-icon.png"
+                        src="/img/icons/achievement-icon.png"
                         alt="Achievement Icon"
                         className="h-icon-size w-icon-size mr-4"
                     />
@@ -308,7 +308,7 @@ function ResponsiveNavigation({ showing }) {
                         className="text-lg flex items-center"
                     >
                         <img
-                            src="/img/logout-icon.png"
+                            src="/img/icons/logout-icon.png"
                             alt="Logout Icon"
                             className="h-icon-size w-icon-size mr-4"
                         />

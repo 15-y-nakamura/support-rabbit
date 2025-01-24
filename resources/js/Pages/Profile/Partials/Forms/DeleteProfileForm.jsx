@@ -5,7 +5,7 @@ import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 
-export default function DeleteUserForm({ className = "" }) {
+export default function DeleteProfileForm({ className = "" }) {
     const { auth } = usePage().props;
     const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
     const {

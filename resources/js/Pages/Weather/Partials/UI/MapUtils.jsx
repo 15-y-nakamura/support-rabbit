@@ -3,7 +3,7 @@ import {
     fetchWeatherData,
     fetchCityWeatherData,
     fetchCurrentLocationWeatherData,
-} from "./WeatherUtils";
+} from "../WeatherUtils";
 
 export const initializeMap = (
     lat,

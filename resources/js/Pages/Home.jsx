@@ -1,4 +1,4 @@
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import HeaderSidebarLayout from "@/Layouts/HeaderSidebarLayout";
 import { Head } from "@inertiajs/react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { useLoader } from "@react-three/fiber";
@@ -61,7 +61,7 @@ export default function Home() {
         loader.setDRACOLoader(dracoLoader);
 
         loader.load(
-            "rabbit-room-compressed.glb",
+            "/models/rabbit-room-compressed.glb",
             (gltf) => {
                 console.log("Model loaded successfully", gltf);
                 setModel(gltf);
@@ -84,7 +84,7 @@ export default function Home() {
     if (!isMounted) return null;
 
     return (
-        <AuthenticatedLayout>
+        <HeaderSidebarLayout>
             <Head title="ホーム画面" />
             <div
                 style={{ width: "100vw", height: "100vh", overflow: "hidden" }}
@@ -107,7 +107,7 @@ export default function Home() {
                     </Suspense>
                 </Canvas>
             </div>
-        </AuthenticatedLayout>
+        </HeaderSidebarLayout>
     );
 }
 

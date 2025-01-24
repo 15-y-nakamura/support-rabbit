@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import CalendarModal from "./CalendarModal";
+import EventModal from "../Modals/EventModal";
 
-export default function CalendarTagSelectButton({ onTagSelected }) {
+export default function TagSelectButton({ onTagSelected }) {
     const [tags, setTags] = useState([]);
     const [newTagName, setNewTagName] = useState("");
     const [newTagColor, setNewTagColor] = useState("#000000");
@@ -72,7 +72,7 @@ export default function CalendarTagSelectButton({ onTagSelected }) {
                     className="w-6 h-6"
                 />
             </button>
-            <CalendarModal
+            <EventModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
             >
@@ -132,7 +132,7 @@ export default function CalendarTagSelectButton({ onTagSelected }) {
                         </button>
                     </div>
                 </div>
-            </CalendarModal>
+            </EventModal>
         </>
     );
 }

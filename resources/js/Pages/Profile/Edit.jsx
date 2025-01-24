@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import HeaderSidebarLayout from "@/Layouts/HeaderSidebarLayout";
 import { Head, usePage, Link } from "@inertiajs/react";
-import DeleteUserForm from "./Partials/DeleteUserForm";
-import UpdatePasswordForm from "./Partials/UpdatePasswordForm";
-import UpdateProfileInformationForm from "./Partials/UpdateProfileInformationForm";
+import DeleteProfileForm from "./Partials/Forms/DeleteProfileForm";
+import UpdatePasswordForm from "./Partials/Forms/UpdatePasswordForm";
+import UpdateProfileForm from "./Partials/Forms/UpdateProfileForm";
 
 export default function Edit() {
     const { auth } = usePage().props;
@@ -105,13 +105,13 @@ export default function Edit() {
     }
 
     return (
-        <AuthenticatedLayout>
+        <HeaderSidebarLayout>
             <Head title="Profile" />
 
             <div className="py-12 bg-[#FFF6EA]">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <UpdateProfileInformationForm
+                        <UpdateProfileForm
                             mustVerifyEmail={mustVerifyEmail}
                             status={status}
                             className="max-w-xl"
@@ -127,13 +127,13 @@ export default function Edit() {
                     </div>
 
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <DeleteUserForm
+                        <DeleteProfileForm
                             className="max-w-xl"
                             onDeleteAccount={handleDeleteAccount}
                         />
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </HeaderSidebarLayout>
     );
 }

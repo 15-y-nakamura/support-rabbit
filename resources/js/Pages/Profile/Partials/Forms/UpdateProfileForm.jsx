@@ -5,7 +5,7 @@ import TextInput from "@/Components/TextInput";
 import { Transition } from "@headlessui/react";
 import { Link, useForm, usePage } from "@inertiajs/react";
 
-export default function UpdateProfileInformation({
+export default function UpdateProfileForm({
     mustVerifyEmail,
     status,
     className = "",

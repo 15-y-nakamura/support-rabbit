@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import CalendarModal from "./CalendarModal";
+import EventModal from "./EventModal";
 
-export default function DateChangeModal({ isOpen, onClose, onDateChange }) {
+export default function ChangeDateModal({ isOpen, onClose, onDateChange }) {
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [selectedMonth, setSelectedMonth] = useState(
         new Date().getMonth() + 1
@@ -21,7 +21,7 @@ export default function DateChangeModal({ isOpen, onClose, onDateChange }) {
     };
 
     return (
-        <CalendarModal isOpen={isOpen} onClose={onClose}>
+        <EventModal isOpen={isOpen} onClose={onClose}>
             <div className="flex flex-col items-center space-y-6">
                 <div className="flex items-center space-x-4">
                     <div className="text-lg font-bold">
@@ -67,6 +67,6 @@ export default function DateChangeModal({ isOpen, onClose, onDateChange }) {
                     </button>
                 </div>
             </div>
-        </CalendarModal>
+        </EventModal>
     );
 }
