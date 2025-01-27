@@ -6,9 +6,6 @@ use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Profile\ProfileController;
-use App\Http\Controllers\Api\Calendar\TagController;
-use App\Http\Controllers\Api\Calendar\EventController;
-use App\Http\Controllers\Api\Calendar\WeekdayEventsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -60,6 +57,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::get('profile/show', [ProfileController::class, 'show'])->name('profile.show');
+    Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::put('profiles', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('profiles/password', [ProfileController::class, 'password'])->name('profile.password');
 
     Route::get('calendar', function () {
         return Inertia::render('Calendar/Calendar');
@@ -72,13 +72,4 @@ Route::middleware('auth')->group(function () {
     Route::get('achievement', function () {
         return Inertia::render('Achievement/Achievement');
     })->name('achievement');
-
-    Route::put('api/v2/profile/update', [ProfileController::class, 'update'])->name('profile.update');
-
-    Route::get('api/v2/calendar/tags', [TagController::class, 'index'])->name('calendar.tags.index');
-    Route::post('api/v2/calendar/tags', [TagController::class, 'store'])->name('calendar.tags.store');
-    Route::post('api/v2/calendar/events', [EventController::class, 'store'])->name('calendar.events.store');
-
-    Route::get('/api/v2/calendar/weekday-events', [WeekdayEventsController::class, 'index']);
-    Route::post('/api/v2/calendar/weekday-events', [WeekdayEventsController::class, 'store']);
 });

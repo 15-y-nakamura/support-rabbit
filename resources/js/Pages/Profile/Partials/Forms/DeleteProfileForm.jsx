@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { useForm, usePage } from "@inertiajs/react";
+import React, { useState } from "react";
+import { useForm } from "@inertiajs/react";
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 
 export default function DeleteProfileForm({ className = "" }) {
-    const { auth } = usePage().props;
     const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
     const {
         data,
@@ -18,22 +17,6 @@ export default function DeleteProfileForm({ className = "" }) {
     } = useForm({
         password: "",
     });
-
-    useEffect(() => {
-        if (confirmingUserDeletion) {
-            axios
-                .get("/api/v2/profiles/delete")
-                .then((response) => {
-                    // 削除対象のデータを取得
-                })
-                .catch((error) => {
-                    console.error(
-                        "There was an error fetching the data!",
-                        error
-                    );
-                });
-        }
-    }, [confirmingUserDeletion]);
 
     const confirmUserDeletion = () => {
         setConfirmingUserDeletion(true);

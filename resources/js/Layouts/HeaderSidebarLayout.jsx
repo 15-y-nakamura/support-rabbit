@@ -6,16 +6,27 @@ import { Link, usePage } from "@inertiajs/react";
 import { useState } from "react";
 
 export default function HeaderSidebarLayout({ header, children }) {
-    const user = usePage().props.auth.user;
-    const currentUrl = usePage().url;
+    const user = usePage().props.auth.user; // 現在のユーザー情報を取得
+    const currentUrl = usePage().url; // 現在のURLを取得
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+        useState(false); // ナビゲーションドロップダウンの表示状態を管理
 
     const toggleNavigationDropdown = () => {
-        setShowingNavigationDropdown((prevState) => !prevState);
+        setShowingNavigationDropdown((prevState) => !prevState); // ドロップダウンの表示状態を切り替え
     };
 
-    const isHomePage = currentUrl === "/home";
+    const isHomePage = currentUrl === "/home"; // 現在のURLがホームページかどうかを判定
+
+    // 現在のURLに基づいてページ名を決定
+    const pageNames = {
+        "/home": "ホーム",
+        "/schedule": "本日の予定",
+        "/weather": "天気",
+        "/calendar": "カレンダー",
+        "/achievement": "達成率",
+        "/profile": "プロフィール",
+    };
+    const currentPageName = pageNames[currentUrl] || "ホーム";
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -39,12 +50,9 @@ export default function HeaderSidebarLayout({ header, children }) {
                                         </span>
                                     )}
                                 </Link>
-                                <Link
-                                    href="/home"
-                                    className="ml-4 text-xl text-gray-800"
-                                >
-                                    ホーム
-                                </Link>
+                                <span className="ml-4 text-xl text-gray-800">
+                                    {currentPageName}
+                                </span>
                             </div>
                         </div>
                         <div className="hidden sm:ms-8 sm:flex sm:items-center">
@@ -95,6 +103,7 @@ export default function HeaderSidebarLayout({ header, children }) {
     );
 }
 
+// ナビゲーションアイテムコンポーネント
 function NavItem({ href, icon, label, className }) {
     return (
         <Link
@@ -111,16 +120,47 @@ function NavItem({ href, icon, label, className }) {
     );
 }
 
+// 垂直の区切り線コンポーネント
 function VerticalDivider() {
     return <div className="h-6 border-l-2 border-white"></div>;
 }
 
+// ユーザードロップダウンコンポーネント
 function UserDropdown({ user }) {
     const [open, setOpen] = useState(false);
 
     const toggleDropdown = () => {
         setOpen((prevState) => !prevState);
     };
+
+    const dropdownLinks = [
+        {
+            href: route("profile.edit"),
+            icon: "/img/icons/profile-icon.png",
+            label: (
+                <>
+                    {user.nickname} <br /> ({user.login_id})
+                </>
+            ), // ユーザーのニックネームとログインIDを表示
+        },
+        {
+            href: "/calendar",
+            icon: "/img/icons/calendar-icon.png",
+            label: "カレンダー",
+        },
+        {
+            href: "/achievement",
+            icon: "/img/icons/achievement-icon.png",
+            label: "達成率",
+        },
+        {
+            href: route("logout"),
+            icon: "/img/icons/logout-icon.png",
+            label: "ログアウト",
+            method: "post",
+            as: "button",
+        },
+    ];
 
     return (
         <div className="relative ms-6">
@@ -147,64 +187,33 @@ function UserDropdown({ user }) {
                     </span>
                 </Dropdown.Trigger>
                 <Dropdown.Content>
-                    <Dropdown.Link
-                        href={route("profile.edit")}
-                        className="flex items-center py-2"
-                    >
-                        <img
-                            src="/img/icons/profile-icon.png"
-                            alt="Profile Icon"
-                            className="h-icon-size w-icon-size mr-2"
-                        />
-                        <div className="flex flex-col">
-                            <span>{user.nickname}</span>
-                            <span>{user.login_id}</span>
+                    {dropdownLinks.map((link, index) => (
+                        <div key={index}>
+                            <Dropdown.Link
+                                href={link.href}
+                                method={link.method}
+                                as={link.as}
+                                className="flex items-center py-2"
+                            >
+                                <img
+                                    src={link.icon}
+                                    alt={`${link.label} Icon`}
+                                    className="h-icon-size w-icon-size mr-2"
+                                />
+                                <div className="flex flex-col">
+                                    <span>{link.label}</span>
+                                </div>
+                            </Dropdown.Link>
+                            {index < dropdownLinks.length - 1 && <Divider />}
                         </div>
-                    </Dropdown.Link>
-                    <Divider />
-                    <Dropdown.Link
-                        href="/calendar"
-                        className="flex items-center py-2"
-                    >
-                        <img
-                            src="/img/icons/calendar-icon.png"
-                            alt="Calendar Icon"
-                            className="h-icon-size w-icon-size mr-2"
-                        />
-                        カレンダー
-                    </Dropdown.Link>
-                    <Divider />
-                    <Dropdown.Link
-                        href="/achievement"
-                        className="flex items-center py-2"
-                    >
-                        <img
-                            src="/img/icons/achievement-icon.png"
-                            alt="Achievement Icon"
-                            className="h-icon-size w-icon-size mr-2"
-                        />
-                        達成率
-                    </Dropdown.Link>
-                    <Divider />
-                    <Dropdown.Link
-                        href={route("logout")}
-                        method="post"
-                        as="button"
-                        className="flex items-center py-2"
-                    >
-                        <img
-                            src="/img/icons/logout-icon.png"
-                            alt="Logout Icon"
-                            className="h-icon-size w-icon-size mr-2"
-                        />
-                        ログアウト
-                    </Dropdown.Link>
+                    ))}
                 </Dropdown.Content>
             </Dropdown>
         </div>
     );
 }
 
+// ドロップダウンアイコンコンポーネント
 function DropdownIcon() {
     return (
         <div className="flex flex-col items-center">
@@ -218,6 +227,7 @@ function DropdownIcon() {
     );
 }
 
+// 閉じるアイコンコンポーネント
 function CloseIcon() {
     return (
         <div className="flex flex-col items-center">
@@ -231,95 +241,85 @@ function CloseIcon() {
     );
 }
 
+// レスポンシブナビゲーションコンポーネント
 function ResponsiveNavigation({ showing }) {
     const user = usePage().props.auth.user;
 
+    const navLinks = [
+        {
+            href: route("profile.edit"),
+            icon: "/img/icons/profile-icon.png",
+            label: (
+                <>
+                    {user.nickname} <br /> ({user.login_id})
+                </>
+            ),
+        },
+        {
+            href: "/schedule",
+            icon: "/img/icons/schedule-icon.png",
+            label: "本日の予定",
+        },
+        {
+            href: "/weather",
+            icon: "/img/icons/weather-icon.png",
+            label: "天気",
+        },
+        {
+            href: "/calendar",
+            icon: "/img/icons/calendar-icon.png",
+            label: "カレンダー",
+        },
+        {
+            href: "/achievement",
+            icon: "/img/icons/achievement-icon.png",
+            label: "達成率",
+        },
+        {
+            href: route("logout"),
+            icon: "/img/icons/logout-icon.png",
+            label: "ログアウト",
+            method: "post",
+            as: "button",
+        },
+    ];
+
     return (
-        <div className={(showing ? "block" : "hidden") + " sm:hidden bg-white"}>
-            <div className="space-y-4 pb-6 pt-4">
-                <ResponsiveNavLink
-                    href={route("profile.edit")}
-                    className="text-lg flex items-center"
-                >
-                    <img
-                        src="/img/icons/profile-icon.png"
-                        alt="Profile Icon"
-                        className="h-icon-size w-icon-size mr-4"
-                    />
-                    <div className="flex flex-col">
-                        <span>{user.nickname}</span>
-                        <span>{user.login_id}</span>
-                    </div>
-                </ResponsiveNavLink>
-                <Divider />
-                <ResponsiveNavLink
-                    href="/schedule"
-                    className="text-lg flex items-center"
-                >
-                    <img
-                        src="/img/icons/schedule-icon.png"
-                        alt="Schedule Icon"
-                        className="h-icon-size w-icon-size mr-4"
-                    />
-                    本日の予定
-                </ResponsiveNavLink>
-                <Divider />
-                <ResponsiveNavLink
-                    href="/weather"
-                    className="text-lg flex items-center"
-                >
-                    <img
-                        src="/img/icons/weather-icon.png"
-                        alt="Weather Icon"
-                        className="h-icon-size w-icon-size mr-4"
-                    />
-                    天気
-                </ResponsiveNavLink>
-                <Divider />
-                <ResponsiveNavLink
-                    href="/calendar"
-                    className="text-lg flex items-center"
-                >
-                    <img
-                        src="/img/icons/calendar-icon.png"
-                        alt="Calendar Icon"
-                        className="h-icon-size w-icon-size mr-4"
-                    />
-                    カレンダー
-                </ResponsiveNavLink>
-                <Divider />
-                <ResponsiveNavLink
-                    href="/achievement"
-                    className="text-lg flex items-center"
-                >
-                    <img
-                        src="/img/icons/achievement-icon.png"
-                        alt="Achievement Icon"
-                        className="h-icon-size w-icon-size mr-4"
-                    />
-                    達成率
-                </ResponsiveNavLink>
-                <Divider />
-                <div className="mt-6 space-y-4">
-                    <ResponsiveNavLink
-                        method="post"
-                        href={route("logout")}
-                        as="button"
-                        className="text-lg flex items-center"
-                    >
-                        <img
-                            src="/img/icons/logout-icon.png"
-                            alt="Logout Icon"
-                            className="h-icon-size w-icon-size mr-4"
-                        />
-                        ログアウト
-                    </ResponsiveNavLink>
+        <div
+            className={`${
+                showing ? "block" : "hidden"
+            } sm:hidden bg-white h-screen`}
+        >
+            <div className="flex flex-col justify-between h-full py-6 overflow-y-auto">
+                <div className="flex flex-col flex-grow overflow-y-auto">
+                    {navLinks.map((link, index) => (
+                        <div key={index}>
+                            <div className="flex items-center py-2">
+                                <ResponsiveNavLink
+                                    href={link.href}
+                                    method={link.method}
+                                    as={link.as}
+                                >
+                                    <img
+                                        src={link.icon}
+                                        alt={`${link.label} Icon`}
+                                        className="h-6 w-6 mr-3"
+                                    />
+                                    <span className="text-left">
+                                        {link.label}
+                                    </span>
+                                </ResponsiveNavLink>
+                            </div>
+                            {index < navLinks.length - 1 && <Divider />}
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>
     );
 }
 
+// 水平の区切り線コンポーネント
 function Divider() {
-    return <div className="h-0.5 bg-gray-300 my-4"></div>;
+    return <div className="h-0.5 bg-gray-300 my-2"></div>;
 }

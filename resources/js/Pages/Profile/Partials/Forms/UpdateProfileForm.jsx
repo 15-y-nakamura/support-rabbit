@@ -23,7 +23,7 @@ export default function UpdateProfileForm({
     const submit = (e) => {
         e.preventDefault();
 
-        put("/api/v2/profile/update"); // putメソッドを使用
+        put(route("profile.update"));
     };
 
     return (
