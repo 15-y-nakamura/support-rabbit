@@ -4,7 +4,7 @@ namespace App\Http\Requests\Calendar;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CalendarEventRequest extends FormRequest
+class EventRequest extends FormRequest
 {
     public function authorize()
     {

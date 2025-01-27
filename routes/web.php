@@ -6,8 +6,8 @@ use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Profile\ProfileController;
-use App\Http\Controllers\Api\Calendar\CalendarTagController;
-use App\Http\Controllers\Api\Calendar\CalendarEventController;
+use App\Http\Controllers\Api\Calendar\TagController;
+use App\Http\Controllers\Api\Calendar\EventController;
 use App\Http\Controllers\Api\Calendar\WeekdayEventsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -75,9 +75,9 @@ Route::middleware('auth')->group(function () {
 
     Route::put('api/v2/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 
-    Route::get('api/v2/calendar/tags', [CalendarTagController::class, 'index'])->name('calendar.tags.index');
-    Route::post('api/v2/calendar/tags', [CalendarTagController::class, 'store'])->name('calendar.tags.store');
-    Route::post('api/v2/calendar/events', [CalendarEventController::class, 'store'])->name('calendar.events.store');
+    Route::get('api/v2/calendar/tags', [TagController::class, 'index'])->name('calendar.tags.index');
+    Route::post('api/v2/calendar/tags', [TagController::class, 'store'])->name('calendar.tags.store');
+    Route::post('api/v2/calendar/events', [EventController::class, 'store'])->name('calendar.events.store');
 
     Route::get('/api/v2/calendar/weekday-events', [WeekdayEventsController::class, 'index']);
     Route::post('/api/v2/calendar/weekday-events', [WeekdayEventsController::class, 'store']);

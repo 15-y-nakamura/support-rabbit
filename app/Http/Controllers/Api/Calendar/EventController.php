@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Api\Calendar;
 use App\Models\CalendarEvent;
 use App\Models\RecurringEvent;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Calendar\CalendarEventRequest;
+use App\Http\Requests\Calendar\EventRequest;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log; // 追加
 
-class CalendarEventController extends Controller
+class EventController extends Controller
 {
     public function index(Request $req)
     {
@@ -67,7 +67,7 @@ class CalendarEventController extends Controller
         }
     }
 
-    public function store(CalendarEventRequest $req)
+    public function store(EventRequest $req)
     {
         try {
             $validated = $req->validated();
@@ -114,7 +114,7 @@ class CalendarEventController extends Controller
         }
     }
 
-    public function update(CalendarEventRequest $req, $id)
+    public function update(EventRequest $req, $id)
     {
         try {
             $event = CalendarEvent::find($id);

@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Api\Calendar;
 
 use App\Models\Tag;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Calendar\CalendarTagRequest;
+use App\Http\Requests\Calendar\TagRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class CalendarTagController extends Controller
+class TagController extends Controller
 {
     public function index(Request $req)
     {
@@ -29,7 +29,7 @@ class CalendarTagController extends Controller
         }
     }
 
-    public function store(CalendarTagRequest $req)
+    public function store(TagRequest $req)
     {
         try {
             $validated = $req->validated();
@@ -54,7 +54,7 @@ class CalendarTagController extends Controller
         }
     }
 
-    public function update(CalendarTagRequest $req, $id)
+    public function update(TagRequest $req, $id)
     {
         try {
             $tag = Tag::find($id);
