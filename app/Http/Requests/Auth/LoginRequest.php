@@ -4,9 +4,9 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use App\Models\User;
 
 class LoginRequest extends FormRequest
 {
@@ -34,41 +34,22 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Configure the validator instance.
+     * Get the error messages for the defined validation rules.
      *
-     * @param  \Illuminate\Contracts\Validation\Validator  $validator
-     * @return void
+     * @return array<string, string>
      */
-    public function withValidator($validator)
+    public function messages(): array
     {
-        $validator->after(function ($validator) {
-            $user = $this->login();
-            if ($user) {
-                $this->merge(['user' => $user]);
-            } else {
-                $validator->errors()->add('login_id', 'IDまたはPWが違います');
-            }
-        });
-    }
-
-    /**
-     * Attempt to authenticate the request's credentials.
-     *
-     * @return \App\Models\User|null
-     */
-    private function login(): ?User
-    {
-        $user = User::where('login_id', $this->input('login_id'))->first();
-        if (!$user) {
-            return null;
-        }
-        if (!Hash::check($this->input('password'), $user->password)) {
-            return null;
-        }
-        if (!$user->isValid()) {
-            return null;
-        }
-        return $user;
+        return [
+            'login_id.required' => json_encode([
+                "code" => "post_login_id_required",
+                "description" => "ユーザIDを入力してください"
+            ]),
+            'password.required' => json_encode([
+                "code" => "post_login_password_required",
+                "description" => "パスワードを入力してください"
+            ]),
+        ];
     }
 
     /**
@@ -81,13 +62,51 @@ class LoginRequest extends FormRequest
      */
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(response()->json([
-            'errors' => [
-                [
-                    'code' => 'post_login_invalid_id_or_password',
-                    'description' => 'IDまたはPWが違います'
-                ]
-            ]
-        ], 400));
+        $errors = $validator->errors()->getMessages();
+        $response = [];
+
+        // バリデーションエラーの整形
+        foreach ($errors as $field => $messages) {
+            $response[$field] = array_map(function ($message) {
+                $decodedMessage = json_decode($message, true);
+                return $decodedMessage['description'] ?? $message;
+            }, $messages);
+        }
+
+        // 認証エラーの処理
+        $user = $this->attemptLogin();
+        if (!$user) {
+            $response['login'] = [
+                "code" => "post_login_invalid_credentials",
+                "description" => "ユーザIDまたはパスワードが違います"
+            ];
+            throw new HttpResponseException(
+                response()->json(['errors' => $response], 400)
+            );
+        }
+
+        // バリデーションエラーをJSON形式で返す
+        throw new HttpResponseException(
+            response()->json(['errors' => $response], 422)
+        );
+    }
+
+    /**
+     * Attempt to authenticate the request's credentials.
+     *
+     * @return \App\Models\User|null
+     */
+    private function attemptLogin(): ?User
+    {
+        $user = User::where('login_id', $this->input('login_id'))->first();
+        if (!$user || !Hash::check($this->input('password'), $user->password)) {
+            return null;
+        }
+
+        if (!$user->isValid()) {
+            return null;
+        }
+
+        return $user;
     }
 }

@@ -29,7 +29,7 @@ export default function LoginForm() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center bg-[#FFF6EA] pt-6 sm:justify-center sm:pt-0">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-[#FFF6EA] pt-6 sm:pt-0">
             <div className="flex justify-center mb-4">
                 <img
                     src="/img/logos/logo.png"
@@ -44,22 +44,15 @@ export default function LoginForm() {
                 </h1>
             </div>
             <Head title="ログイン" />
-            <div
-                className="w-full max-w-sm sm:max-w-md"
-                style={{ width: "400px" }}
-            >
+            <div className="w-full max-w-sm sm:max-w-md mx-auto">
                 <div className="bg-white shadow-md rounded-lg overflow-hidden">
                     <div className="flex justify-center">
-                        <button
-                            className="w-1/2 py-2 sm:py-4 text-gray-700 font-medium bg-customPink"
-                            style={{ width: "200px" }}
-                        >
+                        <button className="w-1/2 py-2 sm:py-4 text-gray-700 font-medium bg-customPink">
                             ログイン
                         </button>
                         <Link
                             href={route("register")}
                             className="w-1/2 py-2 sm:py-4 text-gray-700 font-medium bg-[#FFB6C1] text-center"
-                            style={{ width: "200px" }}
                         >
                             新規登録
                         </Link>
@@ -129,7 +122,7 @@ export default function LoginForm() {
                                     )}
                                 </div>
                                 <InputError
-                                    message={errors.password}
+                                    message={errors.password || errors.login}
                                     className="mt-2"
                                 />
                             </div>

@@ -45,13 +45,6 @@ Route::middleware('guest')->group(function () {
 
 // 認証済みユーザー専用ルート
 Route::middleware('auth')->group(function () {
-    Route::get('verify-email/{id}/{hash}', [EmailVerificationController::class, 'verifyEmail'])
-        ->middleware(['signed', 'throttle:6,1'])
-        ->name('verification.verify');
-
-    Route::post('email/verification-notification', [EmailVerificationController::class, 'resendVerificationEmail'])
-        ->middleware('throttle:6,1')
-        ->name('verification.send');
 
     Route::post('logout', [LogoutController::class, 'logout'])
         ->name('logout');

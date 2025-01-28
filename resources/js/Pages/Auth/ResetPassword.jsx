@@ -3,7 +3,9 @@ import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { Head, useForm, usePage } from "@inertiajs/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 export default function ResetPassword({ token, email }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -14,12 +16,31 @@ export default function ResetPassword({ token, email }) {
     });
 
     const { props } = usePage();
+    const [successMessage, setSuccessMessage] = useState("");
+    const [passwordType, setPasswordType] = useState("password");
+    const [passwordConfirmationType, setPasswordConfirmationType] =
+        useState("password");
+
+    const togglePasswordVisibility = () => {
+        setPasswordType((prevType) =>
+            prevType === "password" ? "text" : "password"
+        );
+    };
+
+    const togglePasswordConfirmationVisibility = () => {
+        setPasswordConfirmationType((prevType) =>
+            prevType === "password" ? "text" : "password"
+        );
+    };
 
     const submit = (e) => {
         e.preventDefault();
 
         post(route("password.update"), {
-            onFinish: () => reset("password", "password_confirmation"),
+            onSuccess: () => {
+                setSuccessMessage("パスワードが変更されました");
+                reset("password", "password_confirmation");
+            },
         });
     };
 
@@ -34,67 +55,56 @@ export default function ResetPassword({ token, email }) {
     }, [props.flash?.status]);
 
     return (
-        <div className="flex min-h-screen flex-col items-center bg-[#FFF6EA] pt-6 sm:justify-center sm:pt-0">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-[#FFF6EA] pt-6 sm:pt-0">
             <div className="text-center mb-4">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-700">
                     パスワードリセット
                 </h1>
             </div>
             <Head title="パスワードリセット" />
-            <div className="w-full max-w-sm sm:max-w-md">
+            <div className="w-full max-w-sm sm:max-w-md mx-auto">
                 <div className="bg-white shadow-md rounded-lg overflow-hidden p-4 sm:p-6">
-                    {props.flash?.status && (
-                        <div className="mb-4 text-sm font-medium text-green-600">
-                            {props.flash.status}
-                        </div>
-                    )}
-
                     <form onSubmit={submit}>
-                        <div>
-                            <InputLabel
-                                htmlFor="email"
-                                value="メールアドレス"
-                            />
-
-                            <TextInput
-                                id="email"
-                                type="email"
-                                name="email"
-                                value={data.email}
-                                className="mt-1 block w-full"
-                                autoComplete="username"
-                                onChange={(e) =>
-                                    setData("email", e.target.value)
-                                }
-                                required
-                            />
-
-                            <InputError
-                                message={errors.email}
-                                className="mt-2"
-                            />
-                        </div>
-
                         <div className="mt-4">
                             <InputLabel
                                 htmlFor="password"
                                 value="新しいパスワード"
                             />
-
-                            <TextInput
-                                id="password"
-                                type="password"
-                                name="password"
-                                value={data.password}
-                                className="mt-1 block w-full"
-                                autoComplete="new-password"
-                                isFocused={true}
-                                onChange={(e) =>
-                                    setData("password", e.target.value)
-                                }
-                                required
-                            />
-
+                            <div className="relative">
+                                <TextInput
+                                    id="password"
+                                    type={passwordType}
+                                    name="password"
+                                    value={data.password}
+                                    className="mt-1 block w-full"
+                                    autoComplete="new-password"
+                                    placeholder="新しいパスワード"
+                                    isFocused={true}
+                                    onChange={(e) =>
+                                        setData("password", e.target.value)
+                                    }
+                                    required
+                                />
+                                {passwordType === "password" ? (
+                                    <VisibilityOffIcon
+                                        onClick={togglePasswordVisibility}
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
+                                        style={{
+                                            fontSize: 32,
+                                            height: "100%",
+                                        }}
+                                    />
+                                ) : (
+                                    <VisibilityIcon
+                                        onClick={togglePasswordVisibility}
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
+                                        style={{
+                                            fontSize: 32,
+                                            height: "100%",
+                                        }}
+                                    />
+                                )}
+                            </div>
                             <InputError
                                 message={errors.password}
                                 className="mt-2"
@@ -106,28 +116,64 @@ export default function ResetPassword({ token, email }) {
                                 htmlFor="password_confirmation"
                                 value="新しいパスワード（確認用）"
                             />
-
-                            <TextInput
-                                type="password"
-                                id="password_confirmation"
-                                name="password_confirmation"
-                                value={data.password_confirmation}
-                                className="mt-1 block w-full"
-                                autoComplete="new-password"
-                                onChange={(e) =>
-                                    setData(
-                                        "password_confirmation",
-                                        e.target.value
-                                    )
-                                }
-                                required
-                            />
-
+                            <div className="relative">
+                                <TextInput
+                                    type={passwordConfirmationType}
+                                    id="password_confirmation"
+                                    name="password_confirmation"
+                                    value={data.password_confirmation}
+                                    className="mt-1 block w-full"
+                                    autoComplete="new-password"
+                                    placeholder="新しいパスワード（確認用）"
+                                    onChange={(e) =>
+                                        setData(
+                                            "password_confirmation",
+                                            e.target.value
+                                        )
+                                    }
+                                    required
+                                />
+                                {passwordConfirmationType === "password" ? (
+                                    <VisibilityOffIcon
+                                        onClick={
+                                            togglePasswordConfirmationVisibility
+                                        }
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
+                                        style={{
+                                            fontSize: 32,
+                                            height: "100%",
+                                        }}
+                                    />
+                                ) : (
+                                    <VisibilityIcon
+                                        onClick={
+                                            togglePasswordConfirmationVisibility
+                                        }
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
+                                        style={{
+                                            fontSize: 32,
+                                            height: "100%",
+                                        }}
+                                    />
+                                )}
+                            </div>
                             <InputError
                                 message={errors.password_confirmation}
                                 className="mt-2"
                             />
                         </div>
+                        {errors.token ? (
+                            <InputError
+                                message={errors.token}
+                                className="mt-2 text-lg sm:text-xl"
+                            />
+                        ) : (
+                            successMessage && (
+                                <div className="mt-2 text-lg sm:text-xl text-green-600">
+                                    {successMessage}
+                                </div>
+                            )
+                        )}
 
                         <div className="mt-4 flex items-center justify-end">
                             <PrimaryButton
@@ -140,12 +186,6 @@ export default function ResetPassword({ token, email }) {
                     </form>
                 </div>
             </div>
-
-            {props.flash?.status && (
-                <div className="fixed top-0 left-0 right-0 bg-green-500 text-white text-center py-4">
-                    {props.flash.status}
-                </div>
-            )}
         </div>
     );
 }

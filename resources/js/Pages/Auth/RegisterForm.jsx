@@ -41,7 +41,7 @@ export default function RegisterForm() {
     };
 
     return (
-        <div className="flex min-h-screen flex-col items-center bg-[#FFF6EA] pt-6 sm:justify-center sm:pt-0">
+        <div className="flex min-h-screen flex-col items-center justify-center bg-[#FFF6EA] pt-6 sm:pt-0">
             <div className="flex justify-center mb-4">
                 <img
                     src="/img/logos/logo.png"
@@ -56,7 +56,7 @@ export default function RegisterForm() {
                 </h1>
             </div>
             <Head title="新規登録" />
-            <div className="w-full max-w-md sm:max-w-4xl">
+            <div className="w-full max-w-sm sm:max-w-4xl mx-auto">
                 <div className="bg-white shadow-md rounded-lg overflow-hidden">
                     <div className="flex justify-center">
                         <Link
