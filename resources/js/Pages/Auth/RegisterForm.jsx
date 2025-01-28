@@ -87,7 +87,7 @@ export default function RegisterForm() {
                                             setData("login_id", e.target.value)
                                         }
                                         required
-                                        placeholder="ユーザID（1〜15文字）"
+                                        placeholder="ユーザID"
                                     />
                                     <InputError
                                         message={errors.login_id}
@@ -109,7 +109,7 @@ export default function RegisterForm() {
                                             setData("nickname", e.target.value)
                                         }
                                         required
-                                        placeholder="ニックネーム（1〜15文字）"
+                                        placeholder="ニックネーム"
                                     />
                                     <InputError
                                         message={errors.nickname}
@@ -180,7 +180,7 @@ export default function RegisterForm() {
                                                 )
                                             }
                                             required
-                                            placeholder="パスワード（8〜12文字）"
+                                            placeholder="パスワード"
                                         />
                                         {passwordType === "password" ? (
                                             <VisibilityOffIcon

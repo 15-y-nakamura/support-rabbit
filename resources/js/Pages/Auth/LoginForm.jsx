@@ -66,7 +66,7 @@ export default function LoginForm() {
                     </div>
                     <div className="p-4 sm:p-6">
                         <form onSubmit={submit}>
-                            <div className="mt-4">
+                            <div className="mt-2">
                                 <InputLabel
                                     htmlFor="login_id"
                                     value="ユーザID"
@@ -81,7 +81,7 @@ export default function LoginForm() {
                                         setData("login_id", e.target.value)
                                     }
                                     required
-                                    placeholder="ユーザID（1〜15文字）"
+                                    placeholder="ユーザID"
                                 />
                                 <InputError
                                     message={errors.login_id}
@@ -106,7 +106,7 @@ export default function LoginForm() {
                                             setData("password", e.target.value)
                                         }
                                         required
-                                        placeholder="パスワード（8〜12文字）"
+                                        placeholder="パスワード"
                                     />
                                     {passwordType === "password" ? (
                                         <VisibilityOffIcon
@@ -133,12 +133,6 @@ export default function LoginForm() {
                                     className="mt-2"
                                 />
                             </div>
-
-                            {errors.login_id && (
-                                <div className="mt-4 text-red-600">
-                                    ログインに失敗しました。ユーザIDまたはパスワードが正しくありません。
-                                </div>
-                            )}
 
                             <div className="mt-4 flex items-center justify-between">
                                 <Link
