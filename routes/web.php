@@ -23,9 +23,10 @@ Route::get('/home', function () {
 // ゲスト専用ルート
 Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'create'])->name('login');
-    Route::post('register', [RegisterController::class, 'store'])->name('register'); // ここでregisterルートを定義
-    Route::post('api/register', [RegisterController::class, 'signup']);
     Route::post('login', [LoginController::class, 'login']);
+
+    Route::get('register', [RegisterController::class, 'create'])->name('register'); // ここでregisterルートを定義
+    Route::post('register', [RegisterController::class, 'store']);
 
     Route::get('forgot-password', function () {
         return Inertia::render('Auth/ForgotPassword');
