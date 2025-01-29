@@ -85,7 +85,7 @@ export default function Home() {
 
     return (
         <HeaderSidebarLayout>
-            <Head title="ホーム画面" />
+            <Head title="ホーム" />
             <div
                 style={{ width: "100vw", height: "100vh", overflow: "hidden" }}
             >

@@ -106,7 +106,7 @@ export default function Edit() {
 
     return (
         <HeaderSidebarLayout>
-            <Head title="Profile" />
+            <Head title="プロフィール" />
 
             <div className="py-12 bg-[#FFF6EA]">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">

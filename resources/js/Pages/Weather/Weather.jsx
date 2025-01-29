@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Head } from "@inertiajs/react"; // 追加
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
@@ -128,6 +129,7 @@ const Weather = () => {
 
     return (
         <HeaderSidebarLayout>
+            <Head title="天気情報" />
             <div className="bg-cream flex items-center justify-center p-4 min-h-screen sm:min-h-[calc(100vh-96px)]">
                 <div className="bg-white rounded-lg shadow-lg p-2 max-w-4xl w-full mb-4">
                     <div className="font-sans flex flex-col md:flex-row">

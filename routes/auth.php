@@ -16,10 +16,4 @@ Route::prefix('v2')->middleware('guest')->group(function () {
 
 Route::prefix('v2')->middleware('auth:sanctum')->group(function () {
     Route::post('logout', [LogoutController::class, 'logout']);
-    Route::get('verify-email/{id}/{hash}', [EmailVerificationController::class, 'verifyEmail'])
-        ->middleware(['signed', 'throttle:6,1'])
-        ->name('verification.verify');
-    Route::post('email/verification-notification', [EmailVerificationController::class, 'resendVerificationEmail'])
-        ->middleware('throttle:6,1')
-        ->name('verification.send');
 });
