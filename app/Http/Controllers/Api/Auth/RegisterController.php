@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest; // RegisterRequestをインポート
 use App\Models\User;
 use App\Models\UserToken;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 use Exception;
@@ -21,25 +21,17 @@ class RegisterController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        return Inertia::render('Auth/RegisterForm');
     }
 
     /**
      * 登録リクエストを処理します。
      */
-    public function store(Request $request)
+    public function store(RegisterRequest $request) // RegisterRequestを使用
     {
-        $request->validate([
-            'nickname' => 'required|string|max:15',
-            'login_id' => 'required|string|max:15|unique:users',
-            'email' => 'required|string|lowercase|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'birthday' => ['nullable', 'date'],
-        ]);
-
         $user = User::create([
-            'nickname' => $request->nickname,
             'login_id' => $request->login_id,
+            'nickname' => $request->nickname,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'birthday' => $request->birthday,
@@ -56,7 +48,7 @@ class RegisterController extends Controller
     /**
      * API登録リクエストを処理します。
      */
-    public function signup(Request $request)
+    public function signup(RegisterRequest $request) // RegisterRequestを使用
     {
         try {
             // 新しいユーザーを作成
@@ -70,6 +62,7 @@ class RegisterController extends Controller
 
             return response()->json(['token' => $token->token]);
         } catch (Exception $e) {
+            Log::error('Signup failed', ['error' => $e->getMessage()]);
             return response()->json(['error' => '登録中にエラーが発生しました'], 500);
         }
     }
@@ -77,25 +70,15 @@ class RegisterController extends Controller
     /**
      * 新しいユーザーを作成します。
      */
-    private function createUser(Request $request): User
+    private function createUser(RegisterRequest $request): User // RegisterRequestを使用
     {
-        $request->validate([
-            'userId' => 'required|string|max:15|unique:users,login_id',
-            'nickname' => 'required|string|max:15',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'email' => 'required|string|lowercase|email|max:255|unique:users',
-            'birthday' => ['nullable', 'date'],
-        ]);
-
-        $user = User::create([
-            'login_id' => $request->userId,
+        return User::create([
+            'login_id' => $request->login_id,
             'nickname' => $request->nickname,
-            'password' => Hash::make($request->password),
             'email' => $request->email,
+            'password' => Hash::make($request->password),
             'birthday' => $request->birthday,
         ]);
-
-        return $user;
     }
 
     /**

@@ -7,6 +7,19 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 class CustomResetPasswordNotification extends ResetPassword
 {
+    public $token;
+
+    /**
+     * Create a new notification instance.
+     *
+     * @param string $token
+     * @return void
+     */
+    public function __construct($token)
+    {
+        $this->token = $token;
+    }
+
     /**
      * パスワードリセット通知メールの内容を定義
      *

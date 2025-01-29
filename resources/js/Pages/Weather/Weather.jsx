@@ -11,19 +11,19 @@ import {
     Tooltip,
     Legend,
 } from "chart.js";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import WeatherModal from "./Partials/WeatherModal";
+import HeaderSidebarLayout from "@/Layouts/HeaderSidebarLayout";
+import WeatherDetailsModal from "./Partials/Modals/WeatherDetailsModal";
 import {
     fetchWeatherData,
     fetchCityWeatherData,
     fetchCurrentLocationWeatherData,
     renderWeatherInfo,
-} from "./Partials/WeatherUtils";
+} from "./Partials/UI/WeatherUtils";
 import {
     initializeMap,
     handleCityClick,
     handleCitySelect,
-} from "./Partials/MapUtils";
+} from "./Partials/UI/MapUtils";
 
 // Leafletのデフォルトアイコンを設定
 delete L.Icon.Default.prototype._getIconUrl;
@@ -107,7 +107,7 @@ const Weather = () => {
     }, []);
 
     return (
-        <AuthenticatedLayout>
+        <HeaderSidebarLayout>
             <div className="bg-cream flex items-center justify-center p-4">
                 <div className="bg-white rounded-lg shadow-lg p-2 max-w-4xl w-full mb-4">
                     <div className="font-sans flex flex-col md:flex-row">
@@ -172,13 +172,13 @@ const Weather = () => {
                     </div>
                 </div>
             </div>
-            <WeatherModal
+            <WeatherDetailsModal
                 isOpen={modalIsOpen}
                 onClose={() => setModalIsOpen(false)}
                 selectedCityWeather={selectedCityWeather}
                 selectedCity={selectedCity}
             />
-        </AuthenticatedLayout>
+        </HeaderSidebarLayout>
     );
 };
 

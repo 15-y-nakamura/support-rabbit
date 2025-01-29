@@ -1,15 +1,15 @@
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import HeaderSidebarLayout from "@/Layouts/HeaderSidebarLayout";
 import { Head } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import CalendarCreateEventForm from "./Partials/CalendarCreateEventForm";
-import CalendarEventDetailForm from "./Partials/CalendarEventDetailForm";
-import CalendarTagSelectButton from "./Partials/CalendarTagSelectButton";
-import CalendarModal from "./Partials/CalendarModal";
-import DateChangeModal from "./Partials/DateChangeModal";
-import CalendarGrid from "./Partials/CalendarGrid";
-import CalendarDeleteConfirmationModal from "./Partials/CalendarDeleteConfirmationModal";
-import CalendarEventList from "./Partials/CalendarEventList";
+import CreateEventForm from "./Partials/Forms/CreateEventForm";
+import EditEventForm from "./Partials/Forms/EditEventForm";
+import TagSelectButton from "./Partials/UI/TagSelectButton";
+import EventModal from "./Partials/Modals/EventModal";
+import ChangeDateModal from "./Partials/Modals/ChangeDateModal";
+import CalendarGrid from "./Partials/UI/CalendarGrid";
+import DeleteEventModal from "./Partials/Modals/DeleteEventModal";
+import EventList from "./Partials/UI/EventList";
 
 export default function Calendar() {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -168,13 +168,13 @@ export default function Calendar() {
     const getSeasonIcon = () => {
         const month = currentDate.getMonth() + 1;
         if (month >= 3 && month <= 5) {
-            return "/img/spring-icon.png"; // 春
+            return "/img/seasons/spring-icon.png"; // 春
         } else if (month >= 6 && month <= 8) {
-            return "/img/summer-icon.png"; // 夏
+            return "/img/seasons/summer-icon.png"; // 夏
         } else if (month >= 9 && month <= 11) {
-            return "/img/autumn-icon.png"; // 秋
+            return "/img/seasons/autumn-icon.png"; // 秋
         } else {
-            return "/img/winter-icon.png"; // 冬
+            return "/img/seasons/winter-icon.png"; // 冬
         }
     };
 
@@ -184,7 +184,7 @@ export default function Calendar() {
     };
 
     return (
-        <AuthenticatedLayout>
+        <HeaderSidebarLayout>
             <Head title="カレンダー" />
             <div className="py-2 bg-cream min-h-screen">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -236,7 +236,7 @@ export default function Calendar() {
                                     handleTagSelected={handleTagSelected}
                                     handleCreateEvent={handleCreateEvent}
                                 />
-                                <CalendarEventList
+                                <EventList
                                     selectedDateEvents={selectedDateEvents}
                                     selectedEvents={selectedEvents}
                                     handleEventSelect={handleEventSelect}
@@ -255,24 +255,24 @@ export default function Calendar() {
                     )}
                 </div>
             </div>
-            <CalendarModal
+            <EventModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
             >
                 {selectedEvent ? (
-                    <CalendarEventDetailForm
+                    <EditEventForm
                         event={selectedEvent}
                         onEventUpdated={handleEventUpdated}
                         onEventDeleted={handleEventDeleted}
                     />
                 ) : (
-                    <CalendarCreateEventForm
+                    <CreateEventForm
                         onEventCreated={handleEventCreated}
                         selectedDate={currentDate.toISOString().slice(0, 16)}
                     />
                 )}
-            </CalendarModal>
-            <CalendarDeleteConfirmationModal
+            </EventModal>
+            <DeleteEventModal
                 isOpen={showDeleteConfirmation}
                 onClose={() => setShowDeleteConfirmation(false)}
                 selectedEvents={selectedEvents}
@@ -283,12 +283,12 @@ export default function Calendar() {
                 isMixedSelection={isMixedSelection}
                 fetchEvents={fetchEvents} // fetchEvents関数を渡す
             />
-            <DateChangeModal
+            <ChangeDateModal
                 isOpen={isDateModalOpen}
                 onClose={() => setIsDateModalOpen(false)}
                 onDateChange={handleDateChange}
             />
-        </AuthenticatedLayout>
+        </HeaderSidebarLayout>
     );
 }
 
@@ -373,7 +373,7 @@ function EventListHeader({
                 >
                     検索
                 </button>
-                <CalendarTagSelectButton onTagSelected={handleTagSelected} />
+                <TagSelectButton onTagSelected={handleTagSelected} />
             </div>
             <button
                 className="bg-[#80ACCF] text-white p-1 rounded-full shadow-md max-sm:p-1"
