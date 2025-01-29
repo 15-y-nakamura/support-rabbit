@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
-export default function ResetPassword({ token, email }) {
+export default function ResetPasswordForm({ token, email }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         token: token || "",
         email: email || "",
@@ -36,6 +36,10 @@ export default function ResetPassword({ token, email }) {
     const submit = (e) => {
         e.preventDefault();
 
+        // メッセージをクリア
+        setSuccessMessage("");
+        reset("errors");
+
         post(route("password.update"), {
             onSuccess: () => {
                 setSuccessMessage("パスワードが変更されました");
@@ -56,13 +60,13 @@ export default function ResetPassword({ token, email }) {
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-[#FFF6EA] pt-6 sm:pt-0">
-            <div className="text-center mb-4">
+            <div className="text-center mb-8">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-700">
                     パスワードリセット
                 </h1>
             </div>
             <Head title="パスワードリセット" />
-            <div className="w-full max-w-sm sm:max-w-md mx-auto">
+            <div className="w-full max-w-xs sm:max-w-md">
                 <div className="bg-white shadow-md rounded-lg overflow-hidden p-4 sm:p-6">
                     <form onSubmit={submit}>
                         <div className="mt-4">
@@ -76,7 +80,7 @@ export default function ResetPassword({ token, email }) {
                                     type={passwordType}
                                     name="password"
                                     value={data.password}
-                                    className="mt-1 block w-full"
+                                    className="mt-1 block w-full text-base sm:text-lg"
                                     autoComplete="new-password"
                                     placeholder="新しいパスワード"
                                     isFocused={true}
@@ -107,7 +111,7 @@ export default function ResetPassword({ token, email }) {
                             </div>
                             <InputError
                                 message={errors.password}
-                                className="mt-2"
+                                className="mt-2 text-base sm:text-lg"
                             />
                         </div>
 
@@ -122,7 +126,7 @@ export default function ResetPassword({ token, email }) {
                                     id="password_confirmation"
                                     name="password_confirmation"
                                     value={data.password_confirmation}
-                                    className="mt-1 block w-full"
+                                    className="mt-1 block w-full text-base sm:text-lg"
                                     autoComplete="new-password"
                                     placeholder="新しいパスワード（確認用）"
                                     onChange={(e) =>
@@ -159,25 +163,25 @@ export default function ResetPassword({ token, email }) {
                             </div>
                             <InputError
                                 message={errors.password_confirmation}
-                                className="mt-2"
+                                className="mt-2 text-base sm:text-lg"
                             />
                         </div>
                         {errors.token ? (
                             <InputError
                                 message={errors.token}
-                                className="mt-2 text-lg sm:text-xl"
+                                className="mt-2 text-base sm:text-lg"
                             />
                         ) : (
                             successMessage && (
-                                <div className="mt-2 text-lg sm:text-xl text-green-600">
+                                <div className="mt-2 text-base sm:text-lg text-green-600">
                                     {successMessage}
                                 </div>
                             )
                         )}
 
-                        <div className="mt-4 flex items-center justify-end">
+                        <div className="mt-6 flex items-center justify-end">
                             <PrimaryButton
-                                className="ms-4"
+                                className="ms-4 text-base sm:text-lg"
                                 disabled={processing}
                             >
                                 パスワードリセット

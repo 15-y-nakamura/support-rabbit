@@ -29,14 +29,14 @@ Route::middleware('guest')->group(function () {
     Route::post('register', [RegisterController::class, 'store']);
 
     Route::get('forgot-password', function () {
-        return Inertia::render('Auth/ForgotPassword');
+        return Inertia::render('Auth/ForgotPasswordForm');
     })->name('password.request');
 
     Route::post('forgot-password', [PasswordResetController::class, 'sendPasswordResetLink'])
         ->name('password.email');
 
     Route::get('reset-password/{token}', function ($token) {
-        return Inertia::render('Auth/ResetPassword', ['token' => $token]);
+        return Inertia::render('Auth/ResetPasswordForm', ['token' => $token]);
     })->name('password.reset');
 
     Route::post('reset-password', [PasswordResetController::class, 'resetPassword'])

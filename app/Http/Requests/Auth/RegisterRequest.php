@@ -31,79 +31,83 @@ class RegisterRequest extends FormRequest
             'login_id.required' => json_encode([
                 "code" => 'post_signup_id_invalid_length',
                 "description" => "半角英数1〜30文字以内で入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'login_id.regex' => json_encode([
                 "code" => "post_signup_id_invalid_characters",
                 "description" => "半角英数以外は使用できません"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'login_id.unique' => json_encode([
                 "code" => "post_signup_id_already_used",
                 "description" => "既に使用されているIDです"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'login_id.max' => json_encode([
                 "code" => "post_signup_id_invalid_length",
                 "description" => "半角英数1〜30文字以内で入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'nickname.required' => json_encode([
                 "code" => "post_signup_nickname_invalid_length",
                 "description" => "1〜15文字以内で入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'nickname.regex' => json_encode([
                 "code" => "post_signup_nickname_invalid_characters",
                 "description" => "特殊記号は使用できません"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'nickname.max' => json_encode([
                 "code" => "post_signup_nickname_invalid_length",
                 "description" => "1〜15文字以内で入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'email.required' => json_encode([
                 "code" => "post_signup_email_required",
                 "description" => "メールアドレスを入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'email.string' => json_encode([
                 "code" => "post_signup_email_invalid",
                 "description" => "有効なメールアドレスを入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'email.lowercase' => json_encode([
                 "code" => "post_signup_email_invalid",
                 "description" => "メールアドレスは小文字で入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'email.email' => json_encode([
                 "code" => "post_signup_email_invalid",
                 "description" => "有効なメールアドレスを入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'email.max' => json_encode([
                 "code" => "post_signup_email_invalid_length",
                 "description" => "メールアドレスは255文字以内で入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'email.unique' => json_encode([
                 "code" => "post_signup_email_already_used",
                 "description" => "既に使用されているメールアドレスです"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'password.required' => json_encode([
-                "code" => "post_signup_password_invalid_length",
-                "description" => "半角英数8〜30文字以内で入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+                "code" => "post_signup_password_required",
+                "description" => "パスワードを入力してください"
+            ], ),
             'password.regex' => json_encode([
                 "code" => "post_signup_password_invalid_characters",
                 "description" => "使用可能な文字は半角英数および記号(@, #, $, %, !, ^, &, *)のみです"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'password.min' => json_encode([
                 "code" => "post_signup_password_invalid_length",
                 "description" => "半角英数8〜30文字以内で入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'password.max' => json_encode([
                 "code" => "post_signup_password_invalid_length",
                 "description" => "半角英数8〜30文字以内で入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'password.confirmed' => json_encode([
                 "code" => "post_signup_password_confirmation_mismatch",
                 "description" => "パスワードと確認フィールドが一致していません。"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'birthday.date' => json_encode([
                 "code" => "post_signup_birthday_invalid",
                 "description" => "有効な日付を入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
+            'birthday.required' => json_encode([
+                "code" => "post_signup_birthday_required",
+                "description" => "生年月日を入力してください"
+            ], ),
         ];
     }
 

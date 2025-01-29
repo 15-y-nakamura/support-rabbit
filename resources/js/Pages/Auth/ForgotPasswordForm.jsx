@@ -4,7 +4,7 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { Head, useForm, Link } from "@inertiajs/react";
 
-export default function ForgotPassword() {
+export default function ForgotPasswordForm() {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: "",
     });
@@ -24,15 +24,16 @@ export default function ForgotPassword() {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-[#FFF6EA] pt-6 sm:pt-0">
             <div className="text-center mb-8">
-                <h1 className="text-2xl sm:text-4xl font-bold text-gray-700">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-700">
                     パスワードリセット
                 </h1>
             </div>
             <Head title="ユーザID・パスワード再発行" />
             <div className="w-full max-w-sm sm:max-w-lg">
-                <div className="bg-white shadow-md rounded-lg overflow-hidden p-6 sm:p-10">
-                    <div className="mb-6 text-lg sm:text-xl text-gray-600">
+                <div className="bg-white shadow-md rounded-lg overflow-hidden p-4 sm:p-6">
+                    <div className="mb-6 text-base sm:text-lg text-gray-600">
                         登録いただいたメールアドレスを入力していただければ、
+                        <br />
                         ユーザIDとパスワードリセット用のリンクを送信いたします。
                     </div>
 
@@ -42,8 +43,9 @@ export default function ForgotPassword() {
                             type="email"
                             name="email"
                             value={data.email}
-                            className="mt-1 block w-full text-lg sm:text-xl"
+                            className="mt-1 block w-full text-base sm:text-lg"
                             isFocused={true}
+                            placeholder="メールアドレス"
                             onChange={(e) => {
                                 setData("email", e.target.value);
                                 setSuccessMessage(""); // フィールド変更時に成功メッセージをクリア
@@ -53,11 +55,11 @@ export default function ForgotPassword() {
                         {errors.email ? (
                             <InputError
                                 message={errors.email}
-                                className="mt-2 text-lg sm:text-xl"
+                                className="mt-2 text-base sm:text-lg"
                             />
                         ) : (
                             successMessage && (
-                                <div className="mt-2 text-lg sm:text-xl text-green-600">
+                                <div className="mt-2 text-base sm:text-lg text-green-600">
                                     {successMessage}
                                 </div>
                             )
@@ -66,12 +68,12 @@ export default function ForgotPassword() {
                         <div className="mt-6 flex items-center justify-between">
                             <Link
                                 href="/login"
-                                className="rounded-md text-lg sm:text-xl text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                className="rounded-md text-base sm:text-lg text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                             >
                                 戻る
                             </Link>
                             <PrimaryButton
-                                className="ms-4 text-lg sm:text-xl"
+                                className="ms-4 text-base sm:text-lg"
                                 disabled={processing}
                             >
                                 送信

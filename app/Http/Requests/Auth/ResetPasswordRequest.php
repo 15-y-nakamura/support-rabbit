@@ -31,21 +31,21 @@ class ResetPasswordRequest extends FormRequest
                 "description" => "トークンが必要です"
             ]),
             'password.required' => json_encode([
-                "code" => "post_signup_password_invalid_length",
-                "description" => "半角英数8〜30文字以内で入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+                "code" => "post_signup_password_required",
+                "description" => "パスワードを入力してください"
+            ], ),
             'password.regex' => json_encode([
                 "code" => "post_signup_password_invalid_characters",
                 "description" => "使用可能な文字は半角英数および記号(@, #, $, %, !, ^, &, *)のみです"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'password.min' => json_encode([
                 "code" => "post_signup_password_invalid_length",
                 "description" => "半角英数8〜30文字以内で入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
             'password.max' => json_encode([
                 "code" => "post_signup_password_invalid_length",
                 "description" => "半角英数8〜30文字以内で入力してください"
-            ], JSON_UNESCAPED_UNICODE),
+            ], ),
         ];
     }
 
