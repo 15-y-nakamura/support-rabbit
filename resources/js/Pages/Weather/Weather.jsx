@@ -47,7 +47,7 @@ ChartJS.register(
     Legend
 );
 
-const apiKey = "6a043120bfc561a280f54712dc2575e0";
+const apiKey = process.env.REACT_APP_WEATHER_API_KEY;
 const cities = [
     { name: "東京", lat: 35.6895, lon: 139.6917 },
     { name: "大阪", lat: 34.6937, lon: 135.5023 },

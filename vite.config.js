@@ -2,6 +2,10 @@ import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import dotenv from "dotenv";
+
+// 環境変数を読み込む
+dotenv.config();
 
 export default defineConfig({
     plugins: [
@@ -21,5 +25,8 @@ export default defineConfig({
         hmr: {
             host: "localhost",
         },
+    },
+    define: {
+        "process.env": process.env,
     },
 });
