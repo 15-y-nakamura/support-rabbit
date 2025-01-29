@@ -3,7 +3,7 @@ import {
     fetchWeatherData,
     fetchCityWeatherData,
     fetchCurrentLocationWeatherData,
-} from "../WeatherUtils";
+} from "./WeatherUtils";
 
 export const initializeMap = (
     lat,
@@ -17,7 +17,7 @@ export const initializeMap = (
     apiKey
 ) => {
     if (L.DomUtil.get("map")._leaflet_id) {
-        return; // マップが既に初期化されている場合は何もしない
+        return;
     }
 
     const mapInstance = L.map("map", { zIndex: 0 }).setView(
@@ -108,9 +108,9 @@ export const handleCurrentLocationClick = (
         apiKey
     );
     if (map) {
-        map.setView([location.lat, location.lon], 8); // ズームレベルを2つ引く
+        map.setView([location.lat, location.lon], 8);
         L.popup({
-            offset: L.point(0, -20), // ポップアップの位置を調整
+            offset: L.point(0, -20),
         })
             .setLatLng([location.lat, location.lon])
             .setContent("現在位置")
@@ -151,9 +151,9 @@ export const handleCitySelect = (
                 apiKey
             );
             if (map) {
-                map.setView([city.lat, city.lon], 8); // ズームレベルを2つ引く
+                map.setView([city.lat, city.lon], 8);
                 L.popup({
-                    offset: L.point(0, -20), // ポップアップの位置を調整
+                    offset: L.point(0, -20),
                 })
                     .setLatLng([city.lat, city.lon])
                     .setContent(city.name)

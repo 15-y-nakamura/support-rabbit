@@ -17,7 +17,7 @@ const WeatherDetailsModal = ({
         return acc;
     }, {});
 
-    const dates = Object.keys(dailyWeather).slice(0, 5); // 本日を含む5日間
+    const dates = Object.keys(dailyWeather).slice(0, 5);
     const modalData = dates.map((date) => {
         const dayForecasts = dailyWeather[date] || [];
         const temp_max = Math.max(...dayForecasts.map((f) => f.main.temp_max));

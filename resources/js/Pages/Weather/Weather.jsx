@@ -56,6 +56,24 @@ const cities = [
     { name: "京都", lat: 35.0211, lon: 135.7556 },
 ];
 
+const Notification = ({ message, type, onClose }) => {
+    return (
+        <div
+            className={`fixed bottom-0 left-0 right-0 p-4 ${
+                type === "error" ? "bg-red-600" : "bg-green-600"
+            } text-white text-center`}
+        >
+            {message}
+            <button
+                className="ml-4 bg-transparent border-none text-white"
+                onClick={onClose}
+            >
+                &times;
+            </button>
+        </div>
+    );
+};
+
 const Weather = () => {
     const [weatherData, setWeatherData] = useState(null);
     const [currentLocation, setCurrentLocation] = useState(null);
@@ -64,6 +82,7 @@ const Weather = () => {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [map, setMap] = useState(null);
     const [markers, setMarkers] = useState([]);
+    const [notification, setNotification] = useState({ message: "", type: "" });
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(
@@ -75,7 +94,8 @@ const Weather = () => {
                     longitude,
                     setWeatherData,
                     setSelectedCityWeather,
-                    apiKey
+                    apiKey,
+                    (message, type) => setNotification({ message, type })
                 );
                 initializeMap(
                     latitude,
@@ -108,7 +128,7 @@ const Weather = () => {
 
     return (
         <HeaderSidebarLayout>
-            <div className="bg-cream flex items-center justify-center p-4">
+            <div className="bg-cream flex items-center justify-center p-4 min-h-screen sm:min-h-[calc(100vh-96px)]">
                 <div className="bg-white rounded-lg shadow-lg p-2 max-w-4xl w-full mb-4">
                     <div className="font-sans flex flex-col md:flex-row">
                         <section className="w-full md:w-1/2 p-2">
@@ -129,7 +149,12 @@ const Weather = () => {
                                             setSelectedCityWeather,
                                             map,
                                             cities,
-                                            apiKey
+                                            apiKey,
+                                            (message, type) =>
+                                                setNotification({
+                                                    message,
+                                                    type,
+                                                })
                                         )
                                     }
                                 >
@@ -167,7 +192,9 @@ const Weather = () => {
                                     5日間の天気情報を見る
                                 </button>
                             </div>
-                            {renderWeatherInfo(selectedCityWeather)}
+                            <div className="w-full flex justify-center">
+                                {renderWeatherInfo(selectedCityWeather)}
+                            </div>
                         </section>
                     </div>
                 </div>
@@ -178,6 +205,13 @@ const Weather = () => {
                 selectedCityWeather={selectedCityWeather}
                 selectedCity={selectedCity}
             />
+            {notification.message && (
+                <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={() => setNotification({ message: "", type: "" })}
+                />
+            )}
         </HeaderSidebarLayout>
     );
 };
