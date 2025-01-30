@@ -9,7 +9,6 @@ import { Transition } from "@headlessui/react";
 
 export default function DeleteProfileForm({ className = "" }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");
 
     const {
         data,
@@ -64,18 +63,6 @@ export default function DeleteProfileForm({ className = "" }) {
                 deleteUser={deleteUser}
                 processing={processing}
             />
-
-            <Transition
-                show={!!successMessage}
-                enter="transition ease-in-out duration-300"
-                enterFrom="opacity-0"
-                enterTo="opacity-100"
-                leave="transition ease-in-out duration-300"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-            >
-                <p className="mt-4 text-sm text-green-600">{successMessage}</p>
-            </Transition>
         </section>
     );
 }

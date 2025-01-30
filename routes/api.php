@@ -25,7 +25,6 @@ Route::prefix('v2')->middleware('auth:sanctum')->group(function () {
     //プロフィール API
     Route::controller(ApiProfileController::class)->prefix('profile')->group(function () {
         Route::get('/', 'show'); // API でプロフィール取得
-        Route::delete('/', 'destroy')->name('v2.profile.destroy'); 
     });
 
     //カレンダーイベント API
@@ -49,6 +48,8 @@ Route::prefix('v2')->middleware('auth:sanctum')->group(function () {
 
     //Weekday イベント API
     Route::controller(WeekdayEventsController::class)->prefix('calendar/weekday-events')->group(function () {
+        Route::get('/', 'index');
+        Route::post('/',  'store'); 
         Route::delete('{id}', 'destroy');
         Route::delete('{id}/all', 'destroyAll');
     });

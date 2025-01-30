@@ -152,12 +152,12 @@ function UserDropdown({ user }) {
             ), // ユーザーのニックネームとログインIDを表示
         },
         {
-            href: "/calendar",
+            href: route("calendar"),
             icon: "/img/icons/calendar-icon.png",
             label: "カレンダー",
         },
         {
-            href: "/achievement",
+            href: route("achievement"),
             icon: "/img/icons/achievement-icon.png",
             label: "達成率",
         },
@@ -274,12 +274,12 @@ function ResponsiveNavigation({ showing }) {
             label: "天気",
         },
         {
-            href: "/calendar",
+            href: route("calendar"),
             icon: "/img/icons/calendar-icon.png",
             label: "カレンダー",
         },
         {
-            href: "/achievement",
+            href: route("achievement"),
             icon: "/img/icons/achievement-icon.png",
             label: "達成率",
         },
