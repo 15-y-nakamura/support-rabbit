@@ -7,9 +7,11 @@ use Illuminate\Http\Request;
 use App\Http\Requests\Profile\ProfileShowRequest;
 use App\Http\Requests\Profile\ProfileUpdateRequest;
 use App\Http\Requests\Profile\PasswordUpdateRequest;
+use App\Http\Requests\Profile\DeleteProfileRequest;
 use App\Models\User;
 use App\Lib\APIResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
@@ -63,21 +65,30 @@ class ProfileController extends Controller
     /**
      * ユーザーアカウントを削除（API用）
      */
-    public function destroy(Request $request)
+    public function destroy(DeleteProfileRequest $request)
     {
+        // 🔹 バリデーションを実行（失敗時は自動的にレスポンスを返す）
         $request->validate([
             'password' => ['required', 'current_password'],
         ]);
 
         $user = $request->user();
 
-        Auth::logout();
+        // 🔹 バリデーションに失敗したら処理を中断
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'errors' => ['password' => 'パスワードが正しくありません']
+            ], 422);
+        }
 
+        // 🔹 ログアウトしてユーザーを削除
+        Auth::logout();
         $user->delete();
 
+        // 🔹 セッションを無効化
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return APIResponse::success();
+        return response()->json(['message' => 'アカウントが削除されました'], 200);
     }
 }

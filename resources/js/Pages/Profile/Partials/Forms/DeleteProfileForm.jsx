@@ -4,9 +4,13 @@ import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
+import DeleteProfileModal from "@/Pages/Profile/Partials/Modals/DeleteProfileModal";
+import { Transition } from "@headlessui/react";
 
 export default function DeleteProfileForm({ className = "" }) {
-    const [confirmingUserDeletion, setConfirmingUserDeletion] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
+
     const {
         data,
         setData,
@@ -18,25 +22,18 @@ export default function DeleteProfileForm({ className = "" }) {
         password: "",
     });
 
-    const confirmUserDeletion = () => {
-        setConfirmingUserDeletion(true);
-    };
-
     const deleteUser = (e) => {
         e.preventDefault();
 
-        if (
-            !confirm(
-                "本当にアカウントを削除しますか？この操作は取り消せません。"
-            )
-        ) {
-            return;
-        }
-
         destroy(route("profile.destroy"), {
             preserveScroll: true,
-            onSuccess: () => reset(),
-            onError: () => reset("password"),
+            onSuccess: () => {
+                setIsModalOpen(false);
+                reset();
+            },
+            onError: (errors) => {
+                reset("password");
+            },
         });
     };
 
@@ -46,39 +43,39 @@ export default function DeleteProfileForm({ className = "" }) {
                 <h2 className="text-lg font-medium text-gray-900">
                     アカウント削除
                 </h2>
-
                 <p className="mt-1 text-sm text-gray-600">
                     アカウントを削除すると、すべてのデータが完全に削除されます。
                 </p>
             </header>
 
-            <form onSubmit={deleteUser} className="mt-6 space-y-6">
-                <div>
-                    <InputLabel htmlFor="delete_password" value="パスワード" />
+            <PrimaryButton
+                onClick={() => setIsModalOpen(true)}
+                className="bg-red-600 hover:bg-red-800 mt-4"
+            >
+                アカウント削除
+            </PrimaryButton>
 
-                    <TextInput
-                        id="delete_password"
-                        type="password"
-                        className="mt-1 block w-full"
-                        value={data.password}
-                        onChange={(e) => setData("password", e.target.value)}
-                        required
-                        placeholder="パスワード"
-                    />
+            <DeleteProfileModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                data={data}
+                setData={setData}
+                errors={errors}
+                deleteUser={deleteUser}
+                processing={processing}
+            />
 
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="flex items-center gap-4">
-                    <PrimaryButton
-                        onClick={confirmUserDeletion}
-                        disabled={processing}
-                        className="bg-red-600 hover:bg-red-800"
-                    >
-                        アカウント削除
-                    </PrimaryButton>
-                </div>
-            </form>
+            <Transition
+                show={!!successMessage}
+                enter="transition ease-in-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="transition ease-in-out duration-300"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+            >
+                <p className="mt-4 text-sm text-green-600">{successMessage}</p>
+            </Transition>
         </section>
     );
 }

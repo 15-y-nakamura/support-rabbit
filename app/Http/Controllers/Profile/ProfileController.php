@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\Profile\ProfileUpdateRequest;
 use App\Http\Requests\Profile\PasswordUpdateRequest;
+use App\Http\Requests\Profile\DeleteProfileRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
@@ -55,7 +57,7 @@ class ProfileController extends Controller
     /**
      * ユーザーアカウントを削除します。
      */
-    public function destroy(Request $request)
+    public function destroy(DeleteProfileRequest $request)
     {
         $request->validate([
             'password' => ['required', 'current_password'],
@@ -70,6 +72,6 @@ class ProfileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/')->with('status', 'アカウントが削除されました');
+        return redirect()->route('login')->with('status', 'アカウントが削除されました');
     }
 }

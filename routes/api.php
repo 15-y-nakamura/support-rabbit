@@ -25,7 +25,7 @@ Route::prefix('v2')->middleware('auth:sanctum')->group(function () {
     //プロフィール API
     Route::controller(ApiProfileController::class)->prefix('profile')->group(function () {
         Route::get('/', 'show'); // API でプロフィール取得
-        Route::delete('/', 'destroy'); // API でアカウント削除
+        Route::delete('/', 'destroy')->name('v2.profile.destroy'); 
     });
 
     //カレンダーイベント API

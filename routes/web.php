@@ -39,6 +39,7 @@ Route::middleware('auth')->prefix('user')->group(function () {
         Route::get('/edit', 'edit')->name('profile.edit');  // Web 画面で編集
         Route::put('/', 'update')->name('profile.update');  // Web でプロフィール更新
         Route::put('/password', 'password')->name('profile.password');  // パスワード変更
+        Route::delete('/', 'destroy')->name('profile.destroy');  // 🔹 アカウント削除を追加
     });
 
     // Web UI 向けルート
