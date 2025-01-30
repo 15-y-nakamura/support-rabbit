@@ -4,6 +4,7 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { Transition } from "@headlessui/react";
 import { Link, useForm, usePage } from "@inertiajs/react";
+import { useState } from "react";
 
 export default function UpdateProfileForm({
     mustVerifyEmail,
@@ -11,6 +12,7 @@ export default function UpdateProfileForm({
     className = "",
 }) {
     const user = usePage().props.auth.user;
+    const [errorMessage, setErrorMessage] = useState("");
 
     const { data, setData, put, errors, processing, recentlySuccessful } =
         useForm({
@@ -23,7 +25,11 @@ export default function UpdateProfileForm({
     const submit = (e) => {
         e.preventDefault();
 
-        put(route("profile.update"));
+        put(route("profile.update"), {
+            onError: () => {
+                setErrorMessage("保存に失敗しました。");
+            },
+        });
     };
 
     return (
@@ -105,36 +111,6 @@ export default function UpdateProfileForm({
                     <InputError className="mt-2" message={errors.birthday} />
                 </div>
 
-                {mustVerifyEmail && user.email_verified_at === null && (
-                    <div>
-                        <p className="mt-2 text-sm text-gray-800">
-                            メールアドレスが確認されていません。
-                            <Link
-                                href={route("verification.send")}
-                                method="post"
-                                as="button"
-                                className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                            >
-                                メールの再送信はこちらをクリック
-                            </Link>
-                        </p>
-                        メールアドレスが確認されていません。
-                        <Link
-                            href={route("verification.send")}
-                            method="post"
-                            as="button"
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        >
-                            メールの再送信はこちらをクリック
-                        </Link>
-                        {status === "verification-link-sent" && (
-                            <div className="mt-2 text-sm font-medium text-green-600">
-                                新しい確認リンクがメールアドレスに送信されました。
-                            </div>
-                        )}
-                    </div>
-                )}
-
                 <div className="flex items-center gap-4">
                     <PrimaryButton
                         className="bg-gray-700"
@@ -144,14 +120,22 @@ export default function UpdateProfileForm({
                     </PrimaryButton>
 
                     <Transition
-                        show={recentlySuccessful}
+                        show={recentlySuccessful || errorMessage}
                         enter="transition ease-in-out"
                         enterFrom="opacity-0"
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-sm text-gray-600">
-                            保存されました。
+                        <p
+                            className={`text-sm ${
+                                recentlySuccessful
+                                    ? "text-gray-600"
+                                    : "text-red-600"
+                            }`}
+                        >
+                            {recentlySuccessful
+                                ? "保存されました。"
+                                : errorMessage}
                         </p>
                     </Transition>
                 </div>

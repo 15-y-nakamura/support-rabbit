@@ -1,69 +1,48 @@
 <?php
 
-use App\Http\Controllers\Api\Auth\EmailVerificationController;
-use App\Http\Controllers\Api\Auth\LoginController;
-use App\Http\Controllers\Api\Auth\LogoutController;
-use App\Http\Controllers\Api\Auth\PasswordResetController;
-use App\Http\Controllers\Api\Auth\RegisterController;
-use App\Http\Controllers\Api\Profile\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Profile\ProfileController;
 
-// ホームページルート
+// 🔹 ホームページルート
 Route::get('/', function () {
     return Inertia::render('Auth/AuthForm');
 })->name('auth.toggle');
 
-// ホームルート
-Route::get('/home', function () {
-    return Inertia::render('Home');
-})->middleware(['auth', 'verified'])->name('home');
-
-// ゲスト専用ルート
-Route::middleware('guest')->group(function () {
-    Route::get('login', [LoginController::class, 'create'])->name('login');
-    Route::post('login', [LoginController::class, 'login']);
-
-    Route::get('register', [RegisterController::class, 'create'])->name('register'); // ここでregisterルートを定義
-    Route::post('register', [RegisterController::class, 'store']);
-
-    Route::get('forgot-password', function () {
-        return Inertia::render('Auth/ForgotPasswordForm');
-    })->name('password.request');
-
-    Route::post('forgot-password', [PasswordResetController::class, 'sendPasswordResetLink'])
-        ->name('password.email');
-
-    Route::get('reset-password/{token}', function ($token) {
-        return Inertia::render('Auth/ResetPasswordForm', ['token' => $token]);
-    })->name('password.reset');
-
-    Route::post('reset-password', [PasswordResetController::class, 'resetPassword'])
-        ->name('password.update');
+// 🔹 ホームルート（認証済みユーザーのみ）
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/home', fn() => Inertia::render('Home'))->name('home');
 });
 
-// 認証済みユーザー専用ルート
-Route::middleware('auth')->group(function () {
+// 🔹 誰でもアクセス可能なルート（ログイン・登録・パスワードリセット）
+Route::get('login', [LoginController::class, 'create'])->name('login');
+Route::post('login', [LoginController::class, 'login']);
 
-    Route::post('logout', [LogoutController::class, 'logout'])
-        ->name('logout');
+Route::get('register', [RegisterController::class, 'create'])->name('register');
+Route::post('register', [RegisterController::class, 'store']);
 
-    Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::get('profile/show', [ProfileController::class, 'show'])->name('profile.show');
-    Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::put('profiles', [ProfileController::class, 'update'])->name('profile.update');
-    Route::put('profiles/password', [ProfileController::class, 'password'])->name('profile.password');
+Route::get('forgot-password', fn() => Inertia::render('Auth/ForgotPasswordForm'))->name('password.request');
+Route::post('forgot-password', [PasswordResetController::class, 'sendPasswordResetLink'])->name('password.email');
 
-    Route::get('calendar', function () {
-        return Inertia::render('Calendar/Calendar');
-    })->name('calendar');
+Route::get('reset-password/{token}', fn($token) => Inertia::render('Auth/ResetPasswordForm', ['token' => $token]))->name('password.reset');
+Route::post('reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.update');
 
-    Route::get('weather', function () {
-        return Inertia::render('Weather/Weather');
-    })->name('weather');
+// 🔹 認証済みユーザー専用ルート（プロフィール・ログアウト）
+Route::middleware('auth')->prefix('user')->group(function () {
+    Route::post('logout', [LogoutController::class, 'logout'])->name('logout');
 
-    Route::get('achievement', function () {
-        return Inertia::render('Achievement/Achievement');
-    })->name('achievement');
+    Route::controller(ProfileController::class)->prefix('profile')->group(function () {
+        Route::get('/edit', 'edit')->name('profile.edit');  // Web 画面で編集
+        Route::put('/', 'update')->name('profile.update');  // Web でプロフィール更新
+        Route::put('/password', 'password')->name('profile.password');  // パスワード変更
+    });
+
+    // Web UI 向けルート
+    Route::get('calendar', fn() => Inertia::render('Calendar/Calendar'))->name('calendar');
+    Route::get('weather', fn() => Inertia::render('Weather/Weather'))->name('weather');
+    Route::get('achievement', fn() => Inertia::render('Achievement/Achievement'))->name('achievement');
 });

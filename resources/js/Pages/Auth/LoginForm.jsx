@@ -6,6 +6,7 @@ import InputError from "@/Components/InputError";
 import PrimaryButton from "@/Components/PrimaryButton";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function LoginForm() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -25,6 +26,7 @@ export default function LoginForm() {
         e.preventDefault();
         post(route("login"), {
             onSuccess: () => reset("password"),
+            onError: () => {},
         });
     };
 
@@ -101,36 +103,42 @@ export default function LoginForm() {
                                         required
                                         placeholder="パスワード"
                                     />
-                                    {passwordType === "password" ? (
-                                        <VisibilityOffIcon
-                                            onClick={togglePasswordVisibility}
-                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
-                                            style={{
-                                                fontSize: 32,
-                                                height: "100%",
-                                            }}
-                                        />
-                                    ) : (
-                                        <VisibilityIcon
-                                            onClick={togglePasswordVisibility}
-                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
-                                            style={{
-                                                fontSize: 32,
-                                                height: "100%",
-                                            }}
-                                        />
-                                    )}
+                                    <div
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                                        onClick={togglePasswordVisibility}
+                                        style={{
+                                            width: "32px",
+                                            height: "100%",
+                                        }}
+                                    >
+                                        {passwordType === "password" ? (
+                                            <VisibilityOffIcon
+                                                style={{ fontSize: 24 }}
+                                            />
+                                        ) : (
+                                            <VisibilityIcon
+                                                style={{ fontSize: 24 }}
+                                            />
+                                        )}
+                                    </div>
                                 </div>
                                 <InputError
-                                    message={errors.password || errors.login}
+                                    message={errors.password}
                                     className="mt-2"
                                 />
                             </div>
 
+                            {/* 認証エラーを個別に表示 */}
+                            {errors.login && (
+                                <div className="text-red-500 text-sm mt-2">
+                                    {errors.login}
+                                </div>
+                            )}
+
                             <div className="mt-4 flex items-center justify-between">
                                 <Link
                                     href={route("password.request")}
-                                    className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                    className="rounded-md text-sm text-gray-600 underline hover:text-gray-900"
                                 >
                                     ユーザID・パスワードを忘れた方はこちら
                                 </Link>
@@ -139,7 +147,14 @@ export default function LoginForm() {
                                     className="ml-4 bg-gray-700"
                                     disabled={processing}
                                 >
-                                    ログイン
+                                    {processing ? (
+                                        <CircularProgress
+                                            size={20}
+                                            color="inherit"
+                                        />
+                                    ) : (
+                                        "ログイン"
+                                    )}
                                 </PrimaryButton>
                             </div>
                         </form>

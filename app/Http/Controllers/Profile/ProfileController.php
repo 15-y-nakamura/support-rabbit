@@ -1,36 +1,28 @@
 <?php
 
-namespace App\Http\Controllers\Api\Profile;
+namespace App\Http\Controllers\Profile;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Http\Requests\Profile\ProfileShowRequest;
 use App\Http\Requests\Profile\ProfileUpdateRequest;
 use App\Http\Requests\Profile\PasswordUpdateRequest;
-use App\Models\User;
-use App\Lib\APIResponse;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class ProfileController extends Controller
 {
     /**
-     * ユーザープロフィールを取得（API用）
+     * プロフィール編集画面を表示します。
      */
-    public function show(ProfileShowRequest $request)
+    public function edit()
     {
-        $user = $request->user();
-
-        if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        return response()->json([
-            'user' => $user->user_info()
+        return Inertia::render('Profile/Edit', [
+            'user' => Auth::user()
         ]);
     }
 
     /**
-     * ユーザープロフィールを更新（API用）
+     * ユーザープロフィールを更新します。
      */
     public function update(ProfileUpdateRequest $request)
     {
@@ -39,14 +31,14 @@ class ProfileController extends Controller
 
             $user->updateProfile($request->nickname, $request->email, $request->birthday, $request->login_id);
 
-            return response()->json(['message' => 'プロフィールが更新されました'], 200);
+            return redirect()->route('profile.edit')->with('status', 'プロフィールが更新されました');
         } catch (\Exception $e) {
-            return response()->json(['error' => 'プロフィールの更新中にエラーが発生しました'], 500);
+            return redirect()->route('profile.edit')->with('error', 'プロフィールの更新中にエラーが発生しました');
         }
     }
 
     /**
-     * ユーザーパスワードを更新（API用）
+     * ユーザーパスワードを更新します。
      */
     public function password(PasswordUpdateRequest $request)
     {
@@ -54,14 +46,14 @@ class ProfileController extends Controller
             $user = $request->user();
             $user->updatePassword($request->password);
 
-            return APIResponse::success();
+            return redirect()->route('profile.edit')->with('status', 'パスワードが更新されました');
         } catch (\Exception $e) {
-            return APIResponse::generalError();
+            return redirect()->route('profile.edit')->with('error', 'パスワードの更新中にエラーが発生しました');
         }
     }
 
     /**
-     * ユーザーアカウントを削除（API用）
+     * ユーザーアカウントを削除します。
      */
     public function destroy(Request $request)
     {
@@ -78,6 +70,6 @@ class ProfileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return APIResponse::success();
+        return redirect('/')->with('status', 'アカウントが削除されました');
     }
 }
