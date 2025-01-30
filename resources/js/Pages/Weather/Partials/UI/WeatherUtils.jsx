@@ -6,21 +6,18 @@ export const fetchWeatherData = async (
     lon,
     setWeatherData,
     setSelectedCityWeather,
-    apiKey
+    apiKey,
+    setNotification
 ) => {
     const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=ja&appid=${apiKey}`;
-    console.log(`Fetching weather data from: ${url}`);
     try {
         const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error("天気データの取得に失敗しました");
-        }
         const data = await response.json();
-        console.log("Weather data:", data);
         setWeatherData(data);
         setSelectedCityWeather(data);
     } catch (error) {
         console.error("天気データの取得中にエラーが発生しました:", error);
+        setNotification("天気データの取得中にエラーが発生しました。", "error");
     }
 };
 
@@ -28,19 +25,20 @@ export const fetchCityWeatherData = async (
     lat,
     lon,
     setSelectedCityWeather,
-    apiKey
+    apiKey,
+    setNotification
 ) => {
     const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=ja&appid=${apiKey}`;
-    console.log(`Fetching city weather data from: ${url}`);
     try {
         const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error("都市の天気データの取得に失敗しました");
-        }
         const data = await response.json();
         setSelectedCityWeather(data);
     } catch (error) {
         console.error("都市の天気データの取得中にエラーが発生しました:", error);
+        setNotification(
+            "都市の天気データの取得中にエラーが発生しました。",
+            "error"
+        );
     }
 };
 
@@ -49,15 +47,12 @@ export const fetchCurrentLocationWeatherData = async (
     lon,
     setWeatherData,
     setSelectedCityWeather,
-    apiKey
+    apiKey,
+    setNotification
 ) => {
     const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=ja&appid=${apiKey}`;
-    console.log(`Fetching current location weather data from: ${url}`);
     try {
         const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error("現在位置の天気データの取得に失敗しました");
-        }
         const data = await response.json();
         setWeatherData(data);
         setSelectedCityWeather(data);
@@ -65,6 +60,10 @@ export const fetchCurrentLocationWeatherData = async (
         console.error(
             "現在位置の天気データの取得中にエラーが発生しました:",
             error
+        );
+        setNotification(
+            "現在位置の天気データの取得中にエラーが発生しました。",
+            "error"
         );
     }
 };
@@ -159,7 +158,7 @@ export const renderWeatherInfo = (selectedCityWeather) => {
     const textColor = getTextColor(currentDayWeather.icon);
 
     return (
-        <div className="w-full">
+        <div className="w-full flex flex-col items-center">
             <table className="table-auto w-full mb-4">
                 <thead>
                     <tr style={{ color: "#000000" }}>
@@ -197,8 +196,8 @@ export const renderWeatherInfo = (selectedCityWeather) => {
                 </tbody>
             </table>
             <div
-                className="mb-4"
-                style={{ maxWidth: "500px", margin: "0 auto" }}
+                className="mb-4 w-full flex justify-center"
+                style={{ maxWidth: "800px", margin: "0 auto" }}
             >
                 <Line data={data} />
             </div>

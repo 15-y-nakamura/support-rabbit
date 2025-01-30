@@ -5,6 +5,8 @@ namespace App\Http\Requests\Profile;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class PasswordUpdateRequest extends FormRequest
 {
@@ -26,44 +28,76 @@ class PasswordUpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            'password' => ['required', 'regex:/^[a-zA-Z0-9]+$/', 'min:8', 'max:12'],
+            'current_password' => ['required', function ($attribute, $value, $fail) {
+                if (!Hash::check($value, Auth::user()->password)) {
+                    $fail(json_encode([
+                        "code" => "put_profile_current_password_invalid",
+                        "description" => "現在のパスワードが間違っています"
+                    ]));
+                }
+            }],
+            'password' => ['required', 'confirmed', 'regex:/^[a-zA-Z0-9@#\$%!\^&*]+$/', 'min:8', 'max:30'],
         ];
     }
 
     public function messages()
     {
         return [
+            'current_password.required' => json_encode([
+                "code" => "put_profile_current_password_required",
+                "description" => "現在のパスワードを入力してください"
+            ]),
             'password.required' => json_encode([
-                "code" => "put_profile_password_invalid_length",
-                "description" => "半角英数8〜12文字以内で入力してください"
+                "code" => "put_profile_password_required",
+                "description" => "パスワードを入力してください"
             ]),
             'password.regex' => json_encode([
                 "code" => "put_profile_password_invalid_characters",
-                "description" => "そのパスワードは使用できません"
+                "description" => "使用可能な文字は半角英数および記号(@, #, $, %, !, ^, &, *)のみです"
             ]),
             'password.min' => json_encode([
                 "code" => "put_profile_password_invalid_length",
-                "description" => "半角英数8〜12文字以内で入力してください"
+                "description" => "半角英数8〜30文字以内で入力してください"
             ]),
             'password.max' => json_encode([
                 "code" => "put_profile_password_invalid_length",
-                "description" => "半角英数8〜12文字以内で入力してください"
+                "description" => "半角英数8〜30文字以内で入力してください"
+            ]),
+            'password.confirmed' => json_encode([
+                "code" => "put_profile_password_confirmation_mismatch",
+                "description" => "パスワードが一致しません"
             ]),
         ];
     }
 
     /**
-     * Handle Failed
+     * Handle a failed validation attempt.
      *
      * @param Validator $validator
      * @throw HttpResponseException
-     * @see FormRequest::failedValidation()
      */
     protected function failedValidation(Validator $validator)
     {
-        $response = array_map(function ($error) {
-            return json_decode($error, true);
-        }, $validator->errors()->all());
-        throw new HttpResponseException(response()->json(["errors" => $response], 400));
+        // フィールドごとにエラーメッセージを構築
+        $errors = $validator->errors()->getMessages();
+        $response = [];
+    
+        foreach ($errors as $field => $messages) {
+            $response[$field] = array_map(function ($message) {
+                $decodedMessage = json_decode($message, true);
+                return $decodedMessage['description'] ?? $message;
+            }, $messages);
+        }
+    
+        if ($this->expectsJson()) {
+            throw new HttpResponseException(
+                response()->json(['errors' => $response], 422)
+            );
+        }
+    
+        // HTMLリクエストの場合のリダイレクト
+        throw new HttpResponseException(
+            back()->withErrors($response)->withInput()
+        );
     }
 }

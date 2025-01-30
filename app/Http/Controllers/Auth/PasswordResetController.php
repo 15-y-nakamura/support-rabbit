@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Auth;
+namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
@@ -10,29 +10,47 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Notifications\CustomResetPasswordNotification;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Auth\Events\PasswordReset;
+use Inertia\Inertia;
 
 class PasswordResetController extends Controller
 {
     /**
-     * パスワードリセットリンクの送信（API）
+     * パスワードリセットリクエスト画面の表示
+     */
+    public function showForgotPasswordForm()
+    {
+        return Inertia::render('Auth/ForgotPasswordForm');
+    }
+
+    /**
+     * パスワードリセットリンクの送信
      */
     public function sendPasswordResetLink(ForgotPasswordRequest $request)
     {
         $status = Password::sendResetLink($request->only('email'));
 
         if ($status === Password::RESET_LINK_SENT) {
-            return response()->json(['message' => __($status)], 200);
+            return back()->with('status', __($status));
         }
 
-        return response()->json(['error' => __($status)], 400);
+        return back()->withErrors(['email' => __($status)]);
     }
 
     /**
-     * パスワードリセット処理（API）
+     * パスワードリセットフォームの表示
+     */
+    public function showResetPasswordForm($token)
+    {
+        return Inertia::render('Auth/ResetPasswordForm', ['token' => $token]);
+    }
+
+    /**
+     * パスワードリセット処理
      */
     public function resetPassword(ResetPasswordRequest $request)
     {
@@ -49,9 +67,9 @@ class PasswordResetController extends Controller
         );
 
         if ($status === Password::PASSWORD_RESET) {
-            return response()->json(['message' => __($status)], 200);
+            return redirect()->route('login')->with('status', __($status));
         }
 
-        return response()->json(['error' => __($status)], 400);
+        return back()->withErrors(['email' => [__($status)]]);
     }
 }

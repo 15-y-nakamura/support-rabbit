@@ -3,7 +3,7 @@ import Dropdown from "@/Components/Dropdown";
 import NavLink from "@/Components/NavLink";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link, usePage } from "@inertiajs/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function HeaderSidebarLayout({ header, children }) {
     const user = usePage().props.auth.user; // 現在のユーザー情報を取得
@@ -14,6 +14,14 @@ export default function HeaderSidebarLayout({ header, children }) {
     const toggleNavigationDropdown = () => {
         setShowingNavigationDropdown((prevState) => !prevState); // ドロップダウンの表示状態を切り替え
     };
+
+    useEffect(() => {
+        if (showingNavigationDropdown) {
+            document.body.style.overflow = "hidden"; // スクロールを無効にする
+        } else {
+            document.body.style.overflow = "auto"; // スクロールを有効にする
+        }
+    }, [showingNavigationDropdown]);
 
     const isHomePage = currentUrl === "/home"; // 現在のURLがホームページかどうかを判定
 
@@ -64,7 +72,7 @@ export default function HeaderSidebarLayout({ header, children }) {
                                 />
                                 <VerticalDivider />
                                 <NavItem
-                                    href="/weather"
+                                    href={route("weather")}
                                     icon="/img/icons/weather-icon.png"
                                     label="天気"
                                 />
@@ -144,12 +152,12 @@ function UserDropdown({ user }) {
             ), // ユーザーのニックネームとログインIDを表示
         },
         {
-            href: "/calendar",
+            href: route("calendar"),
             icon: "/img/icons/calendar-icon.png",
             label: "カレンダー",
         },
         {
-            href: "/achievement",
+            href: route("achievement"),
             icon: "/img/icons/achievement-icon.png",
             label: "達成率",
         },
@@ -261,17 +269,17 @@ function ResponsiveNavigation({ showing }) {
             label: "本日の予定",
         },
         {
-            href: "/weather",
+            href: route("weather"),
             icon: "/img/icons/weather-icon.png",
             label: "天気",
         },
         {
-            href: "/calendar",
+            href: route("calendar"),
             icon: "/img/icons/calendar-icon.png",
             label: "カレンダー",
         },
         {
-            href: "/achievement",
+            href: route("achievement"),
             icon: "/img/icons/achievement-icon.png",
             label: "達成率",
         },
@@ -288,9 +296,9 @@ function ResponsiveNavigation({ showing }) {
         <div
             className={`${
                 showing ? "block" : "hidden"
-            } sm:hidden bg-white h-screen`}
+            } sm:hidden bg-white h-screen overflow-hidden`}
         >
-            <div className="flex flex-col justify-between h-full py-6 overflow-y-auto">
+            <div className="flex flex-col justify-between h-full py-6">
                 <div className="flex flex-col flex-grow overflow-y-auto">
                     {navLinks.map((link, index) => (
                         <div key={index}>

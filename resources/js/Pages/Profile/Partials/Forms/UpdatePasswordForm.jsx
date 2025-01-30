@@ -30,14 +30,19 @@ export default function UpdatePasswordForm({ className = "" }) {
     const [newPasswordType, setNewPasswordType] = useState("password");
     const [passwordConfirmationType, setPasswordConfirmationType] =
         useState("password");
+    const [errorMessage, setErrorMessage] = useState("");
 
     const updatePassword = (e) => {
         e.preventDefault();
 
         put(route("profile.password"), {
             preserveScroll: true,
-            onSuccess: () => reset(),
+            onSuccess: () => {
+                reset();
+                setErrorMessage("");
+            },
             onError: (errors) => {
+                setErrorMessage("保存に失敗しました。");
                 if (errors.password) {
                     reset("password", "password_confirmation");
                     passwordInput.current.focus();
@@ -120,7 +125,7 @@ export default function UpdatePasswordForm({ className = "" }) {
                             type={newPasswordType}
                             className="mt-1 block w-full"
                             autoComplete="new-password"
-                            placeholder="新しいパスワード（8〜12文字）"
+                            placeholder="新しいパスワード"
                         />
                         {newPasswordType === "password" ? (
                             <VisibilityOffIcon
@@ -154,7 +159,7 @@ export default function UpdatePasswordForm({ className = "" }) {
                             type={passwordConfirmationType}
                             className="mt-1 block w-full"
                             autoComplete="new-password"
-                            placeholder="パスワード確認"
+                            placeholder="パスワードの確認"
                         />
                         {passwordConfirmationType === "password" ? (
                             <VisibilityOffIcon
@@ -184,13 +189,23 @@ export default function UpdatePasswordForm({ className = "" }) {
                     <PrimaryButton disabled={processing}>保存</PrimaryButton>
 
                     <Transition
-                        show={recentlySuccessful}
+                        show={recentlySuccessful || errorMessage}
                         enter="transition ease-in-out"
                         enterFrom="opacity-0"
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-sm text-gray-600">保存しました。</p>
+                        <p
+                            className={`text-sm ${
+                                recentlySuccessful
+                                    ? "text-gray-600"
+                                    : "text-red-600"
+                            }`}
+                        >
+                            {recentlySuccessful
+                                ? "保存されました。"
+                                : errorMessage}
+                        </p>
                     </Transition>
                 </div>
             </form>

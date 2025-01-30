@@ -7,26 +7,24 @@ use Illuminate\Http\Request;
 use App\Http\Requests\Profile\ProfileShowRequest;
 use App\Http\Requests\Profile\ProfileUpdateRequest;
 use App\Http\Requests\Profile\PasswordUpdateRequest;
+use App\Http\Requests\Profile\DeleteProfileRequest;
 use App\Models\User;
 use App\Lib\APIResponse;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
+use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
     /**
-     * ユーザープロフィールを表示します。
+     * ユーザープロフィールを取得（API用）
      */
     public function show(ProfileShowRequest $request)
     {
-        $authUser = Auth::user();
+        $user = $request->user();
 
-        if (!$authUser) {
+        if (!$user) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-
-        // $authUserをApp\Models\User型にキャスト
-        $user = User::find($authUser->id);
 
         return response()->json([
             'user' => $user->user_info()
@@ -34,7 +32,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * ユーザープロフィールを更新します。
+     * ユーザープロフィールを更新（API用）
      */
     public function update(ProfileUpdateRequest $request)
     {
@@ -43,14 +41,14 @@ class ProfileController extends Controller
 
             $user->updateProfile($request->nickname, $request->email, $request->birthday, $request->login_id);
 
-            return redirect()->route('profile.edit')->with('status', 'Profile updated successfully'); // Inertiaレスポンスを返す
+            return response()->json(['message' => 'プロフィールが更新されました'], 200);
         } catch (\Exception $e) {
-            return redirect()->route('profile.edit')->with('error', 'There was an error updating the profile'); // エラーレスポンスを返す
+            return response()->json(['error' => 'プロフィールの更新中にエラーが発生しました'], 500);
         }
     }
 
     /**
-     * ユーザーパスワードを更新します。
+     * ユーザーパスワードを更新（API用）
      */
     public function password(PasswordUpdateRequest $request)
     {
@@ -65,33 +63,32 @@ class ProfileController extends Controller
     }
 
     /**
-     * ユーザーアカウントを削除します。
+     * ユーザーアカウントを削除（API用）
      */
-    public function destroy(Request $request)
+    public function destroy(DeleteProfileRequest $request)
     {
+        // 🔹 バリデーションを実行（失敗時は自動的にレスポンスを返す）
         $request->validate([
             'password' => ['required', 'current_password'],
         ]);
 
         $user = $request->user();
 
-        Auth::logout();
+        // 🔹 バリデーションに失敗したら処理を中断
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'errors' => ['password' => 'パスワードが正しくありません']
+            ], 422);
+        }
 
+        // 🔹 ログアウトしてユーザーを削除
+        Auth::logout();
         $user->delete();
 
+        // 🔹 セッションを無効化
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return APIResponse::success();
-    }
-
-    /**
-     * プロフィール編集画面を表示します。
-     */
-    public function edit()
-    {
-        return Inertia::render('Profile/Edit', [
-            'user' => Auth::user()
-        ]);
+        return response()->json(['message' => 'アカウントが削除されました'], 200);
     }
 }

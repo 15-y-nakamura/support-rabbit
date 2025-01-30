@@ -19,18 +19,6 @@ class ProfileShowRequest extends FormRequest
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
-    {
-        return [
-            'userId' => ['required', 'regex:/^[0-9a-zA-Z_]+$/', 'max:15']
-        ];
-    }
-
     protected function failedValidation(Validator $validator)
     {
         $errors = $validator->errors()->all();

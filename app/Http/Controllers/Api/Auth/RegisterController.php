@@ -3,52 +3,20 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\RegisterRequest; // RegisterRequestをインポート
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use App\Models\UserToken;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
-use Inertia\Response;
 use Exception;
 
 class RegisterController extends Controller
 {
     /**
-     * 登録画面を表示します。
+     * APIの登録処理
      */
-    public function create(): Response
-    {
-        return Inertia::render('Auth/RegisterForm');
-    }
-
-    /**
-     * 登録リクエストを処理します。
-     */
-    public function store(RegisterRequest $request) // RegisterRequestを使用
-    {
-        $user = User::create([
-            'login_id' => $request->login_id,
-            'nickname' => $request->nickname,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'birthday' => $request->birthday,
-        ]);
-
-        event(new Registered($user));
-
-        Auth::login($user);
-
-        // 登録成功時に/homeにリダイレクト
-        return redirect()->route('home');
-    }
-
-    /**
-     * API登録リクエストを処理します。
-     */
-    public function signup(RegisterRequest $request) // RegisterRequestを使用
+    public function signup(RegisterRequest $request)
     {
         try {
             // 新しいユーザーを作成
@@ -60,7 +28,7 @@ class RegisterController extends Controller
             // 登録イベントを発生させる
             event(new Registered($user));
 
-            return response()->json(['token' => $token->token]);
+            return response()->json(['token' => $token->token, 'user' => $user], 201);
         } catch (Exception $e) {
             Log::error('Signup failed', ['error' => $e->getMessage()]);
             return response()->json(['error' => '登録中にエラーが発生しました'], 500);
@@ -68,9 +36,9 @@ class RegisterController extends Controller
     }
 
     /**
-     * 新しいユーザーを作成します。
+     * 新しいユーザーを作成
      */
-    private function createUser(RegisterRequest $request): User // RegisterRequestを使用
+    private function createUser(RegisterRequest $request): User
     {
         return User::create([
             'login_id' => $request->login_id,
@@ -82,7 +50,7 @@ class RegisterController extends Controller
     }
 
     /**
-     * ユーザートークンを作成します。
+     * ユーザートークンを作成
      */
     private function createUserToken(User $user): UserToken
     {
