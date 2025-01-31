@@ -24,9 +24,7 @@ class CalendarEvent extends Model
         'notification',
         'is_recurring',
         'recurrence_type',
-        'latitude',
-        'longitude',
-    ];
+        'tag_id',    ];
 
     public function user()
     {

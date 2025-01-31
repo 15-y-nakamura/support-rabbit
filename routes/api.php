@@ -19,7 +19,7 @@ Route::prefix('v2/auth')->middleware('guest')->group(function () {
     Route::post('reset-password', [ApiPasswordResetController::class, 'resetPassword']);
 });
 
-Route::prefix('v2')->middleware('auth:sanctum')->group(function () {
+Route::prefix('v2')->group(function () {
     Route::post('logout', [ApiLogoutController::class, 'logout']);
 
     //プロフィール API

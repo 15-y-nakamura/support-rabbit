@@ -19,8 +19,9 @@ class UserToken extends Model
     public $incrementing = false;
 
     protected $fillable = [
+        'user_id',
         'token',
-        'expiration_time'
+        'expiration_time',
     ];
 
     protected $hidden = [

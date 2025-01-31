@@ -50,24 +50,15 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
             const recurrenceData = isRecurring
                 ? {
                       recurrence_type: recurrenceType,
-                      recurrence_days:
-                          recurrenceType === "weekly" ? recurrenceDays : null,
                       recurrence_date: ["monthly", "yearly"].includes(
                           recurrenceType
                       )
                           ? recurrenceDate
                           : null,
-                      recurrence_start_time: startTime
-                          .split("T")[1]
-                          .slice(0, 5),
-                      recurrence_end_time: endTime.split("T")[1].slice(0, 5),
                   }
                 : {
                       recurrence_type: "none",
-                      recurrence_days: null,
                       recurrence_date: null,
-                      recurrence_start_time: null,
-                      recurrence_end_time: null,
                   };
 
             console.log("送信データ:", {
@@ -137,7 +128,6 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                     case "weekly":
                         await axios.post("/api/v2/calendar/weekly_events", {
                             event_id: eventId,
-                            recurrence_days: recurrenceDays,
                             title,
                             description,
                             start_time: eventStartTime,
@@ -195,7 +185,6 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
             setLink("");
             setNote("");
             setSelectedTag(null);
-            setRecurrenceDays([]);
             setRecurrenceDate("");
         } catch (error) {
             console.error(

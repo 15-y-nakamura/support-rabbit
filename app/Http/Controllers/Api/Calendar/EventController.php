@@ -1,14 +1,14 @@
 <?php
-
 namespace App\Http\Controllers\Api\Calendar;
 
 use App\Models\CalendarEvent;
 use App\Models\RecurringEvent;
+use App\Models\UserToken;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Calendar\EventRequest;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log; // 追加
+use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
 {
@@ -70,17 +70,26 @@ class EventController extends Controller
     public function store(EventRequest $req)
     {
         try {
+            // トークンを使用してユーザーを認証
+            $token = $req->bearerToken();
+            $userToken = UserToken::where('token', $token)->first();
+    
+            if (!$userToken || $userToken->expiration_time < now()) {
+                throw new \Exception('User not authenticated');
+            }
+    
             $validated = $req->validated();
-
-            $event = CalendarEvent::create(array_merge($validated, ['user_id' => $req->user()->id]));
-
+    
+            $event = CalendarEvent::create(array_merge($validated, ['user_id' => $userToken->user_id]));
+    
             if (isset($validated['tag_id'])) {
                 $event->tag_id = $validated['tag_id'];
                 $event->save();
             }
-
+    
             return response()->json(['message' => 'イベントが作成されました', 'event' => $event], 201);
         } catch (\Exception $e) {
+            Log::error('Error creating event: ' . $e->getMessage(), ['exception' => $e]);
             return response(['error' => $e->getMessage()], 500);
         }
     }
