@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+// 認証トークンを取得する関数
+const getAuthToken = () => {
+    return localStorage.getItem("authToken");
+};
+
 export default function CreateEventForm({ onEventCreated, selectedDate }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -32,7 +37,15 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
     const fetchTags = async () => {
         setLoadingTags(true);
         try {
-            const response = await axios.get("/api/v2/calendar/tags");
+            const authToken = getAuthToken();
+            if (!authToken) {
+                throw new Error("Auth token is missing");
+            }
+            const response = await axios.get("/api/v2/calendar/tags", {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                },
+            });
             setTags(response.data.tags);
         } catch (error) {
             console.error("タグの取得中にエラーが発生しました:", error);
@@ -44,6 +57,10 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const authToken = getAuthToken();
+            if (!authToken) {
+                throw new Error("Auth token is missing");
+            }
             const eventStartTime = allDay ? `${allDayDate}T00:00` : startTime;
             const eventEndTime = allDay ? `${allDayDate}T23:59` : endTime;
 
@@ -77,21 +94,29 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                 tag_id: selectedTag ? selectedTag.id : null,
             });
 
-            const response = await axios.post("/api/v2/calendar/events", {
-                title,
-                description,
-                start_time: eventStartTime,
-                end_time: eventEndTime,
-                is_recurring: isRecurring,
-                ...recurrenceData,
-                all_day: allDay,
-                all_day_date: allDay ? allDayDate : null,
-                notification,
-                location,
-                link,
-                note,
-                tag_id: selectedTag ? selectedTag.id : null,
-            });
+            const response = await axios.post(
+                "/api/v2/calendar/events",
+                {
+                    title,
+                    description,
+                    start_time: eventStartTime,
+                    end_time: eventEndTime,
+                    is_recurring: isRecurring,
+                    ...recurrenceData,
+                    all_day: allDay,
+                    all_day_date: allDay ? allDayDate : null,
+                    notification,
+                    location,
+                    link,
+                    note,
+                    tag_id: selectedTag ? selectedTag.id : null,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${authToken}`,
+                    },
+                }
+            );
 
             console.log("作成されたイベント:", response.data.event);
             const eventId = response.data.event.id;
@@ -99,72 +124,113 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
             if (isRecurring) {
                 switch (recurrenceType) {
                     case "weekday":
-                        await axios.post("/api/v2/calendar/weekday-events", {
-                            event_id: eventId,
-                            title,
-                            description,
-                            start_time: eventStartTime,
-                            end_time: eventEndTime,
-                            all_day: allDay,
-                            location,
-                            link,
-                            notification,
-                            recurrence_type: recurrenceType,
-                        });
+                        await axios.post(
+                            "/api/v2/calendar/weekday-events",
+                            {
+                                event_id: eventId,
+                                title,
+                                description,
+                                start_time: eventStartTime,
+                                end_time: eventEndTime,
+                                all_day: allDay,
+                                location,
+                                link,
+                                notification,
+                                recurrence_type: recurrenceType,
+                                tag_id: selectedTag ? selectedTag.id : null,
+                            },
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${authToken}`,
+                                },
+                            }
+                        );
                         break;
                     case "weekend":
-                        await axios.post("/api/v2/calendar/events", {
-                            event_id: eventId,
-                            title,
-                            description,
-                            start_time: eventStartTime,
-                            end_time: eventEndTime,
-                            all_day: allDay,
-                            location,
-                            link,
-                            notification,
-                        });
+                        await axios.post(
+                            "/api/v2/calendar/events",
+                            {
+                                event_id: eventId,
+                                title,
+                                description,
+                                start_time: eventStartTime,
+                                end_time: eventEndTime,
+                                all_day: allDay,
+                                location,
+                                link,
+                                notification,
+                            },
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${authToken}`,
+                                },
+                            }
+                        );
                         break;
                     case "weekly":
-                        await axios.post("/api/v2/calendar/weekly_events", {
-                            event_id: eventId,
-                            title,
-                            description,
-                            start_time: eventStartTime,
-                            end_time: eventEndTime,
-                            all_day: allDay,
-                            location,
-                            link,
-                            notification,
-                        });
+                        await axios.post(
+                            "/api/v2/calendar/weekly_events",
+                            {
+                                event_id: eventId,
+                                title,
+                                description,
+                                start_time: eventStartTime,
+                                end_time: eventEndTime,
+                                all_day: allDay,
+                                location,
+                                link,
+                                notification,
+                            },
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${authToken}`,
+                                },
+                            }
+                        );
                         break;
                     case "monthly":
-                        await axios.post("/api/v2/calendar/monthly_events", {
-                            event_id: eventId,
-                            recurrence_date: recurrenceDate,
-                            title,
-                            description,
-                            start_time: eventStartTime,
-                            end_time: eventEndTime,
-                            all_day: allDay,
-                            location,
-                            link,
-                            notification,
-                        });
+                        await axios.post(
+                            "/api/v2/calendar/monthly_events",
+                            {
+                                event_id: eventId,
+                                recurrence_date: recurrenceDate,
+                                title,
+                                description,
+                                start_time: eventStartTime,
+                                end_time: eventEndTime,
+                                all_day: allDay,
+                                location,
+                                link,
+                                notification,
+                            },
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${authToken}`,
+                                },
+                            }
+                        );
                         break;
                     case "yearly":
-                        await axios.post("/api/v2/calendar/yearly_events", {
-                            event_id: eventId,
-                            recurrence_date: recurrenceDate,
-                            title,
-                            description,
-                            start_time: eventStartTime,
-                            end_time: eventEndTime,
-                            all_day: allDay,
-                            location,
-                            link,
-                            notification,
-                        });
+                        await axios.post(
+                            "/api/v2/calendar/yearly_events",
+                            {
+                                event_id: eventId,
+                                recurrence_date: recurrenceDate,
+                                title,
+                                description,
+                                start_time: eventStartTime,
+                                end_time: eventEndTime,
+                                all_day: allDay,
+                                location,
+                                link,
+                                notification,
+                            },
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${authToken}`,
+                                },
+                            }
+                        );
                         break;
                     default:
                         break;

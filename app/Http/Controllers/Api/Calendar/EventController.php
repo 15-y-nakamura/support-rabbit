@@ -15,7 +15,7 @@ class EventController extends Controller
     public function index(Request $req)
     {
         try {
-            $calendarEvents = CalendarEvent::with('weekday_events')->where('is_recurring', 0)->orderBy('id', 'desc');
+            $calendarEvents = CalendarEvent::with(['weekday_events', 'tag'])->where('is_recurring', 0)->orderBy('id', 'desc');
 
             // 検索条件がある場合はフィルタリング
             if ($req->has('searchQuery')) {
@@ -56,6 +56,7 @@ class EventController extends Controller
                     'recurrence_start_time' => $event->recurrence_start_time,
                     'recurrence_end_time' => $event->recurrence_end_time,
                     'tag_id' => $event->tag_id,
+                    'tag' => $event->tag, // タグ情報を追加
                     'weekday_events' => $event->weekday_events,
                 ];
             });
@@ -72,9 +73,9 @@ class EventController extends Controller
         try {
             // トークンを使用してユーザーを認証
             $token = $req->bearerToken();
-            $userToken = UserToken::where('token', $token)->first();
+            $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
     
-            if (!$userToken || $userToken->expiration_time < now()) {
+            if (!$userToken) {
                 throw new \Exception('User not authenticated');
             }
     
@@ -97,7 +98,7 @@ class EventController extends Controller
     public function show(Request $req, $id)
     {
         try {
-            $event = CalendarEvent::find($id);
+            $event = CalendarEvent::with('tag')->find($id);
             if (!$event) return response(['error' => 'イベントが見つかりません'], 404);
 
             return response()->json([
@@ -117,6 +118,7 @@ class EventController extends Controller
                 'recurrence_start_time' => $event->recurrence_start_time,
                 'recurrence_end_time' => $event->recurrence_end_time,
                 'tag_id' => $event->tag_id,
+                'tag' => $event->tag, // タグ情報を追加
             ]);
         } catch (\Exception $e) {
             return response(['error' => $e->getMessage()], 500);

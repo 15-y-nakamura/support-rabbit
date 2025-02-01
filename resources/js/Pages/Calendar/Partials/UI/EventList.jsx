@@ -6,9 +6,8 @@ export default function EventList({
     handleEventSelect,
     handleDeleteSelectedEvents,
     handleEventDetail,
-    handleEventComplete, // 新しいハンドラを追加
+    handleEventComplete,
 }) {
-    // イベントをstart_timeが早い順にソートし、同じstart_timeのものはend_timeが早い順に並べる
     const sortedEvents = selectedDateEvents.sort((a, b) => {
         const startA = new Date(a.start_time);
         const startB = new Date(b.start_time);
@@ -21,7 +20,6 @@ export default function EventList({
         return startA - startB;
     });
 
-    // 時間単位ごとにイベントをグループ化
     const groupedEvents = sortedEvents.reduce((acc, event) => {
         const startHour = new Date(event.start_time).getHours();
         if (!acc[startHour]) {
@@ -88,7 +86,35 @@ export default function EventList({
                                                 })}
                                             </span>
                                             {" 　"}
-                                            {event.title}
+                                            <span className="font-bold">
+                                                {event.title}
+                                            </span>
+                                            {/* タグが存在する場合に表示 */}
+                                            {event.tag && (
+                                                <div
+                                                    className="ml-2 text-sm text-white px-2 py-1 rounded"
+                                                    style={{
+                                                        backgroundColor:
+                                                            event.tag.color ||
+                                                            "#3b82f6", // デフォルトは青
+                                                    }}
+                                                >
+                                                    {event.tag.name}
+                                                </div>
+                                            )}
+                                            {/* weekday_events の tag_id が存在する場合に表示 */}
+                                            {!event.tag && event.tag_id && (
+                                                <div
+                                                    className="ml-2 text-sm text-white px-2 py-1 rounded"
+                                                    style={{
+                                                        backgroundColor:
+                                                            event.tag_color ||
+                                                            "#3b82f6", // デフォルトは青
+                                                    }}
+                                                >
+                                                    {event.tag_name}
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <button

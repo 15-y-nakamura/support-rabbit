@@ -25,15 +25,11 @@ class CreateWeekdayEventsTable extends Migration
             $table->string('link')->nullable();
             $table->string('notification')->nullable();
             $table->enum('recurrence_type', ['none', 'weekday', 'weekend', 'weekly', 'monthly', 'yearly'])->default('none'); // 繰り返しの種類
+            $table->foreignId('tag_id')->nullable()->constrained('calendar_tags')->onDelete('set null'); // タグの外部キー
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('weekday_events');

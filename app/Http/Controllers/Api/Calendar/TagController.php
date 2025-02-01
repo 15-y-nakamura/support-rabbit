@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Calendar;
 
 use App\Models\Tag;
+use App\Models\UserToken;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Calendar\TagRequest;
 use Illuminate\Http\Request;
@@ -32,16 +33,25 @@ class TagController extends Controller
     public function store(TagRequest $req)
     {
         try {
+            // トークンを使用してユーザーを認証
+            $token = $req->bearerToken();
+            Log::info('Received Token:', ['token' => $token]);
+            $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
+    
+            if (!$userToken) {
+                throw new \Exception('User not authenticated');
+            }
+    
             $validated = $req->validated();
-
-            $tag = Tag::create(array_merge($validated, ['user_id' => $req->user()->id]));
-
+            $tag = Tag::create(array_merge($validated, ['user_id' => $userToken->user_id]));
+    
             return response()->json(['message' => 'タグが作成されました', 'tag' => $tag], 201);
         } catch (\Exception $e) {
+            Log::error('Error creating tag: ' . $e->getMessage(), ['exception' => $e]);
             return response(['error' => $e->getMessage()], 500);
         }
     }
-
+    
     public function show(Request $req, $id)
     {
         try {

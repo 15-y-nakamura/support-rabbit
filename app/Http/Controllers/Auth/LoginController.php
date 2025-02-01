@@ -9,6 +9,7 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UserToken;
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
@@ -29,14 +30,14 @@ class LoginController extends Controller
      * ログイン処理
      *
      * @param  \App\Http\Requests\Auth\LoginRequest  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\JsonResponse
      */
     public function login(LoginRequest $request)
     {
         $credentials = $request->only('login_id', 'password');
 
         // 認証試行
-        if (Auth::attempt($credentials,)) {
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
             // ユーザーのトークンを管理する処理を追加
@@ -44,13 +45,13 @@ class LoginController extends Controller
             $this->deleteExistingToken($user);
             $token = $this->createUserToken($user);
 
-            return redirect()->intended(route('home'));
+            Log::info('User logged in successfully', ['user_id' => $user->id, 'token' => $token->token]);
+
+            return response()->json(['token' => $token->token, 'user' => $user], 200);
         }
 
         // 認証失敗時
-        return back()->withErrors([
-            'login' => 'ユーザIDまたはパスワードが違います',
-        ])->onlyInput('login_id');
+        return response()->json(['error' => 'ユーザIDまたはパスワードが違います'], 401);
     }
 
     /**

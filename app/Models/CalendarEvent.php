@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,16 +23,17 @@ class CalendarEvent extends Model
         'notification',
         'is_recurring',
         'recurrence_type',
-        'tag_id',    ];
+        'tag_id',
+    ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function tags()
+    public function tag()
     {
-        return $this->belongsToMany(Tag::class, 'calendar_event_tag');
+        return $this->belongsTo(Tag::class, 'tag_id');
     }
 
     public function weekday_events()

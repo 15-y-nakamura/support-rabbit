@@ -24,6 +24,6 @@ class Tag extends Model
 
     public function events()
     {
-        return $this->belongsToMany(Event::class, 'calendar_event_tag');
+        return $this->belongsToMany(CalendarEvent::class, 'calendar_event_tag');
     }
 }

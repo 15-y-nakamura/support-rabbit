@@ -21,5 +21,13 @@ class WeekdayEvent extends Model
         'link',
         'notification',
         'recurrence_type', // 繰り返しの種類
+        'tag_id',
     ];
+
+    
+    // Tagリレーションの追加
+    public function tag()
+    {
+        return $this->belongsTo(Tag::class, 'tag_id');
+    }
 }

@@ -15,7 +15,7 @@ class UserToken extends Model
 
     const FROZEN_STATUS = 'frozen'; // 定数を追加
 
-    protected $primaryKey = 'user_id';
+    protected $primaryKey = 'id';
     public $incrementing = false;
 
     protected $fillable = [
@@ -37,9 +37,14 @@ class UserToken extends Model
 
     public function createToken(User $user)
     {
-        while (!$this->token || self::where('token', $this->token)->exists()) {
+        // 古いトークンを削除
+        self::where('user_id', $user->id)->delete();
+
+        // 新しいトークンを生成
+        do {
             $this->token = Str::random(128);
-        }
+        } while (self::where('token', $this->token)->exists());
+
         $this->expiration_time = now()->addMonth();
         $this->user_id = $user->id;
         $this->saveOrFail();

@@ -45,15 +45,6 @@ export default function EditEventForm({
     const [isEditing, setIsEditing] = useState(false);
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
-    const defaultTags = [
-        { id: "default-1", name: "お出かけ", color: "#FF0000" },
-        { id: "default-2", name: "仕事", color: "#00FF00" },
-        { id: "default-3", name: "勉強", color: "#0000FF" },
-        { id: "default-4", name: "家事", color: "#FFFF00" },
-        { id: "default-5", name: "健康", color: "#FF00FF" },
-        { id: "default-6", name: "自由時間", color: "#00FFFF" },
-    ];
-
     useEffect(() => {
         fetchTags();
     }, []);
@@ -62,10 +53,9 @@ export default function EditEventForm({
         setLoadingTags(true);
         try {
             const response = await axios.get("/api/v2/calendar/tags");
-            setTags([...defaultTags, ...response.data.tags]);
+            setTags(response.data.tags);
         } catch (error) {
             console.error("Error fetching tags:", error);
-            setTags(defaultTags); // デフォルトタグのみを設定
         } finally {
             setLoadingTags(false);
         }
@@ -429,7 +419,7 @@ export default function EditEventForm({
                             onClose={() => setShowDeleteConfirmation(false)}
                             onDelete={handleDelete}
                             isRecurring={isRecurring}
-                            recurrenceType={recurrenceType} // 追加
+                            recurrenceType={recurrenceType}
                         />
                     )}
                 </div>

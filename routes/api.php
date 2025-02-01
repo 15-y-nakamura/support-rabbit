@@ -49,7 +49,8 @@ Route::prefix('v2')->group(function () {
     //Weekday イベント API
     Route::controller(WeekdayEventsController::class)->prefix('calendar/weekday-events')->group(function () {
         Route::get('/', 'index');
-        Route::post('/',  'store'); 
+        Route::get('{id}', 'show');
+        Route::post('/', 'store'); 
         Route::delete('{id}', 'destroy');
         Route::delete('{id}/all', 'destroyAll');
     });
