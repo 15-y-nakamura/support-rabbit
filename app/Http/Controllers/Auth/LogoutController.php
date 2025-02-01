@@ -22,6 +22,26 @@ class LogoutController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/')->with('status', 'ログアウトしました。');
+        return redirect('/login')->with('status', 'ログアウトしました。');
+    }
+
+    /**
+     * APIログアウト処理
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function apiLogout(Request $request)
+    {
+        $user = $request->user();
+
+        // ユーザーのトークンを削除
+        if ($user && $user->currentAccessToken()) {
+            $user->currentAccessToken()->delete();
+        }
+
+        return response()->json([
+            'message' => 'ログアウトしました。'
+        ], 200);
     }
 }

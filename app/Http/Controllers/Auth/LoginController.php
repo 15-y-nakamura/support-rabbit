@@ -55,6 +55,37 @@ class LoginController extends Controller
     }
 
     /**
+     * APIログイン処理
+     *
+     * @param  \App\Http\Requests\Auth\LoginRequest  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function apiLogin(LoginRequest $request)
+    {
+        // ユーザー取得
+        $user = User::where('login_id', $request->login_id)->first();
+
+        if (!$user || !Auth::attempt($request->only('login_id', 'password'))) {
+            return response()->json([
+                'message' => 'ユーザIDまたはパスワードが違います',
+                'code' => 'invalid_credentials'
+            ], 401);
+        }
+
+        // 既存のトークン削除
+        $this->deleteExistingToken($user);
+
+        // 新しいトークンを作成
+        $token = $this->createUserToken($user);
+
+        return response()->json([
+            'message' => 'ログイン成功',
+            'token' => $token->token,
+            'user' => $user
+        ], 200);
+    }
+
+    /**
      * ログアウト処理
      *
      * @param  \Illuminate\Http\Request  $request
@@ -67,6 +98,24 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/')->with('status', 'ログアウトしました。');
+    }
+
+    /**
+     * APIログアウト処理
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function apiLogout(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user && $user->user_token) {
+            $user->user_token->delete();
+        }
+
+        Auth::guard('sanctum')->logout();
+        return response()->json(['message' => 'ログアウトしました。'], 200);
     }
 
     /**

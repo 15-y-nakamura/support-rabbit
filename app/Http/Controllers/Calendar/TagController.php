@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Calendar;
+namespace App\Http\Controllers\Calendar;
 
 use App\Models\Tag;
 use App\Models\UserToken;

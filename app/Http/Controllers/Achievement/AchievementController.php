@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Achievement;
+namespace App\Http\Controllers\Achievement;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;

@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\Api\Calendar;
+namespace App\Http\Controllers\Calendar;
 
 use App\Models\CalendarEvent;
 use App\Models\RecurringEvent;
@@ -172,7 +172,7 @@ class EventController extends Controller
                 ->delete();
 
             // 関連するweekdayイベントも削除
-            app('App\Http\Controllers\Api\Calendar\WeekdayEventsController')->destroyAll($event->id);
+            app('App\Http\Controllers\Calendar\WeekdayEventsController')->destroyAll($event->id);
 
             return response()->json(['message' => 'すべての関連イベントが削除されました'], 200);
         } catch (\Exception $e) {
