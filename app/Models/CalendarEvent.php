@@ -12,18 +12,17 @@ class CalendarEvent extends Model
 
     protected $fillable = [
         'user_id',
-        'event_id',
         'title',
-        'description',
         'start_time',
         'end_time',
         'all_day',
+        'notification',
         'location',
         'link',
-        'notification',
+        'tag_id',
+        'description',
         'is_recurring',
         'recurrence_type',
-        'tag_id',
     ];
 
     public function user()
@@ -38,6 +37,26 @@ class CalendarEvent extends Model
 
     public function weekday_events()
     {
-        return $this->hasMany(RecurringEvent::class, 'event_id');
+        return $this->hasMany(WeekdayEvent::class, 'event_id');
+    }
+
+    public function weekend_events()
+    {
+        return $this->hasMany(WeekendEvent::class, 'event_id');
+    }
+
+    public function weekly_events()
+    {
+        return $this->hasMany(WeeklyEvent::class, 'event_id');
+    }
+
+    public function monthly_events()
+    {
+        return $this->hasMany(MonthlyEvent::class, 'event_id');
+    }
+
+    public function yearly_events()
+    {
+        return $this->hasMany(YearlyEvent::class, 'event_id');
     }
 }

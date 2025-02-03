@@ -15,7 +15,9 @@ class EventController extends Controller
     public function index(Request $req)
     {
         try {
-            $calendarEvents = CalendarEvent::with(['weekday_events', 'tag'])->where('is_recurring', 0)->orderBy('id', 'desc');
+            Log::info('Fetching calendar events with parameters:', $req->all());
+
+            $calendarEvents = CalendarEvent::with(['weekday_events', 'weekend_events', 'weekly_events', 'monthly_events', 'yearly_events', 'tag'])->where('is_recurring', 0)->orderBy('id', 'desc');
 
             // 検索条件がある場合はフィルタリング
             if ($req->has('searchQuery')) {
@@ -41,23 +43,23 @@ class EventController extends Controller
             $res = $calendarEvents->map(function ($event) {
                 return [
                     'id' => $event->id,
+                    // 'user_id' => $event->user_id,
                     'title' => $event->title,
-                    'description' => $event->description,
                     'start_time' => $event->start_time,
                     'end_time' => $event->end_time,
                     'all_day' => $event->all_day,
+                    'notification' => $event->notification,
                     'location' => $event->location,
                     'link' => $event->link,
-                    'notification' => $event->notification,
+                    'tag_id' => $event->tag_id,
+                    'description' => $event->description,
                     'is_recurring' => $event->is_recurring,
                     'recurrence_type' => $event->recurrence_type,
-                    'recurrence_dates' => $event->recurrence_dates,
-                    'recurrence_days' => $event->recurrence_days,
-                    'recurrence_start_time' => $event->recurrence_start_time,
-                    'recurrence_end_time' => $event->recurrence_end_time,
-                    'tag_id' => $event->tag_id,
-                    'tag' => $event->tag, // タグ情報を追加
                     'weekday_events' => $event->weekday_events,
+                    'weekend_events' => $event->weekend_events,
+                    'weekly_events' => $event->weekly_events,
+                    'monthly_events' => $event->monthly_events,
+                    'yearly_events' => $event->yearly_events,
                 ];
             });
 
@@ -68,11 +70,13 @@ class EventController extends Controller
         }
     }
 
+
     public function store(EventRequest $req)
     {
         try {
             // トークンを使用してユーザーを認証
             $token = $req->bearerToken();
+            Log::info('Received Token:', ['token' => $token]);
             $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
     
             if (!$userToken) {
@@ -80,6 +84,7 @@ class EventController extends Controller
             }
     
             $validated = $req->validated();
+            Log::info('Validated Data:', $validated);
     
             $event = CalendarEvent::create(array_merge($validated, ['user_id' => $userToken->user_id]));
     
@@ -98,27 +103,28 @@ class EventController extends Controller
     public function show(Request $req, $id)
     {
         try {
-            $event = CalendarEvent::with('tag')->find($id);
+            $event = CalendarEvent::with(['tag', 'weekday_events', 'weekend_events', 'weekly_events', 'monthly_events', 'yearly_events'])->find($id);
             if (!$event) return response(['error' => 'イベントが見つかりません'], 404);
 
             return response()->json([
                 'id' => $event->id,
+                // 'user_id' => $event->user_id,
                 'title' => $event->title,
-                'description' => $event->description,
                 'start_time' => $event->start_time,
                 'end_time' => $event->end_time,
                 'all_day' => $event->all_day,
+                'notification' => $event->notification,
                 'location' => $event->location,
                 'link' => $event->link,
-                'notification' => $event->notification,
+                'tag_id' => $event->tag_id,
+                'description' => $event->description,
                 'is_recurring' => $event->is_recurring,
                 'recurrence_type' => $event->recurrence_type,
-                'recurrence_dates' => $event->recurrence_dates,
-                'recurrence_days' => $event->recurrence_days,
-                'recurrence_start_time' => $event->recurrence_start_time,
-                'recurrence_end_time' => $event->recurrence_end_time,
-                'tag_id' => $event->tag_id,
-                'tag' => $event->tag, // タグ情報を追加
+                'weekday_events' => $event->weekday_events,
+                'weekend_events' => $event->weekend_events,
+                'weekly_events' => $event->weekly_events,
+                'monthly_events' => $event->monthly_events,
+                'yearly_events' => $event->yearly_events,
             ]);
         } catch (\Exception $e) {
             return response(['error' => $e->getMessage()], 500);
@@ -173,6 +179,10 @@ class EventController extends Controller
 
             // 関連するweekdayイベントも削除
             app('App\Http\Controllers\Calendar\WeekdayEventsController')->destroyAll($event->id);
+            app('App\Http\Controllers\Calendar\WeekendEventsController')->destroyAll($event->id);
+            app('App\Http\Controllers\Calendar\WeeklyEventsController')->destroyAll($event->id);
+            app('App\Http\Controllers\Calendar\MonthlyEventsController')->destroyAll($event->id);
+            app('App\Http\Controllers\Calendar\YearlyEventsController')->destroyAll($event->id);
 
             return response()->json(['message' => 'すべての関連イベントが削除されました'], 200);
         } catch (\Exception $e) {

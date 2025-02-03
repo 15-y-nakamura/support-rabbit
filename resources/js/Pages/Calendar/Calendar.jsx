@@ -35,11 +35,30 @@ export default function Calendar() {
     const fetchEvents = async () => {
         setIsLoading(true); // ローディング開始
         try {
-            const [eventsResponse, weekdayResponse] = await Promise.all([
+            const [
+                eventsResponse,
+                weekdayResponse,
+                weekendResponse,
+                weeklyResponse,
+                monthlyResponse,
+                yearlyResponse,
+            ] = await Promise.all([
                 axios.get("/api/v2/calendar/events", {
                     params: { searchQuery, tagId: selectedTag },
                 }),
                 fetch("/api/v2/calendar/weekday-events").then((res) =>
+                    res.json()
+                ),
+                fetch("/api/v2/calendar/weekend-events").then((res) =>
+                    res.json()
+                ),
+                fetch("/api/v2/calendar/weekly-events").then((res) =>
+                    res.json()
+                ),
+                fetch("/api/v2/calendar/monthly-events").then((res) =>
+                    res.json()
+                ),
+                fetch("/api/v2/calendar/yearly-events").then((res) =>
                     res.json()
                 ),
             ]);
@@ -47,6 +66,10 @@ export default function Calendar() {
             const allEvents = [
                 ...eventsResponse.data.events,
                 ...weekdayResponse,
+                ...weekendResponse,
+                ...weeklyResponse,
+                ...monthlyResponse,
+                ...yearlyResponse,
             ];
             setEvents(allEvents);
 
@@ -125,31 +148,65 @@ export default function Calendar() {
     const handleDeleteSelectedEvents = () => {
         setShowDeleteConfirmation(true);
     };
-
     // 選択されたイベントが weekday イベントとそれ以外のイベントが混在しているかどうかを判定
     const isMixedSelection = (() => {
         let hasWeekdayEvent = false;
+        let hasWeekendEvent = false;
+        let hasWeeklyEvent = false;
+        let hasMonthlyEvent = false;
+        let hasYearlyEvent = false;
         let hasNonWeekdayEvent = false;
+        let hasNonWeekendEvent = false;
+        let hasNonWeeklyEvent = false;
+        let hasNonMonthlyEvent = false;
+        let hasNonYearlyEvent = false;
 
         for (let i = 0; i < selectedEvents.length; i++) {
             const eventId = selectedEvents[i];
             const event = events.find((event) => event.id === eventId);
 
             if (event) {
-                if (event.recurrence_type === "weekday") {
-                    hasWeekdayEvent = true;
-                } else {
-                    hasNonWeekdayEvent = true;
+                switch (event.recurrence_type) {
+                    case "weekday":
+                        hasWeekdayEvent = true;
+                        break;
+                    case "weekend":
+                        hasWeekendEvent = true;
+                        break;
+                    case "weekly":
+                        hasWeeklyEvent = true;
+                        break;
+                    case "monthly":
+                        hasMonthlyEvent = true;
+                        break;
+                    case "yearly":
+                        hasYearlyEvent = true;
+                        break;
+                    default:
+                        hasNonWeekdayEvent = true;
+                        break;
                 }
 
-                // 両方のタイプが見つかったら、早期にループを終了
-                if (hasWeekdayEvent && hasNonWeekdayEvent) {
+                // 複数のタイプが見つかったら、早期にループを終了
+                if (
+                    (hasWeekdayEvent && hasNonWeekdayEvent) ||
+                    (hasWeekendEvent && hasNonWeekendEvent) ||
+                    (hasWeeklyEvent && hasNonWeeklyEvent) ||
+                    (hasMonthlyEvent && hasNonMonthlyEvent) ||
+                    (hasYearlyEvent && hasNonYearlyEvent)
+                ) {
                     return true;
                 }
             }
         }
 
-        return hasWeekdayEvent && hasNonWeekdayEvent;
+        return (
+            (hasWeekdayEvent && hasNonWeekdayEvent) ||
+            (hasWeekendEvent && hasNonWeekdayEvent) ||
+            (hasWeeklyEvent && hasNonWeekdayEvent) ||
+            (hasMonthlyEvent && hasNonWeekdayEvent) ||
+            (hasYearlyEvent && hasNonWeekdayEvent)
+        );
     })();
 
     const handleEventDetail = (event) => {

@@ -36,7 +36,13 @@ export default function RegisterForm() {
     const submit = (e) => {
         e.preventDefault();
         post(route("register"), {
-            onSuccess: () => reset("password", "password_confirmation"),
+            onSuccess: (page) => {
+                const token = page.props.auth.token;
+                if (token) {
+                    localStorage.setItem("authToken", token);
+                }
+                reset("password", "password_confirmation");
+            },
         });
     };
 

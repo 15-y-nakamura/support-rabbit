@@ -34,15 +34,47 @@ export default function DeleteEventModal({
             const eventId = selectedEvents[i];
             const event = events.find((e) => e.id === eventId);
             if (event) {
-                const response = await axios.get(
-                    `/api/v2/calendar/weekday-events`,
-                    {
+                const [
+                    weekdayResponse,
+                    weekendResponse,
+                    weeklyResponse,
+                    monthlyResponse,
+                    yearlyResponse,
+                ] = await Promise.all([
+                    axios.get(`/api/v2/calendar/weekday-events`, {
                         params: { event_id: event.event_id },
-                    }
-                );
-                related[eventId] = response.data.filter(
-                    (e) => e.event_id === event.event_id && e.id !== eventId
-                );
+                    }),
+                    axios.get(`/api/v2/calendar/weekend-events`, {
+                        params: { event_id: event.event_id },
+                    }),
+                    axios.get(`/api/v2/calendar/weekly-events`, {
+                        params: { event_id: event.event_id },
+                    }),
+                    axios.get(`/api/v2/calendar/monthly-events`, {
+                        params: { event_id: event.event_id },
+                    }),
+                    axios.get(`/api/v2/calendar/yearly-events`, {
+                        params: { event_id: event.event_id },
+                    }),
+                ]);
+
+                related[eventId] = [
+                    ...weekdayResponse.data.filter(
+                        (e) => e.event_id === event.event_id && e.id !== eventId
+                    ),
+                    ...weekendResponse.data.filter(
+                        (e) => e.event_id === event.event_id && e.id !== eventId
+                    ),
+                    ...weeklyResponse.data.filter(
+                        (e) => e.event_id === event.event_id && e.id !== eventId
+                    ),
+                    ...monthlyResponse.data.filter(
+                        (e) => e.event_id === event.event_id && e.id !== eventId
+                    ),
+                    ...yearlyResponse.data.filter(
+                        (e) => e.event_id === event.event_id && e.id !== eventId
+                    ),
+                ];
             }
         }
         setRelatedEvents(related);
@@ -83,10 +115,29 @@ export default function DeleteEventModal({
             if (!deleteAll[eventId]) continue;
 
             const event = events.find((e) => e.id === eventId);
-            const url =
-                event.recurrence_type === "weekday"
-                    ? `/api/v2/calendar/weekday-events/${eventId}`
-                    : `/api/v2/calendar/events/${eventId}`;
+            let url;
+
+            switch (event.recurrence_type) {
+                case "weekday":
+                    url = `/api/v2/calendar/weekday-events/${eventId}`;
+                    break;
+                case "weekend":
+                    url = `/api/v2/calendar/weekend-events/${eventId}`;
+                    break;
+                case "weekly":
+                    url = `/api/v2/calendar/weekly-events/${eventId}`;
+                    break;
+                case "monthly":
+                    url = `/api/v2/calendar/monthly-events/${eventId}`;
+                    break;
+                case "yearly":
+                    url = `/api/v2/calendar/yearly-events/${eventId}`;
+                    break;
+                default:
+                    url = `/api/v2/calendar/events/${eventId}`;
+                    break;
+            }
+
             await deleteEvent(url);
 
             const relatedEventIds =
@@ -94,9 +145,30 @@ export default function DeleteEventModal({
             for (let j = 0; j < relatedEventIds.length; j++) {
                 const relatedEventId = relatedEventIds[j];
                 if (deleteAll[relatedEventId]) {
-                    await deleteEvent(
-                        `/api/v2/calendar/weekday-events/${relatedEventId}`
-                    );
+                    let relatedUrl;
+
+                    switch (event.recurrence_type) {
+                        case "weekday":
+                            relatedUrl = `/api/v2/calendar/weekday-events/${relatedEventId}`;
+                            break;
+                        case "weekend":
+                            relatedUrl = `/api/v2/calendar/weekend-events/${relatedEventId}`;
+                            break;
+                        case "weekly":
+                            relatedUrl = `/api/v2/calendar/weekly-events/${relatedEventId}`;
+                            break;
+                        case "monthly":
+                            relatedUrl = `/api/v2/calendar/monthly-events/${relatedEventId}`;
+                            break;
+                        case "yearly":
+                            relatedUrl = `/api/v2/calendar/yearly-events/${relatedEventId}`;
+                            break;
+                        default:
+                            relatedUrl = `/api/v2/calendar/events/${relatedEventId}`;
+                            break;
+                    }
+
+                    await deleteEvent(relatedUrl);
                     eventsToDelete.push(relatedEventId);
                 }
             }
@@ -119,12 +191,37 @@ export default function DeleteEventModal({
             const event = events.find((e) => e.id === eventId);
             if (!event) continue;
 
-            const remainingRelatedEvents = await axios.get(
-                `/api/v2/calendar/weekday-events`,
-                {
+            const [
+                weekdayEvents,
+                weekendEvents,
+                weeklyEvents,
+                monthlyEvents,
+                yearlyEvents,
+            ] = await Promise.all([
+                axios.get(`/api/v2/calendar/weekday-events`, {
                     params: { event_id: event.event_id },
-                }
-            );
+                }),
+                axios.get(`/api/v2/calendar/weekend-events`, {
+                    params: { event_id: event.event_id },
+                }),
+                axios.get(`/api/v2/calendar/weekly-events`, {
+                    params: { event_id: event.event_id },
+                }),
+                axios.get(`/api/v2/calendar/monthly-events`, {
+                    params: { event_id: event.event_id },
+                }),
+                axios.get(`/api/v2/calendar/yearly-events`, {
+                    params: { event_id: event.event_id },
+                }),
+            ]);
+
+            const remainingRelatedEvents = [
+                ...weekdayEvents.data,
+                ...weekendEvents.data,
+                ...weeklyEvents.data,
+                ...monthlyEvents.data,
+                ...yearlyEvents.data,
+            ];
 
             const selectedRelatedEventIds =
                 relatedEvents[eventId]?.map((e) => e.id) || [];
@@ -134,9 +231,9 @@ export default function DeleteEventModal({
 
             // コンソールログを追加
             console.log(`イベントID: ${eventId}`);
-            console.log(`残っている関連イベント:`, remainingRelatedEvents.data);
+            console.log(`残っている関連イベント:`, remainingRelatedEvents);
             console.log(
-                `残っている関連イベントの数: ${remainingRelatedEvents.data.length}`
+                `残っている関連イベントの数: ${remainingRelatedEvents.length}`
             );
             console.log(`選択された関連イベントID:`, selectedRelatedEventIds);
             console.log(`全て選択されている: ${allSelected}`);

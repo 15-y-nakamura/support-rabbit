@@ -3,26 +3,26 @@
 namespace App\Http\Controllers\Calendar;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Calendar\WeekdayEventRequest;
-use App\Models\WeekdayEvent;
+use App\Http\Requests\Calendar\MonthlyEventRequest;
+use App\Models\MonthlyEvent;
 use Illuminate\Http\Request;
 use Carbon\CarbonPeriod;
 use App\Models\UserToken;
 use Illuminate\Support\Facades\Log;
 
-class WeekdayEventsController extends Controller
+class MonthlyEventsController extends Controller
 {
     public function index(Request $request)
     {
         $query = $request->input('query');
-        $events = WeekdayEvent::with('tag')->where('title', 'like', '%' . $query . '%')->get();
+        $events = MonthlyEvent::with('tag')->where('title', 'like', '%' . $query . '%')->get();
         return response()->json($events);
     }
 
     public function show($id)
     {
         try {
-            $event = WeekdayEvent::with('tag')->find($id);
+            $event = MonthlyEvent::with('tag')->find($id);
             if (!$event) return response()->json(['error' => 'イベントが見つかりません'], 404);
 
             return response()->json($event);
@@ -31,7 +31,7 @@ class WeekdayEventsController extends Controller
         }
     }
 
-    public function store(WeekdayEventRequest $request)
+    public function store(MonthlyEventRequest $request)
     {
         try {
             // トークンを使用してユーザーを認証
@@ -48,17 +48,22 @@ class WeekdayEventsController extends Controller
     
             $startDate = new \DateTime($validatedData['start_time']);
             $endDate = new \DateTime($validatedData['end_time'] ?? $validatedData['start_time']);
+            $recurrenceDay = $validatedData['recurrence_date'] ?? $startDate->format('d'); // 選択された日付
     
-            $period = CarbonPeriod::create($startDate, $endDate);
+            $period = CarbonPeriod::create($startDate, '1 month', $endDate);
     
             foreach ($period as $date) {
-                if ($date->isWeekday()) {
-                    WeekdayEvent::create([
+                // 入力された日付を使用
+                $eventDate = new \DateTime($date->format('Y') . '-' . $date->format('m') . '-' . $recurrenceDay);
+                
+                if ($eventDate >= $startDate && $eventDate <= $endDate) {
+                    Log::info('Creating Monthly Event:', ['date' => $eventDate->format('Y-m-d')]);
+                    MonthlyEvent::create([
                         'event_id' => $validatedData['event_id'],
                         'user_id' => $userToken->user_id, // user_idを保存
                         'title' => $validatedData['title'],
-                        'start_time' => $date->format('Y-m-d') . 'T' . (new \DateTime($validatedData['start_time']))->format('H:i'),
-                        'end_time' => $validatedData['end_time'] ? $date->format('Y-m-d') . 'T' . (new \DateTime($validatedData['end_time']))->format('H:i') : null,
+                        'start_time' => $eventDate->format('Y-m-d') . 'T' . (new \DateTime($validatedData['start_time']))->format('H:i'),
+                        'end_time' => $validatedData['end_time'] ? $eventDate->format('Y-m-d') . 'T' . (new \DateTime($validatedData['end_time']))->format('H:i') : null,
                         'all_day' => $validatedData['all_day'],
                         'notification' => $validatedData['notification'],
                         'location' => $validatedData['location'],
@@ -66,13 +71,14 @@ class WeekdayEventsController extends Controller
                         'tag_id' => $validatedData['tag_id'], // タグの保存
                         'description' => $validatedData['description'],
                         'recurrence_type' => $validatedData['recurrence_type'], // 繰り返しの種類の保存
+                        'recurrence_date' => $recurrenceDay, // recurrence_dateを保存
                     ]);
                 }
             }
     
-            return response()->json(['message' => 'Weekday events created successfully'], 201);
+            return response()->json(['message' => 'Monthly events created successfully'], 201);
         } catch (\Exception $e) {
-            Log::error('Error creating weekday events: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Error creating monthly events:', ['error' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -80,7 +86,7 @@ class WeekdayEventsController extends Controller
     public function destroy(Request $req, $id)
     {
         try {
-            $event = WeekdayEvent::find($id);
+            $event = MonthlyEvent::find($id);
             if (!$event) return response(['error' => 'イベントが見つかりません'], 404);
 
             $event->delete();
@@ -95,7 +101,7 @@ class WeekdayEventsController extends Controller
     {
         try {
             // 繰り返しイベントを含むすべての関連イベントを削除
-            WeekdayEvent::where('event_id', $eventId)->delete();
+            MonthlyEvent::where('event_id', $eventId)->delete();
 
             return response()->json(['message' => 'すべての関連イベントが削除されました'], 200);
         } catch (\Exception $e) {

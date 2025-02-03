@@ -37,16 +37,47 @@ export default function SearchModal({
 
     const handleTitleSearch = async () => {
         const searchResults = await handleSearch(query, "");
-        const weekdayResults = await axios.get(
-            "/api/v2/calendar/weekday-events"
-        );
+        const [
+            weekdayResults,
+            weekendResults,
+            weeklyResults,
+            monthlyResults,
+            yearlyResults,
+        ] = await Promise.all([
+            axios.get("/api/v2/calendar/weekday-events"),
+            axios.get("/api/v2/calendar/weekend-events"),
+            axios.get("/api/v2/calendar/weekly-events"),
+            axios.get("/api/v2/calendar/monthly-events"),
+            axios.get("/api/v2/calendar/yearly-events"),
+        ]);
+
         const filteredResults = searchResults.filter((result) =>
             result.title.includes(query)
         );
         const filteredWeekdayResults = weekdayResults.data.filter((result) =>
             result.title.includes(query)
         );
-        const combinedResults = [...filteredResults, ...filteredWeekdayResults];
+        const filteredWeekendResults = weekendResults.data.filter((result) =>
+            result.title.includes(query)
+        );
+        const filteredWeeklyResults = weeklyResults.data.filter((result) =>
+            result.title.includes(query)
+        );
+        const filteredMonthlyResults = monthlyResults.data.filter((result) =>
+            result.title.includes(query)
+        );
+        const filteredYearlyResults = yearlyResults.data.filter((result) =>
+            result.title.includes(query)
+        );
+
+        const combinedResults = [
+            ...filteredResults,
+            ...filteredWeekdayResults,
+            ...filteredWeekendResults,
+            ...filteredWeeklyResults,
+            ...filteredMonthlyResults,
+            ...filteredYearlyResults,
+        ];
         combinedResults.sort(
             (a, b) => new Date(a.start_time) - new Date(b.start_time)
         );
@@ -55,18 +86,56 @@ export default function SearchModal({
 
     const handleTagSearch = async () => {
         const searchResults = await handleSearch("", selectedTag?.id);
+        const [
+            weekdayResults,
+            weekendResults,
+            weeklyResults,
+            monthlyResults,
+            yearlyResults,
+        ] = await Promise.all([
+            axios.get(
+                `/api/v2/calendar/weekday-events?tag_id=${selectedTag?.id}`
+            ),
+            axios.get(
+                `/api/v2/calendar/weekend-events?tag_id=${selectedTag?.id}`
+            ),
+            axios.get(
+                `/api/v2/calendar/weekly-events?tag_id=${selectedTag?.id}`
+            ),
+            axios.get(
+                `/api/v2/calendar/monthly-events?tag_id=${selectedTag?.id}`
+            ),
+            axios.get(
+                `/api/v2/calendar/yearly-events?tag_id=${selectedTag?.id}`
+            ),
+        ]);
+
         const filteredSearchResults = searchResults.filter(
             (result) => result.tag_id === selectedTag?.id
-        );
-        const weekdayResults = await axios.get(
-            `/api/v2/calendar/weekday-events?tag_id=${selectedTag?.id}`
         );
         const filteredWeekdayResults = weekdayResults.data.filter(
             (result) => result.tag_id === selectedTag?.id
         );
+        const filteredWeekendResults = weekendResults.data.filter(
+            (result) => result.tag_id === selectedTag?.id
+        );
+        const filteredWeeklyResults = weeklyResults.data.filter(
+            (result) => result.tag_id === selectedTag?.id
+        );
+        const filteredMonthlyResults = monthlyResults.data.filter(
+            (result) => result.tag_id === selectedTag?.id
+        );
+        const filteredYearlyResults = yearlyResults.data.filter(
+            (result) => result.tag_id === selectedTag?.id
+        );
+
         const combinedResults = [
             ...filteredSearchResults,
             ...filteredWeekdayResults,
+            ...filteredWeekendResults,
+            ...filteredWeeklyResults,
+            ...filteredMonthlyResults,
+            ...filteredYearlyResults,
         ];
         combinedResults.sort(
             (a, b) => new Date(a.start_time) - new Date(b.start_time)

@@ -3,26 +3,26 @@
 namespace App\Http\Controllers\Calendar;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Calendar\WeekdayEventRequest;
-use App\Models\WeekdayEvent;
+use App\Http\Requests\Calendar\WeekendEventRequest;
+use App\Models\WeekendEvent;
 use Illuminate\Http\Request;
 use Carbon\CarbonPeriod;
 use App\Models\UserToken;
 use Illuminate\Support\Facades\Log;
 
-class WeekdayEventsController extends Controller
+class WeekendEventsController extends Controller
 {
     public function index(Request $request)
     {
         $query = $request->input('query');
-        $events = WeekdayEvent::with('tag')->where('title', 'like', '%' . $query . '%')->get();
+        $events = WeekendEvent::with('tag')->where('title', 'like', '%' . $query . '%')->get();
         return response()->json($events);
     }
 
     public function show($id)
     {
         try {
-            $event = WeekdayEvent::with('tag')->find($id);
+            $event = WeekendEvent::with('tag')->find($id);
             if (!$event) return response()->json(['error' => 'イベントが見つかりません'], 404);
 
             return response()->json($event);
@@ -31,29 +31,28 @@ class WeekdayEventsController extends Controller
         }
     }
 
-    public function store(WeekdayEventRequest $request)
+    public function store(WeekendEventRequest $request)
     {
         try {
             // トークンを使用してユーザーを認証
             $token = $request->bearerToken();
             Log::info('Received Token:', ['token' => $token]);
             $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
-    
+
             if (!$userToken) {
                 throw new \Exception('User not authenticated');
             }
-    
+
             $validatedData = $request->validated();
-            Log::info('Validated Data:', $validatedData);
-    
+
             $startDate = new \DateTime($validatedData['start_time']);
             $endDate = new \DateTime($validatedData['end_time'] ?? $validatedData['start_time']);
-    
+
             $period = CarbonPeriod::create($startDate, $endDate);
-    
+
             foreach ($period as $date) {
-                if ($date->isWeekday()) {
-                    WeekdayEvent::create([
+                if ($date->isWeekend()) {
+                    WeekendEvent::create([
                         'event_id' => $validatedData['event_id'],
                         'user_id' => $userToken->user_id, // user_idを保存
                         'title' => $validatedData['title'],
@@ -69,10 +68,9 @@ class WeekdayEventsController extends Controller
                     ]);
                 }
             }
-    
-            return response()->json(['message' => 'Weekday events created successfully'], 201);
+
+            return response()->json(['message' => 'Weekend events created successfully'], 201);
         } catch (\Exception $e) {
-            Log::error('Error creating weekday events: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -80,7 +78,7 @@ class WeekdayEventsController extends Controller
     public function destroy(Request $req, $id)
     {
         try {
-            $event = WeekdayEvent::find($id);
+            $event = WeekendEvent::find($id);
             if (!$event) return response(['error' => 'イベントが見つかりません'], 404);
 
             $event->delete();
@@ -95,7 +93,7 @@ class WeekdayEventsController extends Controller
     {
         try {
             // 繰り返しイベントを含むすべての関連イベントを削除
-            WeekdayEvent::where('event_id', $eventId)->delete();
+            WeekendEvent::where('event_id', $eventId)->delete();
 
             return response()->json(['message' => 'すべての関連イベントが削除されました'], 200);
         } catch (\Exception $e) {

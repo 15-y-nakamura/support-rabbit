@@ -4,7 +4,11 @@ import EventModal from "../Modals/EventModal";
 
 // 認証トークンを取得する関数
 const getAuthToken = () => {
-    return localStorage.getItem("authToken");
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+        console.error("Auth token is missing");
+    }
+    return token;
 };
 
 export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
@@ -32,7 +36,10 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
                     Authorization: `Bearer ${authToken}`,
                 },
             });
-            setTags(response.data.tags);
+            const sortedTags = response.data.tags.sort(
+                (a, b) => new Date(a.created_at) - new Date(b.created_at)
+            );
+            setTags(sortedTags);
         } catch (error) {
             console.error("Error fetching tags:", error);
         } finally {
@@ -63,7 +70,10 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
                 }
             );
             const newTag = response.data.tag;
-            setTags([...tags, newTag]);
+            const updatedTags = [...tags, newTag].sort(
+                (a, b) => new Date(a.created_at) - new Date(b.created_at)
+            );
+            setTags(updatedTags);
             setNewTagName("");
             setNewTagColor("#000000");
         } catch (error) {
@@ -86,7 +96,8 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
                     Authorization: `Bearer ${authToken}`,
                 },
             });
-            setTags(tags.filter((tag) => tag.id !== selectedTag.id));
+            const updatedTags = tags.filter((tag) => tag.id !== selectedTag.id);
+            setTags(updatedTags);
             setSelectedTag(null);
         } catch (error) {
             console.error("Error deleting tag:", error);
@@ -104,26 +115,39 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
 
                 {/* タグ選択レイアウトを修正 */}
                 <div className="grid grid-cols-3 gap-3 mb-4">
-                    {tags.map((tag) => (
-                        <div
-                            key={tag.id}
-                            onClick={() => handleTagClick(tag)}
-                            className={`p-2 border border-gray-300 rounded-lg cursor-pointer transition-colors duration-300 ${
-                                selectedTag?.id === tag.id
-                                    ? "border-2 border-[#80ACCF]"
-                                    : ""
-                            }`}
-                            style={{
-                                backgroundColor: tag.color,
-                                borderColor:
-                                    selectedTag?.id === tag.id
-                                        ? "#80ACCF"
-                                        : "gray",
-                            }}
-                        >
-                            {tag.name}
+                    {tags.length === 0 ? (
+                        <div className="col-span-3 text-center text-gray-500">
+                            タグが作成されていません
                         </div>
-                    ))}
+                    ) : (
+                        (() => {
+                            const tagElements = [];
+                            for (let i = 0; i < tags.length; i++) {
+                                const tag = tags[i];
+                                tagElements.push(
+                                    <div
+                                        key={tag.id}
+                                        onClick={() => handleTagClick(tag)}
+                                        className={`p-2 border border-gray-300 rounded-lg cursor-pointer transition-colors duration-300 ${
+                                            selectedTag?.id === tag.id
+                                                ? "border-2 border-[#80ACCF]"
+                                                : ""
+                                        }`}
+                                        style={{
+                                            backgroundColor: tag.color,
+                                            borderColor:
+                                                selectedTag?.id === tag.id
+                                                    ? "#80ACCF"
+                                                    : "gray",
+                                        }}
+                                    >
+                                        {tag.name}
+                                    </div>
+                                );
+                            }
+                            return tagElements;
+                        })()
+                    )}
                 </div>
 
                 {/* ボタンを右寄せし、サイズ調整 */}

@@ -35,13 +35,11 @@ class LogoutController extends Controller
     {
         $user = $request->user();
 
-        // ユーザーのトークンを削除
-        if ($user && $user->currentAccessToken()) {
-            $user->currentAccessToken()->delete();
+        if ($user && $user->user_token) {
+            $user->user_token->delete();
         }
 
-        return response()->json([
-            'message' => 'ログアウトしました。'
-        ], 200);
+        Auth::guard('sanctum')->logout();
+        return response()->json(['message' => 'ログアウトしました。'], 200);
     }
 }

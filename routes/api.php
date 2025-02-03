@@ -9,6 +9,10 @@ use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Calendar\EventController;
 use App\Http\Controllers\Calendar\TagController;
 use App\Http\Controllers\Calendar\WeekdayEventsController;
+use App\Http\Controllers\Calendar\WeekendEventsController;
+use App\Http\Controllers\Calendar\WeeklyEventsController;
+use App\Http\Controllers\Calendar\MonthlyEventsController;
+use App\Http\Controllers\Calendar\YearlyEventsController;
 use App\Http\Controllers\Notice\NoticeController;
 use App\Http\Controllers\Achievement\AchievementController;
 
@@ -48,6 +52,42 @@ Route::prefix('v2')->group(function () {
 
     //Weekday イベント API
     Route::controller(WeekdayEventsController::class)->prefix('calendar/weekday-events')->group(function () {
+        Route::get('/', 'index');
+        Route::get('{id}', 'show');
+        Route::post('/', 'store'); 
+        Route::delete('{id}', 'destroy');
+        Route::delete('{id}/all', 'destroyAll');
+    });
+
+    //Weekend イベント API
+    Route::controller(WeekendEventsController::class)->prefix('calendar/weekend-events')->group(function () {
+        Route::get('/', 'index');
+        Route::get('{id}', 'show');
+        Route::post('/', 'store'); 
+        Route::delete('{id}', 'destroy');
+        Route::delete('{id}/all', 'destroyAll');
+    });
+
+    //Weekly イベント API
+    Route::controller(WeeklyEventsController::class)->prefix('calendar/weekly-events')->group(function () {
+        Route::get('/', 'index');
+        Route::get('{id}', 'show');
+        Route::post('/', 'store'); 
+        Route::delete('{id}', 'destroy');
+        Route::delete('{id}/all', 'destroyAll');
+    });
+
+    //Monthly イベント API
+    Route::controller(MonthlyEventsController::class)->prefix('calendar/monthly-events')->group(function () {
+        Route::get('/', 'index');
+        Route::get('{id}', 'show');
+        Route::post('/', 'store'); 
+        Route::delete('{id}', 'destroy');
+        Route::delete('{id}/all', 'destroyAll');
+    });
+
+    //Yearly イベント API
+    Route::controller(YearlyEventsController::class)->prefix('calendar/yearly-events')->group(function () {
         Route::get('/', 'index');
         Route::get('{id}', 'show');
         Route::post('/', 'store'); 

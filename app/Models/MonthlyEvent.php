@@ -4,11 +4,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class WeekdayEvent extends Model
+class MonthlyEvent extends Model
 {
     use HasFactory;
 
-    protected $table = 'weekday_events';
+    protected $table = 'monthly_events';
 
     protected $fillable = [
         'event_id',

@@ -44,6 +44,12 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
+        // ユーザーのトークンを管理する処理を追加
+        $this->deleteExistingToken($user);
+        $token = $this->createUserToken($user);
+
+        Log::info('User registered and logged in successfully', ['user_id' => $user->id, 'token' => $token->token]);
+
         return redirect()->route('home');
     }
 
@@ -55,6 +61,9 @@ class RegisterController extends Controller
         try {
             // 新しいユーザーを作成
             $user = $this->createUser($request);
+
+            // 既存のトークンを削除
+            $this->deleteExistingToken($user);
 
             // ユーザートークンを作成
             $token = $this->createUserToken($user);
@@ -89,7 +98,20 @@ class RegisterController extends Controller
     private function createUserToken(User $user): UserToken
     {
         $token = new UserToken();
-        $token->createToken($user);
+        $token->user_id = $user->id;
+        $token->token = bin2hex(random_bytes(32)); // トークンを生成
+        $token->expiration_time = now()->addDays(30); // トークンの有効期限を設定
+        $token->save();
         return $token;
+    }
+
+    /**
+     * 既存のユーザートークンを削除
+     */
+    private function deleteExistingToken(User $user): void
+    {
+        if ($user->user_token) {
+            $user->user_token->delete();
+        }
     }
 }

@@ -3,7 +3,19 @@ import axios from "axios";
 
 // 認証トークンを取得する関数
 const getAuthToken = () => {
-    return localStorage.getItem("authToken");
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+        console.error("Auth token is missing");
+    }
+    return token;
+};
+
+const getUserId = () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) {
+        console.error("User is missing");
+    }
+    return user ? user.id : null;
 };
 
 export default function CreateEventForm({ onEventCreated, selectedDate }) {
@@ -72,10 +84,12 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                       )
                           ? recurrenceDate
                           : null,
+                      recurrence_days: recurrenceDays,
                   }
                 : {
                       recurrence_type: "none",
                       recurrence_date: null,
+                      recurrence_days: [],
                   };
 
             console.log("送信データ:", {
@@ -148,7 +162,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                         break;
                     case "weekend":
                         await axios.post(
-                            "/api/v2/calendar/events",
+                            "/api/v2/calendar/weekend-events",
                             {
                                 event_id: eventId,
                                 title,
@@ -159,6 +173,8 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                                 location,
                                 link,
                                 notification,
+                                recurrence_type: recurrenceType,
+                                tag_id: selectedTag ? selectedTag.id : null,
                             },
                             {
                                 headers: {
@@ -169,7 +185,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                         break;
                     case "weekly":
                         await axios.post(
-                            "/api/v2/calendar/weekly_events",
+                            "/api/v2/calendar/weekly-events",
                             {
                                 event_id: eventId,
                                 title,
@@ -180,6 +196,9 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                                 location,
                                 link,
                                 notification,
+                                recurrence_type: recurrenceType,
+                                tag_id: selectedTag ? selectedTag.id : null,
+                                recurrence_days: recurrenceDays,
                             },
                             {
                                 headers: {
@@ -190,10 +209,9 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                         break;
                     case "monthly":
                         await axios.post(
-                            "/api/v2/calendar/monthly_events",
+                            "/api/v2/calendar/monthly-events",
                             {
                                 event_id: eventId,
-                                recurrence_date: recurrenceDate,
                                 title,
                                 description,
                                 start_time: eventStartTime,
@@ -202,6 +220,9 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                                 location,
                                 link,
                                 notification,
+                                recurrence_type: recurrenceType,
+                                tag_id: selectedTag ? selectedTag.id : null,
+                                recurrence_date: recurrenceDate,
                             },
                             {
                                 headers: {
@@ -212,10 +233,9 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                         break;
                     case "yearly":
                         await axios.post(
-                            "/api/v2/calendar/yearly_events",
+                            "/api/v2/calendar/yearly-events",
                             {
                                 event_id: eventId,
-                                recurrence_date: recurrenceDate,
                                 title,
                                 description,
                                 start_time: eventStartTime,
@@ -224,6 +244,9 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                                 location,
                                 link,
                                 notification,
+                                recurrence_type: recurrenceType,
+                                tag_id: selectedTag ? selectedTag.id : null,
+                                recurrence_date: recurrenceDate, // 入力された日付を使用
                             },
                             {
                                 headers: {
@@ -257,6 +280,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                 "イベントの作成中にエラーが発生しました:",
                 error.response?.data || error.message
             );
+            console.log("エラー詳細:", error.response?.data.errors);
         }
     };
 
@@ -449,19 +473,38 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                 {["monthly", "yearly"].includes(recurrenceType) && (
                     <div className="flex flex-col space-y-2">
                         <label className="font-bold">日付</label>
-                        <input
-                            type="date"
-                            value={recurrenceDate}
-                            onChange={(e) => setRecurrenceDate(e.target.value)}
-                            className="p-2 border border-gray-300 rounded"
-                        />
+                        {recurrenceType === "monthly" ? (
+                            <input
+                                type="number"
+                                placeholder="日付"
+                                value={recurrenceDate}
+                                onChange={(e) =>
+                                    setRecurrenceDate(e.target.value)
+                                }
+                                className="p-2 border border-gray-300 rounded"
+                                min="1"
+                                max="31"
+                            />
+                        ) : (
+                            <input
+                                type="text"
+                                placeholder="MM/DD"
+                                value={recurrenceDate}
+                                onChange={(e) =>
+                                    setRecurrenceDate(e.target.value)
+                                }
+                                className="p-2 border border-gray-300 rounded"
+                            />
+                        )}
                         <label className="font-bold">開始時刻</label>
                         <input
                             type="time"
                             value={startTime.split("T")[1].slice(0, 5)}
                             onChange={(e) =>
                                 setStartTime(
-                                    `${recurrenceDate}T${e.target.value}`
+                                    `${startTime.split("T")[0]}T${
+                                        e.target.value
+                                    }`
                                 )
                             }
                             className="p-2 border border-gray-300 rounded"
@@ -472,7 +515,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                             value={endTime.split("T")[1].slice(0, 5)}
                             onChange={(e) =>
                                 setEndTime(
-                                    `${recurrenceDate}T${e.target.value}`
+                                    `${endTime.split("T")[0]}T${e.target.value}`
                                 )
                             }
                             className="p-2 border border-gray-300 rounded"

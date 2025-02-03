@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
 
-class EventRequest extends FormRequest
+class WeekdayEventRequest extends FormRequest
 {
     public function authorize()
     {
@@ -16,17 +16,16 @@ class EventRequest extends FormRequest
     public function rules()
     {
         return [
-            // 'user_id' => 'required|integer|exists:users,id', // 削除
-            'title' => 'required|string|max:50',
-            'start_time' => 'required|date_format:Y-m-d\TH:i|before_or_equal:end_time', // 修正
+            'event_id' => 'required|integer|exists:calendar_events,id',
+            'title' => 'required|string|max:50', // タイトルは50文字以内
+            'start_time' => 'required|date_format:Y-m-d\TH:i|before:end_time',
             'end_time' => 'nullable|date_format:Y-m-d\TH:i|after_or_equal:start_time',
-            'all_day' => 'boolean',
-            'notification' => 'nullable|string|max:100',
-            'location' => 'nullable|string|max:100',
-            'link' => 'nullable|url|max:500',
-            'tag_id' => 'nullable|exists:calendar_tags,id',
-            'description' => 'nullable|string|max:1000',
-            'is_recurring' => 'boolean',
+            'all_day' => 'required|boolean',
+            'notification' => 'nullable|string|max:100', // 通知は100文字以内
+            'location' => 'nullable|string|max:100', // 場所は100文字以内
+            'link' => 'nullable|url|max:500', // リンクは500文字以内
+            'tag_id' => 'nullable|exists:calendar_tags,id', // タグの外部キー
+            'description' => 'nullable|string|max:1000', // 説明は1000文字以内
             'recurrence_type' => 'required|in:none,weekday,weekend,weekly,monthly,yearly',
         ];
     }
@@ -34,25 +33,17 @@ class EventRequest extends FormRequest
     public function messages(): array
     {
         return [
-            // 'user_id.required' => json_encode([
-            //     "code" => "post_user_id_required",
-            //     "description" => "ユーザーIDは必須です"
-            // ]),
-            // 'user_id.integer' => json_encode([
-            //     "code" => "post_user_id_integer",
-            //     "description" => "ユーザーIDは整数である必要があります"
-            // ]),
-            // 'user_id.exists' => json_encode([
-            //     "code" => "post_user_id_exists",
-            //     "description" => "指定されたユーザーIDは存在しません"
-            // ]),
             'title.required' => json_encode([
                 "code" => "post_title_required",
                 "description" => "タイトルは必須です"
             ]),
+            'title.string' => json_encode([
+                "code" => "post_title_string",
+                "description" => "タイトルは文字列である必要があります"
+            ]),
             'title.max' => json_encode([
                 "code" => "post_title_max",
-                "description" => "タイトルは50文字以内です"
+                "description" => "タイトルは50文字以内である必要があります"
             ]),
             'start_time.required' => json_encode([
                 "code" => "post_start_time_required",
@@ -84,7 +75,7 @@ class EventRequest extends FormRequest
             ]),
             'notification.max' => json_encode([
                 "code" => "post_notification_max",
-                "description" => "通知は100文字以内です"
+                "description" => "通知は100文字以内である必要があります"
             ]),
             'location.string' => json_encode([
                 "code" => "post_location_string",
@@ -92,7 +83,7 @@ class EventRequest extends FormRequest
             ]),
             'location.max' => json_encode([
                 "code" => "post_location_max",
-                "description" => "場所は100文字以内です"
+                "description" => "場所は100文字以内である必要があります"
             ]),
             'link.url' => json_encode([
                 "code" => "post_link_url",
@@ -100,7 +91,7 @@ class EventRequest extends FormRequest
             ]),
             'link.max' => json_encode([
                 "code" => "post_link_max",
-                "description" => "リンクは500文字以内です"
+                "description" => "リンクは500文字以内である必要があります"
             ]),
             'tag_id.exists' => json_encode([
                 "code" => "post_tag_id_exists",
@@ -112,11 +103,7 @@ class EventRequest extends FormRequest
             ]),
             'description.max' => json_encode([
                 "code" => "post_description_max",
-                "description" => "説明は1000文字以内です"
-            ]),
-            'is_recurring.boolean' => json_encode([
-                "code" => "post_is_recurring_boolean",
-                "description" => "繰り返し設定のフラグは真偽値である必要があります"
+                "description" => "説明は1000文字以内である必要があります"
             ]),
             'recurrence_type.required' => json_encode([
                 "code" => "post_recurrence_type_required",

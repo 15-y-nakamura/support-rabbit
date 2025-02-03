@@ -37,14 +37,14 @@ class TagController extends Controller
             $token = $req->bearerToken();
             Log::info('Received Token:', ['token' => $token]);
             $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
-    
+
             if (!$userToken) {
                 throw new \Exception('User not authenticated');
             }
-    
+
             $validated = $req->validated();
             $tag = Tag::create(array_merge($validated, ['user_id' => $userToken->user_id]));
-    
+
             return response()->json(['message' => 'タグが作成されました', 'tag' => $tag], 201);
         } catch (\Exception $e) {
             Log::error('Error creating tag: ' . $e->getMessage(), ['exception' => $e]);

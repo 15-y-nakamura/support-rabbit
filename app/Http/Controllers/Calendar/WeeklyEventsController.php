@@ -3,26 +3,26 @@
 namespace App\Http\Controllers\Calendar;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Calendar\WeekdayEventRequest;
-use App\Models\WeekdayEvent;
+use App\Http\Requests\Calendar\WeeklyEventRequest;
+use App\Models\WeeklyEvent;
 use Illuminate\Http\Request;
 use Carbon\CarbonPeriod;
 use App\Models\UserToken;
 use Illuminate\Support\Facades\Log;
 
-class WeekdayEventsController extends Controller
+class WeeklyEventsController extends Controller
 {
     public function index(Request $request)
     {
         $query = $request->input('query');
-        $events = WeekdayEvent::with('tag')->where('title', 'like', '%' . $query . '%')->get();
+        $events = WeeklyEvent::with('tag')->where('title', 'like', '%' . $query . '%')->get();
         return response()->json($events);
     }
 
     public function show($id)
     {
         try {
-            $event = WeekdayEvent::with('tag')->find($id);
+            $event = WeeklyEvent::with('tag')->find($id);
             if (!$event) return response()->json(['error' => 'イベントが見つかりません'], 404);
 
             return response()->json($event);
@@ -31,29 +31,31 @@ class WeekdayEventsController extends Controller
         }
     }
 
-    public function store(WeekdayEventRequest $request)
+    public function store(WeeklyEventRequest $request)
     {
         try {
             // トークンを使用してユーザーを認証
             $token = $request->bearerToken();
-            Log::info('Received Token:', ['token' => $token]);
+            Log::info('受信したトークン:', ['token' => $token]);
             $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
     
             if (!$userToken) {
-                throw new \Exception('User not authenticated');
+                throw new \Exception('ユーザーが認証されていません');
             }
     
             $validatedData = $request->validated();
-            Log::info('Validated Data:', $validatedData);
+            Log::info('検証済みデータ:', $validatedData);
     
             $startDate = new \DateTime($validatedData['start_time']);
             $endDate = new \DateTime($validatedData['end_time'] ?? $validatedData['start_time']);
+            $daysOfWeek = $request->input('recurrence_days', []);
+            Log::info('曜日:', $daysOfWeek);
     
             $period = CarbonPeriod::create($startDate, $endDate);
     
             foreach ($period as $date) {
-                if ($date->isWeekday()) {
-                    WeekdayEvent::create([
+                if (in_array($date->dayOfWeek, $daysOfWeek)) {
+                    $eventData = [
                         'event_id' => $validatedData['event_id'],
                         'user_id' => $userToken->user_id, // user_idを保存
                         'title' => $validatedData['title'],
@@ -66,13 +68,16 @@ class WeekdayEventsController extends Controller
                         'tag_id' => $validatedData['tag_id'], // タグの保存
                         'description' => $validatedData['description'],
                         'recurrence_type' => $validatedData['recurrence_type'], // 繰り返しの種類の保存
-                    ]);
+                    ];
+                    Log::info('作成する週次イベント:', $eventData);
+                    $createdEvent = WeeklyEvent::create($eventData);
+                    Log::info('作成された週次イベント:', ['event' => $createdEvent]);
                 }
             }
     
-            return response()->json(['message' => 'Weekday events created successfully'], 201);
+            return response()->json(['message' => '週次イベントが正常に作成されました'], 201);
         } catch (\Exception $e) {
-            Log::error('Error creating weekday events: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('週次イベントの作成中にエラーが発生しました: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -80,7 +85,7 @@ class WeekdayEventsController extends Controller
     public function destroy(Request $req, $id)
     {
         try {
-            $event = WeekdayEvent::find($id);
+            $event = WeeklyEvent::find($id);
             if (!$event) return response(['error' => 'イベントが見つかりません'], 404);
 
             $event->delete();
@@ -95,7 +100,7 @@ class WeekdayEventsController extends Controller
     {
         try {
             // 繰り返しイベントを含むすべての関連イベントを削除
-            WeekdayEvent::where('event_id', $eventId)->delete();
+            WeeklyEvent::where('event_id', $eventId)->delete();
 
             return response()->json(['message' => 'すべての関連イベントが削除されました'], 200);
         } catch (\Exception $e) {

@@ -115,6 +115,74 @@ export default function EventList({
                                                     {event.tag_name}
                                                 </div>
                                             )}
+
+                                            {/* weekend_events の tag_id が存在する場合に表示 */}
+                                            {!event.tag &&
+                                                event.tag_id &&
+                                                event.recurrence_type ===
+                                                    "weekend" && (
+                                                    <div
+                                                        className="ml-2 text-sm text-white px-2 py-1 rounded"
+                                                        style={{
+                                                            backgroundColor:
+                                                                event.tag_color ||
+                                                                "#3b82f6", // デフォルトは青
+                                                        }}
+                                                    >
+                                                        {event.tag_name}
+                                                    </div>
+                                                )}
+
+                                            {/* weekly_events の tag_id が存在する場合に表示 */}
+                                            {!event.tag &&
+                                                event.tag_id &&
+                                                event.recurrence_type ===
+                                                    "weekly" && (
+                                                    <div
+                                                        className="ml-2 text-sm text-white px-2 py-1 rounded"
+                                                        style={{
+                                                            backgroundColor:
+                                                                event.tag_color ||
+                                                                "#3b82f6", // デフォルトは青
+                                                        }}
+                                                    >
+                                                        {event.tag_name}
+                                                    </div>
+                                                )}
+
+                                            {/* monthly_events の tag_id が存在する場合に表示 */}
+                                            {!event.tag &&
+                                                event.tag_id &&
+                                                event.recurrence_type ===
+                                                    "monthly" && (
+                                                    <div
+                                                        className="ml-2 text-sm text-white px-2 py-1 rounded"
+                                                        style={{
+                                                            backgroundColor:
+                                                                event.tag_color ||
+                                                                "#3b82f6", // デフォルトは青
+                                                        }}
+                                                    >
+                                                        {event.tag_name}
+                                                    </div>
+                                                )}
+
+                                            {/* yearly_events の tag_id が存在する場合に表示 */}
+                                            {!event.tag &&
+                                                event.tag_id &&
+                                                event.recurrence_type ===
+                                                    "yearly" && (
+                                                    <div
+                                                        className="ml-2 text-sm text-white px-2 py-1 rounded"
+                                                        style={{
+                                                            backgroundColor:
+                                                                event.tag_color ||
+                                                                "#3b82f6", // デフォルトは青
+                                                        }}
+                                                    >
+                                                        {event.tag_name}
+                                                    </div>
+                                                )}
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <button
