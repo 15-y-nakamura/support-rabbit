@@ -20,9 +20,6 @@ class LoginController extends Controller
      */
     public function create()
     {
-        if (Auth::check()) {
-            return redirect()->route('home'); // ログイン済みなら /home にリダイレクト
-        }
         return Inertia::render('Auth/LoginForm');
     }
     

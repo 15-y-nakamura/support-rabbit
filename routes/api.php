@@ -55,6 +55,7 @@ Route::prefix('v2')->group(function () {
         Route::get('/', 'index');
         Route::get('{id}', 'show');
         Route::post('/', 'store'); 
+        Route::put('{id}', 'update'); // update ルートを追加
         Route::delete('{id}', 'destroy');
         Route::delete('{id}/all', 'destroyAll');
     });
@@ -64,6 +65,7 @@ Route::prefix('v2')->group(function () {
         Route::get('/', 'index');
         Route::get('{id}', 'show');
         Route::post('/', 'store'); 
+        Route::put('{id}', 'update'); // update ルートを追加
         Route::delete('{id}', 'destroy');
         Route::delete('{id}/all', 'destroyAll');
     });
@@ -73,6 +75,7 @@ Route::prefix('v2')->group(function () {
         Route::get('/', 'index');
         Route::get('{id}', 'show');
         Route::post('/', 'store'); 
+        Route::put('{id}', 'update'); // update ルートを追加
         Route::delete('{id}', 'destroy');
         Route::delete('{id}/all', 'destroyAll');
     });
@@ -82,6 +85,7 @@ Route::prefix('v2')->group(function () {
         Route::get('/', 'index');
         Route::get('{id}', 'show');
         Route::post('/', 'store'); 
+        Route::put('{id}', 'update'); // update ルートを追加
         Route::delete('{id}', 'destroy');
         Route::delete('{id}/all', 'destroyAll');
     });
@@ -91,6 +95,7 @@ Route::prefix('v2')->group(function () {
         Route::get('/', 'index');
         Route::get('{id}', 'show');
         Route::post('/', 'store'); 
+        Route::put('{id}', 'update'); // update ルートを追加
         Route::delete('{id}', 'destroy');
         Route::delete('{id}/all', 'destroyAll');
     });

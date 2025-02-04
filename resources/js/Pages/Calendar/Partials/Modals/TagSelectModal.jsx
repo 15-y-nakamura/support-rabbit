@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import EventModal from "../Modals/EventModal";
+import EventModal from "../../../../Components/EventModal"; // 修正されたインポートパス
 
 // 認証トークンを取得する関数
 const getAuthToken = () => {
@@ -36,7 +36,14 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
                     Authorization: `Bearer ${authToken}`,
                 },
             });
-            const sortedTags = response.data.tags.sort(
+
+            // 認証している user_id と一致するタグのみをフィルタリング
+            const userId = response.data.user_id;
+            const filteredTags = response.data.tags.filter(
+                (tag) => tag.user_id === userId
+            );
+
+            const sortedTags = filteredTags.sort(
                 (a, b) => new Date(a.created_at) - new Date(b.created_at)
             );
             setTags(sortedTags);

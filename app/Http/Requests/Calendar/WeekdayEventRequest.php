@@ -18,7 +18,7 @@ class WeekdayEventRequest extends FormRequest
         return [
             'event_id' => 'required|integer|exists:calendar_events,id',
             'title' => 'required|string|max:50', // タイトルは50文字以内
-            'start_time' => 'required|date_format:Y-m-d\TH:i|before:end_time',
+            'start_time' => 'required|date_format:Y-m-d\TH:i|before_or_equal:end_time',
             'end_time' => 'nullable|date_format:Y-m-d\TH:i|after_or_equal:start_time',
             'all_day' => 'required|boolean',
             'notification' => 'nullable|string|max:100', // 通知は100文字以内

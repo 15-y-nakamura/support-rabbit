@@ -10,7 +10,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import axios from "axios";
 
 export default function LoginForm() {
-    const { data, setData, processing, errors, reset } = useForm({
+    const { data, setData, processing, errors, setError, reset } = useForm({
         login_id: "",
         password: "",
     });
@@ -33,6 +33,15 @@ export default function LoginForm() {
             window.location.href = "/home"; // ログイン成功後にホームページにリダイレクト
         } catch (error) {
             console.error("Error logging in:", error);
+            if (error.response && error.response.data.errors) {
+                setError(
+                    "login",
+                    error.response.data.errors.login ||
+                        "ログインに失敗しました。"
+                );
+            } else {
+                setError("login", "ログインに失敗しました。");
+            }
         }
     };
 
@@ -155,7 +164,7 @@ export default function LoginForm() {
                                 </Link>
 
                                 <PrimaryButton
-                                    className="ml-4 bg-gray-700"
+                                    className="ml-4 bg-gray-700 flex items-center justify-center"
                                     disabled={processing}
                                 >
                                     {processing ? (

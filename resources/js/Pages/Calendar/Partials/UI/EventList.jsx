@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
+import EventDetailModal from "../Modals/EventDetailModal";
 
 export default function EventList({
     selectedDateEvents,
     selectedEvents,
     handleEventSelect,
     handleDeleteSelectedEvents,
-    handleEventDetail,
     handleEventComplete,
 }) {
+    const [selectedEvent, setSelectedEvent] = useState(null);
+
     const sortedEvents = selectedDateEvents.sort((a, b) => {
         const startA = new Date(a.start_time);
         const startB = new Date(b.start_time);
@@ -28,6 +30,14 @@ export default function EventList({
         acc[startHour].push(event);
         return acc;
     }, {});
+
+    const handleEventDetail = (event) => {
+        setSelectedEvent(event);
+    };
+
+    const handleCloseModal = () => {
+        setSelectedEvent(null);
+    };
 
     return (
         <div className="mt-2 p-2 bg-white border border-gray-300 rounded shadow-md w-full h-96 overflow-y-auto">
@@ -215,6 +225,13 @@ export default function EventList({
                     <h2 className="text-lg font-bold mb-2">予定一覧</h2>
                     <p>登録されていません。</p>
                 </>
+            )}
+            {selectedEvent && (
+                <EventDetailModal
+                    event={selectedEvent}
+                    onEdit={() => {}}
+                    onClose={handleCloseModal}
+                />
             )}
         </div>
     );

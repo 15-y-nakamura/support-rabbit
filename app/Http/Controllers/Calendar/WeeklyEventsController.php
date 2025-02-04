@@ -14,9 +14,26 @@ class WeeklyEventsController extends Controller
 {
     public function index(Request $request)
     {
+        // トークンを使用してユーザーを認証
+        $token = $request->bearerToken();
+        Log::info('Received Token:', ['token' => $token]);
+        $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
+
+        if (!$userToken) {
+            throw new \Exception('User not authenticated');
+        }
+
+        Log::info('Authenticated User ID:', ['user_id' => $userToken->user_id]);
+
         $query = $request->input('query');
-        $events = WeeklyEvent::with('tag')->where('title', 'like', '%' . $query . '%')->get();
-        return response()->json($events);
+        $events = WeeklyEvent::with('tag')
+            ->where('user_id', $userToken->user_id) // 認証している user_id と一致するデータを取得
+            ->where('title', 'like', '%' . $query . '%')
+            ->get();
+
+        Log::info('Fetched Weekly Events:', ['events' => $events]);
+
+        return response()->json(['events' => $events]);
     }
 
     public function show($id)
@@ -78,6 +95,44 @@ class WeeklyEventsController extends Controller
             return response()->json(['message' => '週次イベントが正常に作成されました'], 201);
         } catch (\Exception $e) {
             Log::error('週次イベントの作成中にエラーが発生しました: ' . $e->getMessage(), ['exception' => $e]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function update(WeeklyEventRequest $request, $id)
+    {
+        try {
+            // トークンを使用してユーザーを認証
+            $token = $request->bearerToken();
+            Log::info('受信したトークン:', ['token' => $token]);
+            $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
+    
+            if (!$userToken) {
+                throw new \Exception('ユーザーが認証されていません');
+            }
+    
+            $validatedData = $request->validated();
+            Log::info('検証済みデータ:', $validatedData);
+    
+            $event = WeeklyEvent::find($id);
+            if (!$event) return response()->json(['error' => 'イベントが見つかりません'], 404);
+    
+            $event->update([
+                'title' => $validatedData['title'],
+                'start_time' => $validatedData['start_time'],
+                'end_time' => $validatedData['end_time'],
+                'all_day' => $validatedData['all_day'],
+                'notification' => $validatedData['notification'],
+                'location' => $validatedData['location'],
+                'link' => $validatedData['link'],
+                'tag_id' => $validatedData['tag_id'],
+                'description' => $validatedData['description'],
+                'recurrence_type' => $validatedData['recurrence_type'],
+            ]);
+    
+            return response()->json(['message' => '週次イベントが正常に更新されました'], 200);
+        } catch (\Exception $e) {
+            Log::error('週次イベントの更新中にエラーが発生しました: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

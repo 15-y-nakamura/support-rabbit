@@ -14,7 +14,18 @@ class TagController extends Controller
     public function index(Request $req)
     {
         try {
-            $result = Tag::orderBy('id', 'desc');
+            Log::info('Fetching calendar tags with parameters:', $req->all());
+
+            // トークンを使用してユーザーを認証
+            $token = $req->bearerToken();
+            Log::info('Received Token:', ['token' => $token]);
+            $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
+
+            if (!$userToken) {
+                throw new \Exception('User not authenticated');
+            }
+
+            $result = Tag::where('user_id', $userToken->user_id)->orderBy('id', 'desc');
 
             // 検索条件がある場合はフィルタリング
             if ($req->has('searchQuery')) {
@@ -22,7 +33,7 @@ class TagController extends Controller
             }
 
             $tags = $result->get();
-            return response()->json(['tags' => $tags]);
+            return response()->json(['tags' => $tags, 'user_id' => $userToken->user_id]);
         } catch (\Exception $e) {
             // エラーメッセージをログに記録
             Log::error('Error fetching tags: ' . $e->getMessage());

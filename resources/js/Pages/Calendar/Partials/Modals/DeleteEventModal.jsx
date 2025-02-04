@@ -23,9 +23,14 @@ export default function DeleteEventModal({
     useEffect(() => {
         if (isOpen) {
             fetchRelatedEvents();
-            initializeDeleteAll();
         }
     }, [isOpen]);
+
+    useEffect(() => {
+        if (isOpen) {
+            initializeDeleteAll();
+        }
+    }, [relatedEvents]);
 
     // 関連イベントを取得する関数
     const fetchRelatedEvents = async () => {
@@ -87,7 +92,7 @@ export default function DeleteEventModal({
             initialDeleteAll[eventId] = true;
             if (relatedEvents[eventId]) {
                 relatedEvents[eventId].forEach((relatedEvent) => {
-                    initialDeleteAll[relatedEvent.id] = true;
+                    initialDeleteAll[`related-${relatedEvent.id}`] = true;
                 });
             }
         });
@@ -144,7 +149,7 @@ export default function DeleteEventModal({
                 relatedEvents[eventId]?.map((e) => e.id) || [];
             for (let j = 0; j < relatedEventIds.length; j++) {
                 const relatedEventId = relatedEventIds[j];
-                if (deleteAll[relatedEventId]) {
+                if (deleteAll[`related-${relatedEventId}`]) {
                     let relatedUrl;
 
                     switch (event.recurrence_type) {
@@ -227,7 +232,9 @@ export default function DeleteEventModal({
                 relatedEvents[eventId]?.map((e) => e.id) || [];
             const allSelected =
                 selectedRelatedEventIds.length > 0 &&
-                selectedRelatedEventIds.every((id) => deleteAll[id]);
+                selectedRelatedEventIds.every(
+                    (id) => deleteAll[`related-${id}`]
+                );
 
             // コンソールログを追加
             console.log(`イベントID: ${eventId}`);
@@ -252,22 +259,28 @@ export default function DeleteEventModal({
         const newDeleteAll = { ...deleteAll };
         const isChecked = !deleteAll[eventId];
         newDeleteAll[eventId] = isChecked;
-        setDeleteAll(newDeleteAll);
 
-        // イベントのチェックが外れた場合、「他のデータも削除」のチェックも外し、関連イベントのチェックも外す
+        console.log(
+            `イベントID: ${eventId} のチェックボックスが ${
+                isChecked ? "オン" : "オフ"
+            } になりました。`
+        );
+
+        // タイトル横のチェックボックスが外れた場合、関連イベントのチェックボックスも外す
         if (!isChecked) {
-            const newShowRelated = { ...showRelated };
-            newShowRelated[eventId] = false;
-            setShowRelated(newShowRelated);
-
-            const relatedEventIds =
-                relatedEvents[eventId]?.map((e) => e.id) || [];
-            for (let i = 0; i < relatedEventIds.length; i++) {
-                const id = relatedEventIds[i];
-                newDeleteAll[id] = false;
-            }
-            setDeleteAll(newDeleteAll);
+            relatedEvents[eventId]?.forEach((relatedEvent) => {
+                newDeleteAll[`related-${relatedEvent.id}`] = false;
+                console.log(
+                    `関連イベントID: ${relatedEvent.id} のチェックボックスがオフになりました。`
+                );
+            });
+            setShowRelated((prevShowRelated) => ({
+                ...prevShowRelated,
+                [eventId]: false,
+            }));
         }
+
+        setDeleteAll(newDeleteAll);
     };
 
     // 関連イベントの表示を切り替える関数
@@ -275,20 +288,34 @@ export default function DeleteEventModal({
         const newShowRelated = { ...showRelated };
         const newState = !showRelated[eventId];
         newShowRelated[eventId] = newState;
-
-        if (!newState) {
-            // チェックが外れた場合、関連イベントのチェックも外す
-            const relatedEventIds =
-                relatedEvents[eventId]?.map((e) => e.id) || [];
-            const newDeleteAll = { ...deleteAll };
-            for (let i = 0; i < relatedEventIds.length; i++) {
-                const id = relatedEventIds[i];
-                newDeleteAll[id] = false;
-            }
-            setDeleteAll(newDeleteAll);
-        }
-
         setShowRelated(newShowRelated);
+
+        console.log(
+            `イベントID: ${eventId} の関連イベントの表示が ${
+                newState ? "オン" : "オフ"
+            } になりました。`
+        );
+
+        // 関連イベントのチェックボックスの状態を更新
+        const newDeleteAll = { ...deleteAll };
+        if (newState) {
+            // 関連イベントを表示する場合、関連イベントのチェックボックスをオンにする
+            relatedEvents[eventId]?.forEach((relatedEvent) => {
+                newDeleteAll[`related-${relatedEvent.id}`] = true;
+                console.log(
+                    `関連イベントID: ${relatedEvent.id} のチェックボックスがオンになりました。`
+                );
+            });
+        } else {
+            // 関連イベントを非表示にする場合、関連イベントのチェックボックスをオフにする
+            relatedEvents[eventId]?.forEach((relatedEvent) => {
+                newDeleteAll[`related-${relatedEvent.id}`] = false;
+                console.log(
+                    `関連イベントID: ${relatedEvent.id} のチェックボックスがオフになりました。`
+                );
+            });
+        }
+        setDeleteAll(newDeleteAll);
     };
 
     // 関連イベントをレンダリングする関数
@@ -316,8 +343,12 @@ export default function DeleteEventModal({
                     </div>
                     <input
                         type="checkbox"
-                        checked={deleteAll[relatedEvent.id] || false}
-                        onChange={() => handleCheckboxChange(relatedEvent.id)}
+                        checked={
+                            deleteAll[`related-${relatedEvent.id}`] || false
+                        }
+                        onChange={() =>
+                            handleCheckboxChange(`related-${relatedEvent.id}`)
+                        }
                         className="ml-2"
                     />
                 </div>
@@ -331,6 +362,9 @@ export default function DeleteEventModal({
         if (!event) return null;
 
         const relatedEventCount = relatedEvents[eventId]?.length || 0;
+        const hasRelatedEvents =
+            event.recurrence_type !== "none" && relatedEventCount > 0;
+
         return (
             <div
                 key={eventId}
@@ -359,7 +393,7 @@ export default function DeleteEventModal({
                         className="ml-2"
                     />
                 </div>
-                {event.recurrence_type !== "none" && relatedEventCount > 0 && (
+                {hasRelatedEvents && (
                     <div className="mt-4">
                         <label className="flex items-center">
                             <input
@@ -388,6 +422,29 @@ export default function DeleteEventModal({
         );
     };
 
+    // selectedEventsを時間の古い順にソートし、時間が同じ場合はIDの古い順にソート
+    const sortedSelectedEvents = [...selectedEvents];
+    for (let i = 0; i < sortedSelectedEvents.length - 1; i++) {
+        for (let j = 0; j < sortedSelectedEvents.length - i - 1; j++) {
+            const eventA = events.find((e) => e.id === sortedSelectedEvents[j]);
+            const eventB = events.find(
+                (e) => e.id === sortedSelectedEvents[j + 1]
+            );
+            const dateA = new Date(eventA.start_time);
+            const dateB = new Date(eventB.start_time);
+
+            if (
+                dateA > dateB ||
+                (dateA.getTime() === dateB.getTime() && eventA.id > eventB.id)
+            ) {
+                // スワップ
+                const temp = sortedSelectedEvents[j];
+                sortedSelectedEvents[j] = sortedSelectedEvents[j + 1];
+                sortedSelectedEvents[j + 1] = temp;
+            }
+        }
+    }
+
     const isDeleteDisabled = !Object.values(deleteAll).some(
         (checked) => checked
     );
@@ -413,7 +470,7 @@ export default function DeleteEventModal({
                                 選択されたデータを削除しますか？
                             </p>
                             <div className="mt-4 space-y-4">
-                                {selectedEvents.map(renderEvent)}
+                                {sortedSelectedEvents.map(renderEvent)}
                             </div>
                             <div className="flex justify-center mt-4">
                                 <button

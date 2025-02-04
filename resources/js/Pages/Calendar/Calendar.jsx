@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import CreateEventForm from "./Partials/Forms/CreateEventForm";
 import EditEventForm from "./Partials/Forms/EditEventForm";
-import EventModal from "./Partials/Modals/EventModal";
+import EventModal from "../../Components/EventModal"; // 修正されたインポートパス
 import ChangeDateModal from "./Partials/Modals/ChangeDateModal";
 import CalendarGrid from "./Partials/UI/CalendarGrid";
 import TagSelectModal from "./Partials/Modals/TagSelectModal";
@@ -32,9 +32,19 @@ export default function Calendar() {
         fetchEvents();
     }, [currentDate, searchQuery, selectedTag]);
 
+    // 認証トークンを取得する関数
+    const getAuthToken = () => {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            console.error("Auth token is missing");
+        }
+        return token;
+    };
+
     const fetchEvents = async () => {
         setIsLoading(true); // ローディング開始
         try {
+            const authToken = getAuthToken(); // トークンを取得
             const [
                 eventsResponse,
                 weekdayResponse,
@@ -45,32 +55,34 @@ export default function Calendar() {
             ] = await Promise.all([
                 axios.get("/api/v2/calendar/events", {
                     params: { searchQuery, tagId: selectedTag },
+                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
                 }),
-                fetch("/api/v2/calendar/weekday-events").then((res) =>
-                    res.json()
-                ),
-                fetch("/api/v2/calendar/weekend-events").then((res) =>
-                    res.json()
-                ),
-                fetch("/api/v2/calendar/weekly-events").then((res) =>
-                    res.json()
-                ),
-                fetch("/api/v2/calendar/monthly-events").then((res) =>
-                    res.json()
-                ),
-                fetch("/api/v2/calendar/yearly-events").then((res) =>
-                    res.json()
-                ),
+                axios.get("/api/v2/calendar/weekday-events", {
+                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                }),
+                axios.get("/api/v2/calendar/weekend-events", {
+                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                }),
+                axios.get("/api/v2/calendar/weekly-events", {
+                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                }),
+                axios.get("/api/v2/calendar/monthly-events", {
+                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                }),
+                axios.get("/api/v2/calendar/yearly-events", {
+                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                }),
             ]);
 
             const allEvents = [
                 ...eventsResponse.data.events,
-                ...weekdayResponse,
-                ...weekendResponse,
-                ...weeklyResponse,
-                ...monthlyResponse,
-                ...yearlyResponse,
+                ...weekdayResponse.data.events,
+                ...weekendResponse.data.events,
+                ...weeklyResponse.data.events,
+                ...monthlyResponse.data.events,
+                ...yearlyResponse.data.events,
             ];
+
             setEvents(allEvents);
 
             // 現在選択されている日付のイベントをフィルタリングして設定

@@ -17,7 +17,19 @@ class EventController extends Controller
         try {
             Log::info('Fetching calendar events with parameters:', $req->all());
 
-            $calendarEvents = CalendarEvent::with(['weekday_events', 'weekend_events', 'weekly_events', 'monthly_events', 'yearly_events', 'tag'])->where('is_recurring', 0)->orderBy('id', 'desc');
+            // トークンを使用してユーザーを認証
+            $token = $req->bearerToken();
+            Log::info('Received Token:', ['token' => $token]);
+            $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
+    
+            if (!$userToken) {
+                throw new \Exception('User not authenticated');
+            }
+
+            $calendarEvents = CalendarEvent::with(['weekday_events', 'weekend_events', 'weekly_events', 'monthly_events', 'yearly_events', 'tag'])
+                ->where('user_id', $userToken->user_id)
+                ->where('is_recurring', 0)
+                ->orderBy('id', 'desc');
 
             // 検索条件がある場合はフィルタリング
             if ($req->has('searchQuery')) {
@@ -43,7 +55,6 @@ class EventController extends Controller
             $res = $calendarEvents->map(function ($event) {
                 return [
                     'id' => $event->id,
-                    // 'user_id' => $event->user_id,
                     'title' => $event->title,
                     'start_time' => $event->start_time,
                     'end_time' => $event->end_time,
@@ -70,7 +81,7 @@ class EventController extends Controller
         }
     }
 
-
+    // 他のメソッドは変更しない
     public function store(EventRequest $req)
     {
         try {
@@ -108,7 +119,6 @@ class EventController extends Controller
 
             return response()->json([
                 'id' => $event->id,
-                // 'user_id' => $event->user_id,
                 'title' => $event->title,
                 'start_time' => $event->start_time,
                 'end_time' => $event->end_time,
@@ -134,10 +144,12 @@ class EventController extends Controller
     public function update(EventRequest $req, $id)
     {
         try {
+            Log::info('Updating event with ID:', ['id' => $id]);
             $event = CalendarEvent::find($id);
             if (!$event) return response(['error' => 'イベントが見つかりません'], 404);
 
             $validated = $req->validated();
+            Log::info('Validated Data for Update:', $validated);
 
             $event->update($validated);
 
@@ -146,8 +158,29 @@ class EventController extends Controller
                 $event->save();
             }
 
+            // サブイベントの更新処理
+            switch ($event->recurrence_type) {
+                case 'weekday':
+                    app('App\Http\Controllers\Calendar\WeekdayEventsController')->update($req, $event->id);
+                    break;
+                case 'weekend':
+                    app('App\Http\Controllers\Calendar\WeekendEventsController')->update($req, $event->id);
+                    break;
+                case 'weekly':
+                    app('App\Http\Controllers\Calendar\WeeklyEventsController')->update($req, $event->id);
+                    break;
+                case 'monthly':
+                    app('App\Http\Controllers\Calendar\MonthlyEventsController')->update($req, $event->id);
+                    break;
+                case 'yearly':
+                    app('App\Http\Controllers\Calendar\YearlyEventsController')->update($req, $event->id);
+                    break;
+            }
+
+            Log::info('Event updated successfully:', ['id' => $id]);
             return response()->json(['message' => 'イベントが更新されました'], 200);
         } catch (\Exception $e) {
+            Log::error('Error updating event: ' . $e->getMessage(), ['exception' => $e]);
             return response(['error' => $e->getMessage()], 500);
         }
     }
