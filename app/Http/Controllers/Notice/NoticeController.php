@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Notice;
+namespace App\Http\Controllers\Notice;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Notice\NoticeReadRequest;

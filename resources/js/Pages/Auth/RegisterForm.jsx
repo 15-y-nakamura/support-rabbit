@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useForm, Link, Head } from "@inertiajs/react";
+import { useForm, Link, Head, usePage } from "@inertiajs/react";
 import InputLabel from "@/Components/InputLabel";
 import TextInput from "@/Components/TextInput";
 import InputError from "@/Components/InputError";
@@ -17,6 +17,7 @@ export default function RegisterForm() {
         birthday: "",
     });
 
+    const { props } = usePage();
     const [passwordType, setPasswordType] = useState("password");
     const [passwordConfirmationType, setPasswordConfirmationType] =
         useState("password");
@@ -36,7 +37,9 @@ export default function RegisterForm() {
     const submit = (e) => {
         e.preventDefault();
         post(route("register"), {
-            onSuccess: () => reset("password", "password_confirmation"),
+            onSuccess: () => {
+                reset("password", "password_confirmation");
+            },
         });
     };
 
@@ -271,12 +274,19 @@ export default function RegisterForm() {
                                 >
                                     既にアカウントをお持ちの方はこちら
                                 </Link>
-                                <PrimaryButton
-                                    className="ml-4 bg-gray-700"
-                                    disabled={processing}
-                                >
-                                    登録
-                                </PrimaryButton>
+                                <div className="flex items-center">
+                                    {props.registrationSuccess && (
+                                        <span className="text-green-500 text-sm mr-4">
+                                            登録が完了しました
+                                        </span>
+                                    )}
+                                    <PrimaryButton
+                                        className="ml-4 bg-gray-700"
+                                        disabled={processing}
+                                    >
+                                        登録
+                                    </PrimaryButton>
+                                </div>
                             </div>
                         </form>
                     </div>

@@ -4,11 +4,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class WeekdayEvent extends Model
+class WeekendEvent extends Model
 {
     use HasFactory;
 
-    protected $table = 'weekday_events';
+    protected $table = 'weekend_events';
 
     protected $fillable = [
         'event_id',
@@ -22,7 +22,7 @@ class WeekdayEvent extends Model
         'link',
         'tag_id',
         'description',
-        'recurrence_type', 
+        'recurrence_type', // 繰り返しの種類
     ];
 
     // Tagリレーションの追加

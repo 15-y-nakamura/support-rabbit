@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api\Calendar;
+namespace App\Http\Controllers\Calendar;
 
 use App\Models\Tag;
+use App\Models\UserToken;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Calendar\TagRequest;
 use Illuminate\Http\Request;
@@ -13,7 +14,18 @@ class TagController extends Controller
     public function index(Request $req)
     {
         try {
-            $result = Tag::orderBy('id', 'desc');
+            Log::info('Fetching calendar tags with parameters:', $req->all());
+
+            // トークンを使用してユーザーを認証
+            $token = $req->bearerToken();
+            Log::info('Received Token:', ['token' => $token]);
+            $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
+
+            if (!$userToken) {
+                throw new \Exception('User not authenticated');
+            }
+
+            $result = Tag::where('user_id', $userToken->user_id)->orderBy('id', 'desc');
 
             // 検索条件がある場合はフィルタリング
             if ($req->has('searchQuery')) {
@@ -21,7 +33,7 @@ class TagController extends Controller
             }
 
             $tags = $result->get();
-            return response()->json(['tags' => $tags]);
+            return response()->json(['tags' => $tags, 'user_id' => $userToken->user_id]);
         } catch (\Exception $e) {
             // エラーメッセージをログに記録
             Log::error('Error fetching tags: ' . $e->getMessage());
@@ -32,16 +44,25 @@ class TagController extends Controller
     public function store(TagRequest $req)
     {
         try {
-            $validated = $req->validated();
+            // トークンを使用してユーザーを認証
+            $token = $req->bearerToken();
+            Log::info('Received Token:', ['token' => $token]);
+            $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
 
-            $tag = Tag::create(array_merge($validated, ['user_id' => $req->user()->id]));
+            if (!$userToken) {
+                throw new \Exception('User not authenticated');
+            }
+
+            $validated = $req->validated();
+            $tag = Tag::create(array_merge($validated, ['user_id' => $userToken->user_id]));
 
             return response()->json(['message' => 'タグが作成されました', 'tag' => $tag], 201);
         } catch (\Exception $e) {
+            Log::error('Error creating tag: ' . $e->getMessage(), ['exception' => $e]);
             return response(['error' => $e->getMessage()], 500);
         }
     }
-
+    
     public function show(Request $req, $id)
     {
         try {

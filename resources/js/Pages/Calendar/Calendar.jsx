@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import CreateEventForm from "./Partials/Forms/CreateEventForm";
 import EditEventForm from "./Partials/Forms/EditEventForm";
-import TagSelectButton from "./Partials/UI/TagSelectButton";
-import EventModal from "./Partials/Modals/EventModal";
+import EventModal from "../../Components/EventModal"; // 修正されたインポートパス
 import ChangeDateModal from "./Partials/Modals/ChangeDateModal";
 import CalendarGrid from "./Partials/UI/CalendarGrid";
+import TagSelectModal from "./Partials/Modals/TagSelectModal";
 import DeleteEventModal from "./Partials/Modals/DeleteEventModal";
+import SearchModal from "./Partials/Modals/SearchModal";
 import EventList from "./Partials/UI/EventList";
 
 export default function Calendar() {
@@ -23,28 +24,65 @@ export default function Calendar() {
     const [selectedEvents, setSelectedEvents] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-    const [isLoading, setIsLoading] = useState(false); // ローディング状態を追加
+    const [isLoading, setIsLoading] = useState(false);
+    const [isTagSelectModalOpen, setIsTagSelectModalOpen] = useState(false); // 追加
+    const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
     useEffect(() => {
         fetchEvents();
     }, [currentDate, searchQuery, selectedTag]);
 
+    // 認証トークンを取得する関数
+    const getAuthToken = () => {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            console.error("Auth token is missing");
+        }
+        return token;
+    };
+
     const fetchEvents = async () => {
         setIsLoading(true); // ローディング開始
         try {
-            const [eventsResponse, weekdayResponse] = await Promise.all([
+            const authToken = getAuthToken(); // トークンを取得
+            const [
+                eventsResponse,
+                weekdayResponse,
+                weekendResponse,
+                weeklyResponse,
+                monthlyResponse,
+                yearlyResponse,
+            ] = await Promise.all([
                 axios.get("/api/v2/calendar/events", {
                     params: { searchQuery, tagId: selectedTag },
+                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
                 }),
-                fetch("/api/v2/calendar/weekday-events").then((res) =>
-                    res.json()
-                ),
+                axios.get("/api/v2/calendar/weekday-events", {
+                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                }),
+                axios.get("/api/v2/calendar/weekend-events", {
+                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                }),
+                axios.get("/api/v2/calendar/weekly-events", {
+                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                }),
+                axios.get("/api/v2/calendar/monthly-events", {
+                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                }),
+                axios.get("/api/v2/calendar/yearly-events", {
+                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                }),
             ]);
 
             const allEvents = [
                 ...eventsResponse.data.events,
-                ...weekdayResponse,
+                ...weekdayResponse.data.events,
+                ...weekendResponse.data.events,
+                ...weeklyResponse.data.events,
+                ...monthlyResponse.data.events,
+                ...yearlyResponse.data.events,
             ];
+
             setEvents(allEvents);
 
             // 現在選択されている日付のイベントをフィルタリングして設定
@@ -82,8 +120,16 @@ export default function Calendar() {
         setNotification("イベントが正常に削除されました。");
     };
 
-    const handleSearch = (query) => {
-        setSearchQuery(query);
+    const handleSearch = async (query, tagQuery) => {
+        try {
+            const response = await axios.get("/api/v2/calendar/events", {
+                params: { searchQuery: query, tagId: tagQuery },
+            });
+            return response.data.events;
+        } catch (error) {
+            console.error("Error searching events:", error);
+            return [];
+        }
     };
 
     const handleTagSelected = (tagId) => {
@@ -114,31 +160,65 @@ export default function Calendar() {
     const handleDeleteSelectedEvents = () => {
         setShowDeleteConfirmation(true);
     };
-
     // 選択されたイベントが weekday イベントとそれ以外のイベントが混在しているかどうかを判定
     const isMixedSelection = (() => {
         let hasWeekdayEvent = false;
+        let hasWeekendEvent = false;
+        let hasWeeklyEvent = false;
+        let hasMonthlyEvent = false;
+        let hasYearlyEvent = false;
         let hasNonWeekdayEvent = false;
+        let hasNonWeekendEvent = false;
+        let hasNonWeeklyEvent = false;
+        let hasNonMonthlyEvent = false;
+        let hasNonYearlyEvent = false;
 
         for (let i = 0; i < selectedEvents.length; i++) {
             const eventId = selectedEvents[i];
             const event = events.find((event) => event.id === eventId);
 
             if (event) {
-                if (event.recurrence_type === "weekday") {
-                    hasWeekdayEvent = true;
-                } else {
-                    hasNonWeekdayEvent = true;
+                switch (event.recurrence_type) {
+                    case "weekday":
+                        hasWeekdayEvent = true;
+                        break;
+                    case "weekend":
+                        hasWeekendEvent = true;
+                        break;
+                    case "weekly":
+                        hasWeeklyEvent = true;
+                        break;
+                    case "monthly":
+                        hasMonthlyEvent = true;
+                        break;
+                    case "yearly":
+                        hasYearlyEvent = true;
+                        break;
+                    default:
+                        hasNonWeekdayEvent = true;
+                        break;
                 }
 
-                // 両方のタイプが見つかったら、早期にループを終了
-                if (hasWeekdayEvent && hasNonWeekdayEvent) {
+                // 複数のタイプが見つかったら、早期にループを終了
+                if (
+                    (hasWeekdayEvent && hasNonWeekdayEvent) ||
+                    (hasWeekendEvent && hasNonWeekendEvent) ||
+                    (hasWeeklyEvent && hasNonWeeklyEvent) ||
+                    (hasMonthlyEvent && hasNonMonthlyEvent) ||
+                    (hasYearlyEvent && hasNonYearlyEvent)
+                ) {
                     return true;
                 }
             }
         }
 
-        return hasWeekdayEvent && hasNonWeekdayEvent;
+        return (
+            (hasWeekdayEvent && hasNonWeekdayEvent) ||
+            (hasWeekendEvent && hasNonWeekdayEvent) ||
+            (hasWeeklyEvent && hasNonWeekdayEvent) ||
+            (hasMonthlyEvent && hasNonWeekdayEvent) ||
+            (hasYearlyEvent && hasNonWeekdayEvent)
+        );
     })();
 
     const handleEventDetail = (event) => {
@@ -233,8 +313,11 @@ export default function Calendar() {
                                     searchQuery={searchQuery}
                                     setSearchQuery={setSearchQuery}
                                     handleSearch={handleSearch}
-                                    handleTagSelected={handleTagSelected}
                                     handleCreateEvent={handleCreateEvent}
+                                    setIsSearchModalOpen={setIsSearchModalOpen}
+                                    setIsTagSelectModalOpen={
+                                        setIsTagSelectModalOpen
+                                    }
                                 />
                                 <EventList
                                     selectedDateEvents={selectedDateEvents}
@@ -287,6 +370,18 @@ export default function Calendar() {
                 isOpen={isDateModalOpen}
                 onClose={() => setIsDateModalOpen(false)}
                 onDateChange={handleDateChange}
+            />
+            <SearchModal
+                isOpen={isSearchModalOpen}
+                onClose={() => setIsSearchModalOpen(false)}
+                handleSearch={handleSearch}
+                handleDateClick={handleDateClick}
+                setCurrentDate={setCurrentDate}
+            />
+            <TagSelectModal
+                isOpen={isTagSelectModalOpen}
+                onClose={() => setIsTagSelectModalOpen(false)}
+                onTagSelected={handleTagSelected}
             />
         </HeaderSidebarLayout>
     );
@@ -351,29 +446,35 @@ function CalendarDays() {
 
 // イベントリストのヘッダー部分をコンポーネント化
 function EventListHeader({
-    searchQuery,
-    setSearchQuery,
-    handleSearch,
-    handleTagSelected,
     handleCreateEvent,
+    setIsSearchModalOpen,
+    setIsTagSelectModalOpen,
 }) {
     return (
         <div className="flex justify-between items-center">
             <div className="flex items-center space-x-1 max-sm:space-x-1">
-                <input
-                    type="text"
-                    placeholder="タグ検索"
-                    className="w-48 p-1 border border-gray-300 rounded-l-md max-sm:w-32 max-sm:p-1"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
                 <button
-                    className="bg-[#FFA742] text-white p-1 rounded-r-md max-sm:p-1"
-                    onClick={() => handleSearch(searchQuery)}
+                    className="bg-[#FFA742] text-white p-1 rounded-r-md max-sm:p-1 flex items-center"
+                    onClick={() => setIsSearchModalOpen(true)} // 検索モーダルを開く
                 >
+                    <img
+                        src="/img/icons/search-icon.png"
+                        alt="検索"
+                        className="w-4 h-4 mr-1"
+                    />
                     検索
                 </button>
-                <TagSelectButton onTagSelected={handleTagSelected} />
+                <button
+                    className="bg-[#FFA742] text-white p-1 rounded-r-md max-sm:p-1 flex items-center"
+                    onClick={() => setIsTagSelectModalOpen(true)} // タグ作成・削除モーダルを開く
+                >
+                    <img
+                        src="/img/icons/tag-create-icon.png"
+                        alt="タグ作成・削除"
+                        className="w-4 h-4 mr-1"
+                    />
+                    タグ作成・削除
+                </button>
             </div>
             <button
                 className="bg-[#80ACCF] text-white p-1 rounded-full shadow-md max-sm:p-1"

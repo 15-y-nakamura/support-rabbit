@@ -57,6 +57,12 @@ class User extends Authenticatable
             'createdAt' => $this->created_at->format('Y/m/d H:i')
         ];
     }
+    
+    public function user_token()
+    {
+        return $this->hasOne(UserToken::class, 'user_id', 'id');
+    }
+
 
     /**
      * ユーザー削除（論理削除）

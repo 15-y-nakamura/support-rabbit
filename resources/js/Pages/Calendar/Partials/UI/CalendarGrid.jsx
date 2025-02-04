@@ -1,83 +1,11 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 
 export default function CalendarGrid({ currentDate, events, handleDateClick }) {
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [tags, setTags] = useState([]);
-    const [calendarEvents, setCalendarEvents] = useState([]);
-    const [weekdayEvents, setWeekdayEvents] = useState([]);
+    const [selectedDate, setSelectedDate] = useState(currentDate);
 
     useEffect(() => {
-        fetchTags();
-        fetchCalendarEvents();
-        fetchWeekdayEvents();
-    }, []);
-
-    const fetchTags = async () => {
-        try {
-            const response = await axios.get("/api/v2/calendar/tags");
-            setTags(response.data.tags);
-            console.log("タグが取得されました:", response.data.tags);
-        } catch (error) {
-            console.error("タグの取得中にエラーが発生しました:", error);
-        }
-    };
-
-    const fetchCalendarEvents = async () => {
-        try {
-            const response = await axios.get("/api/v2/calendar/events");
-            setCalendarEvents(response.data.events);
-            console.log(
-                "カレンダーイベントが取得されました:",
-                response.data.events
-            );
-        } catch (error) {
-            console.error(
-                "カレンダーイベントの取得中にエラーが発生しました:",
-                error
-            );
-        }
-    };
-
-    const fetchWeekdayEvents = async () => {
-        try {
-            const response = await axios.get("/api/v2/calendar/weekday-events");
-            setWeekdayEvents(response.data.events);
-            console.log("平日イベントが取得されました:", response.data.events);
-        } catch (error) {
-            console.error("平日イベントの取得中にエラーが発生しました:", error);
-        }
-    };
-
-    const getTagColor = (tagId) => {
-        const tag = tags.find((tag) => tag.id === tagId);
-        console.log(
-            "タグの色を取得:",
-            tagId,
-            tag ? tag.color : "デフォルトカラー"
-        );
-        return tag ? tag.color : "#F78FB3"; // デフォルトカラー
-    };
-
-    const getEventTagColor = (event) => {
-        if (event.tag_id) {
-            console.log("イベントのタグID:", event.tag_id);
-            return getTagColor(event.tag_id);
-        } else if (event.event_id) {
-            const calendarEvent = calendarEvents.find(
-                (e) => e.id === event.event_id
-            );
-            console.log(
-                "カレンダーイベントのタグID:",
-                calendarEvent ? calendarEvent.tag_id : "なし"
-            );
-            return calendarEvent && calendarEvent.tag_id
-                ? getTagColor(calendarEvent.tag_id)
-                : "#F78FB3"; // デフォルトカラー
-        } else {
-            return "#F78FB3"; // デフォルトカラー
-        }
-    };
+        setSelectedDate(currentDate);
+    }, [currentDate]);
 
     const daysInMonth = new Date(
         currentDate.getFullYear(),
@@ -125,17 +53,15 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
         );
         currentDay.setHours(0, 0, 0, 0); // 時間部分をリセット
 
-        // 予定一覧のデータをそのまま表示
+        // 予定一覧のデータをフィルタリング
         const dayEvents = events.filter((event) => {
             const eventStart = new Date(event.start_time);
             const eventEnd = new Date(event.end_time || event.start_time);
-            eventStart.setHours(0, 0, 0, 0); // 時間部分をリセット
-            eventEnd.setHours(23, 59, 59, 999); // 時間部分をリセット
+            eventStart.setHours(0, 0, 0, 0);
+            eventEnd.setHours(23, 59, 59, 999);
 
             return eventStart <= currentDay && eventEnd >= currentDay;
         });
-
-        console.log("日付:", currentDay, "のイベント:", dayEvents);
 
         // 選択された日付かどうかを判定
         const isSelected =
@@ -143,35 +69,29 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
 
         days.push(
             <div
-                className={`calendar-day text-gray-800 font-bold bg-white hover:bg-gray-200 rounded-md ${
+                className={`calendar-day text-gray-800 font-bold bg-white hover:bg-gray-200 rounded-md flex flex-col justify-center items-center ${
                     isSelected ? "border-2 border-pink-500" : ""
                 }`}
                 key={`current-${currentDate.getMonth()}-${i}`}
                 onClick={() => {
-                    setSelectedDate(currentDay); // 選択された日付を状態に保存
-                    handleDateClick(currentDay); // 親コンポーネントに日付を通知
+                    setSelectedDate(currentDay);
+                    handleDateClick(currentDay);
                 }}
                 style={{
-                    minHeight: "48px", // 縦幅をさらに縮める
+                    minHeight: "48px",
                     padding: "2px",
                     margin: "2px",
                     width: "calc(100% - 4px)",
                 }}
             >
                 <div className="text-sm">{i}</div>
-                {dayEvents.map((event) => {
-                    const eventColor = getEventTagColor(event);
-                    console.log("イベントの色:", event.title, eventColor);
-                    return (
-                        <div
-                            key={event.id}
-                            className="text-xs rounded mt-1 px-1 truncate"
-                            style={{ backgroundColor: eventColor }}
-                        >
-                            {event.title}
-                        </div>
-                    );
-                })}
+                {dayEvents.length > 0 && (
+                    <img
+                        src="/img/icons/event_icon.png"
+                        alt="イベントあり"
+                        className="w-4 h-4 mt-1"
+                    />
+                )}
             </div>
         );
     }
