@@ -5,39 +5,40 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Auth\Events\PasswordReset;
 use Inertia\Inertia;
+use App\Notifications\CustomResetPasswordNotification;
 
 class PasswordResetController extends Controller
 {
-    /**
-     * パスワードリセットリクエスト画面の表示
-     */
-    public function showForgotPasswordForm()
-    {
-        return Inertia::render('Auth/ForgotPasswordForm');
-    }
-
     /**
      * パスワードリセットリンクの送信
      */
     public function sendPasswordResetLink(ForgotPasswordRequest $request)
     {
-        $status = Password::sendResetLink($request->only('email'));
+        $email = $request->input('email');
+        $token = Str::random(60);
 
-        if ($status === Password::RESET_LINK_SENT) {
-            return back()->with('status', __($status));
+        // 既存のトークンを削除し、新しいトークンを保存
+        DB::table('password_reset_tokens')->where('email', $email)->delete();
+        DB::table('password_reset_tokens')->insert([
+            'email' => $email,
+            'token' => $token,
+            'created_at' => Carbon::now(),
+        ]);
+
+        // パスワードリセット通知を送信
+        $user = User::where('email', $email)->first();
+        if ($user) {
+            $user->notify(new CustomResetPasswordNotification($token));
         }
 
-        return back()->withErrors(['email' => __($status)]);
+        return back()->with('status', __('passwords.sent'));
     }
 
     /**
@@ -53,60 +54,39 @@ class PasswordResetController extends Controller
      */
     public function resetPassword(ResetPasswordRequest $request)
     {
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
-
-                event(new PasswordReset($user));
-            }
-        );
-
-        if ($status === Password::PASSWORD_RESET) {
-            return redirect()->route('login')->with('status', __($status));
+        // トークンを検索
+        $passwordReset = DB::table('password_reset_tokens')->where('token', $request->token)->first();
+        if (!$passwordReset) {
+            return back()->withErrors(['token' => '無効なトークンです']);
         }
 
-        return back()->withErrors(['email' => [__($status)]]);
-    }
-
-    /**
-     * パスワードリセットリンクの送信（API）
-     */
-    public function apiSendPasswordResetLink(ForgotPasswordRequest $request)
-    {
-        $status = Password::sendResetLink($request->only('email'));
-
-        if ($status === Password::RESET_LINK_SENT) {
-            return response()->json(['message' => __($status)], 200);
+        // トークンの有効期限をチェック（60分）
+        if (Carbon::parse($passwordReset->created_at)->addMinutes(60)->isPast()) {
+            return back()->withErrors(['token' => 'このトークンは有効期限が切れています']);
         }
 
-        return response()->json(['error' => __($status)], 400);
-    }
-
-    /**
-     * パスワードリセット処理（API）
-     */
-    public function apiResetPassword(ResetPasswordRequest $request)
-    {
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
-
-                event(new PasswordReset($user));
-            }
-        );
-
-        if ($status === Password::PASSWORD_RESET) {
-            return response()->json(['message' => __($status)], 200);
+        // ユーザーを取得
+        $user = User::where('email', $passwordReset->email)->first();
+        if (!$user) {
+            return back()->withErrors(['email' => __('passwords.user')]);
         }
 
-        return response()->json(['error' => __($status)], 400);
+        // 既存のパスワードと異なることを確認
+        if (Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['password' => '新しいパスワードは現在のパスワードと異なる必要があります']);
+        }
+
+        // パスワードを更新
+        $user->forceFill([
+            'password' => Hash::make($request->password),
+            'remember_token' => Str::random(60),
+        ])->save();
+
+        // トークンを削除
+        DB::table('password_reset_tokens')->where('token', $request->token)->delete();
+
+        event(new PasswordReset($user));
+
+        return back()->with('status', __('passwords.reset'));
     }
 }

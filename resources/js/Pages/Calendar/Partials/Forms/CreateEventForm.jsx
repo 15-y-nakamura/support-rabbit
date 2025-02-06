@@ -98,14 +98,13 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
 
             console.log("送信データ:", {
                 title,
-                description,
+                note,
                 start_time: eventStartTime,
                 end_time: eventEndTime,
                 is_recurring: recurrenceType === "none" ? 0 : isRecurring,
                 ...recurrenceData,
                 all_day: allDay,
                 all_day_date: allDay ? allDayDate : null,
-                notification,
                 location,
                 link,
                 note,
@@ -116,14 +115,13 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                 "/api/v2/calendar/events",
                 {
                     title,
-                    description,
+                    note,
                     start_time: eventStartTime,
                     end_time: eventEndTime,
                     is_recurring: recurrenceType === "none" ? 0 : isRecurring,
                     ...recurrenceData,
                     all_day: allDay,
                     all_day_date: allDay ? allDayDate : null,
-                    notification,
                     location,
                     link,
                     note,
@@ -147,13 +145,12 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                             {
                                 event_id: eventId,
                                 title,
-                                description,
+                                note,
                                 start_time: eventStartTime,
                                 end_time: eventEndTime,
                                 all_day: allDay,
                                 location,
                                 link,
-                                notification,
                                 recurrence_type: recurrenceType,
                                 tag_id: selectedTag ? selectedTag.id : null,
                             },
@@ -170,13 +167,12 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                             {
                                 event_id: eventId,
                                 title,
-                                description,
+                                note,
                                 start_time: eventStartTime,
                                 end_time: eventEndTime,
                                 all_day: allDay,
                                 location,
                                 link,
-                                notification,
                                 recurrence_type: recurrenceType,
                                 tag_id: selectedTag ? selectedTag.id : null,
                             },
@@ -193,13 +189,12 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                             {
                                 event_id: eventId,
                                 title,
-                                description,
+                                note,
                                 start_time: eventStartTime,
                                 end_time: eventEndTime,
                                 all_day: allDay,
                                 location,
                                 link,
-                                notification,
                                 recurrence_type: recurrenceType,
                                 tag_id: selectedTag ? selectedTag.id : null,
                                 recurrence_days: recurrenceDays,
@@ -217,13 +212,12 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                             {
                                 event_id: eventId,
                                 title,
-                                description,
+                                note,
                                 start_time: eventStartTime,
                                 end_time: eventEndTime,
                                 all_day: allDay,
                                 location,
                                 link,
-                                notification,
                                 recurrence_type: recurrenceType,
                                 tag_id: selectedTag ? selectedTag.id : null,
                                 recurrence_date: recurrenceDate,
@@ -241,13 +235,12 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                             {
                                 event_id: eventId,
                                 title,
-                                description,
+                                note,
                                 start_time: eventStartTime,
                                 end_time: eventEndTime,
                                 all_day: allDay,
                                 location,
                                 link,
-                                notification,
                                 recurrence_type: recurrenceType,
                                 tag_id: selectedTag ? selectedTag.id : null,
                                 recurrence_date: recurrenceDate, // 入力された日付を使用
@@ -617,19 +610,6 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                         </div>
                     )}
                 </div>
-            </div>
-            <div className="flex flex-col space-y-2">
-                <label className="font-bold">通知</label>
-                <select
-                    value={notification}
-                    onChange={(e) => setNotification(e.target.value)}
-                    className="p-2 border border-gray-300 rounded w-32"
-                >
-                    <option value="none">なし</option>
-                    <option value="10minutes">10分前</option>
-                    <option value="1hour">1時間前</option>
-                </select>
-                <InputError message={errors.notification} className="mt-2" />
             </div>
             <hr className="my-4" />
             <div className="flex flex-col space-y-2">

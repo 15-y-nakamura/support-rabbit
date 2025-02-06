@@ -84,7 +84,7 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
         const eventData = {
             event_id: event.id, // event_id を追加
             title,
-            description,
+            note,
             start_time: startTime,
             end_time: endTime,
             is_recurring: isRecurring,
@@ -95,7 +95,6 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
             recurrence_end_time: recurrenceEndTime,
             all_day: allDay,
             all_day_date: allDay ? allDayDate : null,
-            notification,
             location,
             link,
             note,
@@ -339,19 +338,6 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
                     </div>
                 </div>
             )}
-            <div className="flex flex-col space-y-2">
-                <label className="font-bold">通知</label>
-                <select
-                    value={notification}
-                    onChange={(e) => setNotification(e.target.value)}
-                    className="p-2 border border-gray-300 rounded w-32"
-                >
-                    <option value="none">なし</option>
-                    <option value="10minutes">10分前</option>
-                    <option value="1hour">1時間前</option>
-                </select>
-                <InputError message={errors.notification} className="mt-2" />
-            </div>
             <hr className="my-4" />
             <div className="flex flex-col space-y-2">
                 <label className="font-bold">場所</label>

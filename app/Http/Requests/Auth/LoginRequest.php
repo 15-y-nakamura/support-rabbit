@@ -73,40 +73,9 @@ class LoginRequest extends FormRequest
             }, $messages);
         }
 
-        // 認証エラーの処理
-        $user = $this->attemptLogin();
-        if (!$user) {
-            $response['login'] = [
-                "code" => "post_login_invalid_credentials",
-                "description" => "ユーザIDまたはパスワードが違います"
-            ];
-            throw new HttpResponseException(
-                response()->json(['errors' => $response], 400)
-            );
-        }
-
         // バリデーションエラーをJSON形式で返す
         throw new HttpResponseException(
             response()->json(['errors' => $response], 422)
         );
-    }
-
-    /**
-     * Attempt to authenticate the request's credentials.
-     *
-     * @return \App\Models\User|null
-     */
-    private function attemptLogin(): ?User
-    {
-        $user = User::where('login_id', $this->input('login_id'))->first();
-        if (!$user || !Hash::check($this->input('password'), $user->password)) {
-            return null;
-        }
-
-        if (!$user->isValid()) {
-            return null;
-        }
-
-        return $user;
     }
 }

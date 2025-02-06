@@ -17,11 +17,10 @@ class MonthlyEvent extends Model
         'start_time',
         'end_time',
         'all_day',
-        'notification',
         'location',
         'link',
         'tag_id',
-        'description',
+        'note',
         'recurrence_type', 
     ];
 

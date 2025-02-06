@@ -30,7 +30,7 @@ class RegisterRequest extends FormRequest
         return [
             'login_id.required' => json_encode([
                 "code" => 'post_signup_id_invalid_length',
-                "description" => "半角英数1〜30文字以内で入力してください"
+                "description" => "ユーザIDを入力してください"
             ], ),
             'login_id.regex' => json_encode([
                 "code" => "post_signup_id_invalid_characters",
@@ -46,7 +46,7 @@ class RegisterRequest extends FormRequest
             ], ),
             'nickname.required' => json_encode([
                 "code" => "post_signup_nickname_invalid_length",
-                "description" => "1〜15文字以内で入力してください"
+                "description" => "ニックネームを入力してください"
             ], ),
             'nickname.regex' => json_encode([
                 "code" => "post_signup_nickname_invalid_characters",

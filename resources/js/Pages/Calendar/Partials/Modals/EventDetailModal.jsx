@@ -63,14 +63,6 @@ export default function EventDetailModal({ event, onEdit, onClose }) {
                                 {event.all_day ? "はい" : "未設定"}
                             </p>
                         </div>
-                        <div className="flex flex-col space-y-2">
-                            <label className="font-bold">通知</label>
-                            <p className="p-2 border border-gray-300 rounded">
-                                {event.notification !== "none"
-                                    ? event.notification
-                                    : "未設定"}
-                            </p>
-                        </div>
                         <hr className="my-4" />
                         <div className="flex flex-col space-y-2">
                             <label className="font-bold">場所</label>

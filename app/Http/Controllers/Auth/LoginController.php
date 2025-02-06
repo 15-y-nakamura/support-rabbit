@@ -27,7 +27,7 @@ class LoginController extends Controller
      * ログイン処理
      *
      * @param  \App\Http\Requests\Auth\LoginRequest  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Inertia\Response
      */
     public function login(LoginRequest $request)
     {
@@ -44,11 +44,14 @@ class LoginController extends Controller
 
             Log::info('User logged in successfully', ['user_id' => $user->id, 'token' => $token->token]);
 
-            return response()->json(['token' => $token->token, 'user' => $user], 200);
+            return redirect()->intended('/user/calendar')->with([
+                'token' => $token->token,
+                'user' => $user,
+            ]);
         }
 
         // 認証失敗時
-        return response()->json(['error' => 'ユーザIDまたはパスワードが違います'], 401);
+        return back()->withErrors(['login' => 'ユーザIDまたはパスワードが違います'])->withInput();
     }
 
     /**

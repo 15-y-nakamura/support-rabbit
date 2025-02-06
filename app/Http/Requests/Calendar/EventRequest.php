@@ -21,11 +21,10 @@ class EventRequest extends FormRequest
             'start_time' => 'required|date_format:Y-m-d\TH:i|before_or_equal:end_time', // 修正
             'end_time' => 'nullable|date_format:Y-m-d\TH:i|after_or_equal:start_time',
             'all_day' => 'boolean',
-            'notification' => 'nullable|string|max:100',
             'location' => 'nullable|string|max:100',
             'link' => 'nullable|url|max:500',
             'tag_id' => 'nullable|exists:calendar_tags,id',
-            'description' => 'nullable|string|max:1000',
+            'note' => 'nullable|string|max:1000',
             'is_recurring' => 'boolean',
             'recurrence_type' => 'required|in:none,weekday,weekend,weekly,monthly,yearly',
         ];
@@ -78,14 +77,6 @@ class EventRequest extends FormRequest
                 "code" => "post_all_day_boolean",
                 "description" => "終日フラグは真偽値である必要があります"
             ]),
-            'notification.string' => json_encode([
-                "code" => "post_notification_string",
-                "description" => "通知は文字列である必要があります"
-            ]),
-            'notification.max' => json_encode([
-                "code" => "post_notification_max",
-                "description" => "通知は100文字以内です"
-            ]),
             'location.string' => json_encode([
                 "code" => "post_location_string",
                 "description" => "場所は文字列である必要があります"
@@ -106,13 +97,13 @@ class EventRequest extends FormRequest
                 "code" => "post_tag_id_exists",
                 "description" => "指定されたタグIDは存在しません"
             ]),
-            'description.string' => json_encode([
-                "code" => "post_description_string",
-                "description" => "説明は文字列である必要があります"
+            'note.string' => json_encode([
+                "code" => "post_note_string",
+                "description" => "メモは文字列である必要があります"
             ]),
-            'description.max' => json_encode([
-                "code" => "post_description_max",
-                "description" => "説明は1000文字以内です"
+            'note.max' => json_encode([
+                "code" => "post_note_max",
+                "description" => "メモは1000文字以内です"
             ]),
             'is_recurring.boolean' => json_encode([
                 "code" => "post_is_recurring_boolean",

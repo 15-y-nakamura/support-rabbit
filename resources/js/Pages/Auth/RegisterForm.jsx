@@ -6,6 +6,7 @@ import InputError from "@/Components/InputError";
 import PrimaryButton from "@/Components/PrimaryButton";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function RegisterForm() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -18,33 +19,25 @@ export default function RegisterForm() {
     });
 
     const { props } = usePage();
-    const [passwordType, setPasswordType] = useState("password");
-    const [passwordConfirmationType, setPasswordConfirmationType] =
-        useState("password");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
-    const togglePasswordVisibility = () => {
-        setPasswordType((prevType) =>
-            prevType === "password" ? "text" : "password"
-        );
-    };
-
-    const togglePasswordConfirmationVisibility = () => {
-        setPasswordConfirmationType((prevType) =>
-            prevType === "password" ? "text" : "password"
-        );
+    // パスワードの可視化トグル（共通化）
+    const toggleVisibility = (type) => {
+        if (type === "password") setShowPassword((prev) => !prev);
+        if (type === "confirm") setShowPasswordConfirm((prev) => !prev);
     };
 
     const submit = (e) => {
         e.preventDefault();
         post(route("register"), {
-            onSuccess: () => {
-                reset("password", "password_confirmation");
-            },
+            onSuccess: () => reset("password", "password_confirmation"),
         });
     };
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-[#FFF6EA] pt-6 sm:pt-0">
+            {/* ロゴ */}
             <div className="flex justify-center mb-4">
                 <img
                     src="/img/logos/logo.png"
@@ -53,14 +46,18 @@ export default function RegisterForm() {
                     style={{ width: "125px", height: "125px" }}
                 />
             </div>
+
+            {/* タイトル */}
             <div className="text-center mb-4">
                 <h1 className="text-xl sm:text-2xl font-semibold text-gray-700">
                     初めまして
                 </h1>
             </div>
             <Head title="新規登録" />
+
             <div className="w-full max-w-sm sm:max-w-4xl mx-auto">
                 <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                    {/* タブ切り替え */}
                     <div className="flex justify-center">
                         <Link
                             href={route("login")}
@@ -72,201 +69,96 @@ export default function RegisterForm() {
                             新規登録
                         </button>
                     </div>
+
+                    {/* フォーム */}
                     <div className="p-4 sm:p-6">
                         <form onSubmit={submit}>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <InputLabel
-                                        htmlFor="login_id"
-                                        value="ユーザID"
-                                    />
-                                    <TextInput
-                                        id="login_id"
-                                        name="login_id"
-                                        value={data.login_id}
-                                        className="mt-1 block w-full"
-                                        autoComplete="login_id"
-                                        onChange={(e) =>
-                                            setData("login_id", e.target.value)
-                                        }
-                                        required
-                                        placeholder="ユーザID"
-                                    />
-                                    <InputError
-                                        message={errors.login_id}
-                                        className="mt-2"
-                                    />
-                                </div>
-                                <div>
-                                    <InputLabel
-                                        htmlFor="nickname"
-                                        value="ニックネーム"
-                                    />
-                                    <TextInput
-                                        id="nickname"
-                                        name="nickname"
-                                        value={data.nickname}
-                                        className="mt-1 block w-full"
-                                        autoComplete="nickname"
-                                        onChange={(e) =>
-                                            setData("nickname", e.target.value)
-                                        }
-                                        required
-                                        placeholder="ニックネーム"
-                                    />
-                                    <InputError
-                                        message={errors.nickname}
-                                        className="mt-2"
-                                    />
-                                </div>
-                                <div>
-                                    <InputLabel
-                                        htmlFor="email"
-                                        value="メールアドレス"
-                                    />
-                                    <TextInput
-                                        id="email"
-                                        type="email"
-                                        name="email"
-                                        value={data.email}
-                                        className="mt-1 block w-full"
-                                        autoComplete="email"
-                                        onChange={(e) =>
-                                            setData("email", e.target.value)
-                                        }
-                                        required
-                                        placeholder="メールアドレス"
-                                    />
-                                    <InputError
-                                        message={errors.email}
-                                        className="mt-2"
-                                    />
-                                </div>
-                                <div>
-                                    <InputLabel
-                                        htmlFor="birthday"
-                                        value="生年月日"
-                                    />
-                                    <TextInput
-                                        id="birthday"
-                                        type="date"
-                                        name="birthday"
-                                        value={data.birthday}
-                                        className="mt-1 block w-full"
-                                        onChange={(e) =>
-                                            setData("birthday", e.target.value)
-                                        }
-                                        placeholder="yyyy/mm/dd"
-                                    />
-                                    <InputError
-                                        message={errors.birthday}
-                                        className="mt-2"
-                                    />
-                                </div>
-                                <div>
-                                    <InputLabel
-                                        htmlFor="password"
-                                        value="パスワード"
-                                    />
-                                    <div className="relative">
-                                        <TextInput
-                                            id="password"
-                                            type={passwordType}
-                                            name="password"
-                                            value={data.password}
-                                            className="mt-1 block w-full"
-                                            autoComplete="new-password"
-                                            onChange={(e) =>
-                                                setData(
-                                                    "password",
-                                                    e.target.value
-                                                )
-                                            }
-                                            required
-                                            placeholder="パスワード"
-                                        />
-                                        {passwordType === "password" ? (
-                                            <VisibilityOffIcon
-                                                onClick={
-                                                    togglePasswordVisibility
-                                                }
-                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
-                                                style={{
-                                                    fontSize: 32,
-                                                    height: "100%",
-                                                }}
-                                            />
-                                        ) : (
-                                            <VisibilityIcon
-                                                onClick={
-                                                    togglePasswordVisibility
-                                                }
-                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
-                                                style={{
-                                                    fontSize: 32,
-                                                    height: "100%",
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                    <InputError
-                                        message={errors.password}
-                                        className="mt-2"
-                                    />
-                                </div>
-                                <div>
-                                    <InputLabel
-                                        htmlFor="password_confirmation"
-                                        value="パスワード確認"
-                                    />
-                                    <div className="relative">
-                                        <TextInput
-                                            id="password_confirmation"
-                                            type={passwordConfirmationType}
-                                            name="password_confirmation"
-                                            value={data.password_confirmation}
-                                            className="mt-1 block w-full"
-                                            autoComplete="new-password"
-                                            onChange={(e) =>
-                                                setData(
-                                                    "password_confirmation",
-                                                    e.target.value
-                                                )
-                                            }
-                                            required
-                                            placeholder="パスワード確認"
-                                        />
-                                        {passwordConfirmationType ===
-                                        "password" ? (
-                                            <VisibilityOffIcon
-                                                onClick={
-                                                    togglePasswordConfirmationVisibility
-                                                }
-                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
-                                                style={{
-                                                    fontSize: 32,
-                                                    height: "100%",
-                                                }}
-                                            />
-                                        ) : (
-                                            <VisibilityIcon
-                                                onClick={
-                                                    togglePasswordConfirmationVisibility
-                                                }
-                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 cursor-pointer"
-                                                style={{
-                                                    fontSize: 32,
-                                                    height: "100%",
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                    <InputError
-                                        message={errors.password_confirmation}
-                                        className="mt-2"
-                                    />
-                                </div>
+                                {/* ユーザID */}
+                                <FormField
+                                    id="login_id"
+                                    label="ユーザID"
+                                    placeholder="ユーザID"
+                                    value={data.login_id}
+                                    onChange={(e) =>
+                                        setData("login_id", e.target.value)
+                                    }
+                                    error={errors.login_id}
+                                />
+
+                                {/* ニックネーム */}
+                                <FormField
+                                    id="nickname"
+                                    label="ニックネーム"
+                                    placeholder="ニックネーム"
+                                    value={data.nickname}
+                                    onChange={(e) =>
+                                        setData("nickname", e.target.value)
+                                    }
+                                    error={errors.nickname}
+                                />
+
+                                {/* メールアドレス */}
+                                <FormField
+                                    id="email"
+                                    type="email"
+                                    label="メールアドレス"
+                                    placeholder="メールアドレス"
+                                    value={data.email}
+                                    onChange={(e) =>
+                                        setData("email", e.target.value)
+                                    }
+                                    error={errors.email}
+                                />
+
+                                {/* 生年月日 */}
+                                <FormField
+                                    id="birthday"
+                                    type="date"
+                                    label="生年月日"
+                                    placeholder="yyyy/mm/dd"
+                                    value={data.birthday}
+                                    onChange={(e) =>
+                                        setData("birthday", e.target.value)
+                                    }
+                                    error={errors.birthday}
+                                />
+
+                                {/* パスワード */}
+                                <PasswordField
+                                    id="password"
+                                    label="パスワード"
+                                    value={data.password}
+                                    onChange={(e) =>
+                                        setData("password", e.target.value)
+                                    }
+                                    error={errors.password}
+                                    isVisible={showPassword}
+                                    toggleVisibility={() =>
+                                        toggleVisibility("password")
+                                    }
+                                />
+
+                                {/* パスワード確認 */}
+                                <PasswordField
+                                    id="password_confirmation"
+                                    label="パスワード確認"
+                                    value={data.password_confirmation}
+                                    onChange={(e) =>
+                                        setData(
+                                            "password_confirmation",
+                                            e.target.value
+                                        )
+                                    }
+                                    error={errors.password_confirmation}
+                                    isVisible={showPasswordConfirm}
+                                    toggleVisibility={() =>
+                                        toggleVisibility("confirm")
+                                    }
+                                />
                             </div>
+
+                            {/* ボタン */}
                             <div className="mt-4 flex items-center justify-between">
                                 <Link
                                     href={route("login")}
@@ -274,6 +166,7 @@ export default function RegisterForm() {
                                 >
                                     既にアカウントをお持ちの方はこちら
                                 </Link>
+
                                 <div className="flex items-center">
                                     {props.registrationSuccess && (
                                         <span className="text-green-500 text-sm mr-4">
@@ -281,10 +174,17 @@ export default function RegisterForm() {
                                         </span>
                                     )}
                                     <PrimaryButton
-                                        className="ml-4 bg-gray-700"
+                                        className="ml-4 bg-gray-700 flex items-center justify-center"
                                         disabled={processing}
                                     >
-                                        登録
+                                        {processing ? (
+                                            <CircularProgress
+                                                size={20}
+                                                color="inherit"
+                                            />
+                                        ) : (
+                                            "登録"
+                                        )}
                                     </PrimaryButton>
                                 </div>
                             </div>
@@ -295,3 +195,65 @@ export default function RegisterForm() {
         </div>
     );
 }
+
+// 共通フォームフィールドコンポーネント
+const FormField = ({
+    id,
+    label,
+    type = "text",
+    placeholder,
+    value,
+    onChange,
+    error,
+}) => (
+    <div>
+        <InputLabel htmlFor={id} value={label} />
+        <TextInput
+            id={id}
+            type={type}
+            name={id}
+            value={value}
+            className="mt-1 block w-full"
+            onChange={onChange}
+            required
+            placeholder={placeholder}
+        />
+        <InputError message={error} className="mt-2" />
+    </div>
+);
+
+// パスワードフィールドコンポーネント
+const PasswordField = ({
+    id,
+    label,
+    value,
+    onChange,
+    error,
+    isVisible,
+    toggleVisibility,
+}) => (
+    <div>
+        <InputLabel htmlFor={id} value={label} />
+        <div className="relative">
+            <TextInput
+                id={id}
+                type={isVisible ? "text" : "password"}
+                name={id}
+                value={value}
+                className="mt-1 block w-full"
+                autoComplete="new-password"
+                onChange={onChange}
+                required
+                placeholder={label}
+            />
+            <div
+                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                onClick={toggleVisibility}
+                style={{ fontSize: 32, height: "100%" }}
+            >
+                {isVisible ? <VisibilityIcon /> : <VisibilityOffIcon />}
+            </div>
+        </div>
+        <InputError message={error} className="mt-2" />
+    </div>
+);

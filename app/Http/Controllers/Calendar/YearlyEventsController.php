@@ -81,11 +81,10 @@ class YearlyEventsController extends Controller
                         'start_time' => $eventDate->format('Y-m-d') . 'T' . (new \DateTime($validatedData['start_time']))->format('H:i'),
                         'end_time' => $validatedData['end_time'] ? $eventDate->format('Y-m-d') . 'T' . (new \DateTime($validatedData['end_time']))->format('H:i') : null,
                         'all_day' => $validatedData['all_day'],
-                        'notification' => $validatedData['notification'],
                         'location' => $validatedData['location'],
                         'link' => $validatedData['link'],
                         'tag_id' => $validatedData['tag_id'], // タグの保存
-                        'description' => $validatedData['description'],
+                        'note' => $validatedData['note'],
                         'recurrence_type' => $validatedData['recurrence_type'], // 繰り返しの種類の保存
                     ]);
                 }
@@ -121,11 +120,10 @@ class YearlyEventsController extends Controller
                 'start_time' => $validatedData['start_time'],
                 'end_time' => $validatedData['end_time'],
                 'all_day' => $validatedData['all_day'],
-                'notification' => $validatedData['notification'],
                 'location' => $validatedData['location'],
                 'link' => $validatedData['link'],
                 'tag_id' => $validatedData['tag_id'],
-                'description' => $validatedData['description'],
+                'note' => $validatedData['note'],
                 'recurrence_type' => $validatedData['recurrence_type'],
             ]);
 

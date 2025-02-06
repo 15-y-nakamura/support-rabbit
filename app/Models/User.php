@@ -28,7 +28,6 @@ class User extends Authenticatable
 
     protected $casts = [
         'status' => 'int',
-        'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'birthday' => 'date',
     ];
@@ -62,7 +61,6 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserToken::class, 'user_id', 'id');
     }
-
 
     /**
      * ユーザー削除（論理削除）
