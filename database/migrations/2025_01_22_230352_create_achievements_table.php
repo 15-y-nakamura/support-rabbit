@@ -15,13 +15,11 @@ class CreateAchievementsTable extends Migration
     {
         Schema::create('achievements', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('event_id')->constrained('calendar_events')->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); 
             $table->string('title');
             $table->dateTime('start_time');
             $table->dateTime('end_time')->nullable();
             $table->dateTime('achieved_at'); // 達成日時
-            $table->timestamps();
         });
     }
 
