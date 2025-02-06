@@ -14,7 +14,7 @@ use App\Http\Controllers\Calendar\WeeklyEventsController;
 use App\Http\Controllers\Calendar\MonthlyEventsController;
 use App\Http\Controllers\Calendar\YearlyEventsController;
 use App\Http\Controllers\Notice\NoticeController;
-use App\Http\Controllers\Achievement\AchievementController;
+use App\Http\Controllers\Achievement\AchievementController; // 正しい名前空間を指定
 
 Route::prefix('v2/auth')->middleware('guest')->group(function () {
     Route::post('register', [RegisterController::class, 'signup']);
@@ -100,12 +100,9 @@ Route::prefix('v2')->group(function () {
         Route::delete('{id}/all', 'destroyAll');
     });
 
-    //通知 API
-    Route::controller(NoticeController::class)->prefix('notices')->group(function () {
+    // 実績 API
+    Route::controller(AchievementController::class)->prefix('achievements')->group(function () {
         Route::get('/', 'index');
-        Route::put('read', 'read');
+        Route::post('/', 'store');
     });
-
-    //実績 API
-    Route::get('achievements', [AchievementController::class, 'index']);
 });

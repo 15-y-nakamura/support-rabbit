@@ -31,8 +31,6 @@ class YearlyEventsController extends Controller
             ->where('title', 'like', '%' . $query . '%')
             ->get();
 
-        Log::info('Fetched Yearly Events:', ['events' => $events]);
-
         return response()->json(['events' => $events]);
     }
 

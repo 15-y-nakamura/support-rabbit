@@ -31,8 +31,6 @@ class WeekendEventsController extends Controller
             ->where('title', 'like', '%' . $query . '%')
             ->get();
 
-        Log::info('Fetched Weekend Events:', ['events' => $events]);
-
         return response()->json(['events' => $events]);
     }
 

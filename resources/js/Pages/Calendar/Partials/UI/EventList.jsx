@@ -1,14 +1,25 @@
 import React, { useState } from "react";
+import axios from "axios";
 import EventDetailModal from "../Modals/EventDetailModal";
+
+// 認証トークンを取得する関数
+const getAuthToken = () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+        console.error("Auth token is missing");
+    }
+    return token;
+};
 
 export default function EventList({
     selectedDateEvents,
     selectedEvents,
     handleEventSelect,
     handleDeleteSelectedEvents,
-    handleEventComplete,
+    fetchEvents, // カレンダーイベントを更新する関数を追加
 }) {
     const [selectedEvent, setSelectedEvent] = useState(null);
+    const [error, setError] = useState(null);
 
     const sortedEvents = selectedDateEvents.sort((a, b) => {
         const startA = new Date(a.start_time);
@@ -39,8 +50,37 @@ export default function EventList({
         setSelectedEvent(null);
     };
 
+    const handleAchieveEvent = async (event) => {
+        try {
+            console.log("Achieving event:", event);
+            const authToken = getAuthToken(); // トークンを取得
+            await axios.post(
+                "/api/v2/achievements",
+                {
+                    user_id: event.user_id,
+                    title: event.title,
+                    start_time: event.start_time,
+                    end_time: event.end_time,
+                },
+                {
+                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                }
+            );
+
+            await axios.delete(`/api/v2/calendar/events/${event.id}`, {
+                headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+            });
+
+            fetchEvents(); // イベントを再取得
+            setNotification("イベントが達成されました。");
+        } catch (error) {
+            console.error("Error achieving event:", error);
+        }
+    };
+
     return (
         <div className="mt-2 p-2 bg-white border border-gray-300 rounded shadow-md w-full h-96 overflow-y-auto">
+            {error && <div className="text-red-500 mb-2">{error}</div>}
             {Object.keys(groupedEvents).length > 0 ? (
                 <>
                     <div className="flex justify-between items-center mb-2">
@@ -206,9 +246,7 @@ export default function EventList({
                                             <button
                                                 className="bg-green-500 text-white p-1 rounded"
                                                 onClick={() =>
-                                                    handleEventComplete(
-                                                        event.id
-                                                    )
+                                                    handleAchieveEvent(event)
                                                 }
                                             >
                                                 達成

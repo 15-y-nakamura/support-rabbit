@@ -13,9 +13,9 @@ Route::get('/', function () {
     return Inertia::render('Auth/AuthForm');
 })->name('auth.toggle');
 
-// 🔹 ホームルート（認証済みユーザーのみ）
+// 🔹 カレンダールート（認証済みユーザーのみ）
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/home', fn() => Inertia::render('Home'))->name('home');
+    Route::get('/calendar', fn() => Inertia::render('Calendar'))->name('calendar');
 });
 
 // 🔹 誰でもアクセス可能なルート（ログイン・登録・パスワードリセット）

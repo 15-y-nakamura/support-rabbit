@@ -15,11 +15,9 @@ class EventController extends Controller
     public function index(Request $req)
     {
         try {
-            Log::info('Fetching calendar events with parameters:', $req->all());
-
             // トークンを使用してユーザーを認証
             $token = $req->bearerToken();
-            Log::info('Received Token:', ['token' => $token]);
+            // Log::info('Received Token:', ['token' => $token]);
             $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
     
             if (!$userToken) {
@@ -48,9 +46,6 @@ class EventController extends Controller
             }
 
             $calendarEvents = $calendarEvents->get();
-
-            // ログにイベントIDを記録
-            Log::info('Fetched calendar events:', ['ids' => $calendarEvents->pluck('id')]);
 
             $res = $calendarEvents->map(function ($event) {
                 return [

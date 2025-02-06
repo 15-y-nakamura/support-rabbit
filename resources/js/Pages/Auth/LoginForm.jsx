@@ -30,7 +30,7 @@ export default function LoginForm() {
             localStorage.setItem("authToken", token); // トークンをローカルストレージに保存
             console.log("Logged in successfully:", response.data);
             reset("password");
-            window.location.href = "/home"; // ログイン成功後にホームページにリダイレクト
+            window.location.href = "/user/calendar"; // ログイン成功後にカレンダーにリダイレクト
         } catch (error) {
             console.error("Error logging in:", error);
             if (error.response && error.response.data.errors) {

@@ -23,18 +23,16 @@ export default function HeaderSidebarLayout({ header, children }) {
         }
     }, [showingNavigationDropdown]);
 
-    const isHomePage = currentUrl === "/home"; // 現在のURLがホームページかどうかを判定
+    const isHomePage = currentUrl === "/user/calendar"; // 現在のURLがカレンダーページかどうかを判定
 
     // 現在のURLに基づいてページ名を決定
     const pageNames = {
-        "/home": "ホーム",
-        "/schedule": "本日の予定",
+        "/user/calendar": "カレンダー",
         "/weather": "天気",
-        "/calendar": "カレンダー",
         "/achievement": "達成率",
         "/profile": "プロフィール",
     };
-    const currentPageName = pageNames[currentUrl] || "ホーム";
+    const currentPageName = pageNames[currentUrl] || "カレンダー";
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -44,7 +42,7 @@ export default function HeaderSidebarLayout({ header, children }) {
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
                                 <Link
-                                    href="/home"
+                                    href="/user/calendar"
                                     className="flex flex-col items-center"
                                 >
                                     <img
@@ -54,7 +52,7 @@ export default function HeaderSidebarLayout({ header, children }) {
                                     />
                                     {!isHomePage && (
                                         <span className="text-sm text-gray-800">
-                                            ホームに戻る
+                                            カレンダーに戻る
                                         </span>
                                     )}
                                 </Link>
@@ -66,9 +64,9 @@ export default function HeaderSidebarLayout({ header, children }) {
                         <div className="hidden sm:ms-8 sm:flex sm:items-center">
                             <div className="flex items-center space-x-8 sm:space-x-6">
                                 <NavItem
-                                    href="/schedule"
-                                    icon="/img/icons/schedule-icon.png"
-                                    label="本日の予定"
+                                    href={route("achievement")}
+                                    icon="/img/icons/achievement-icon.png"
+                                    label="達成率"
                                 />
                                 <VerticalDivider />
                                 <NavItem
@@ -155,11 +153,6 @@ function UserDropdown({ user }) {
             href: route("calendar"),
             icon: "/img/icons/calendar-icon.png",
             label: "カレンダー",
-        },
-        {
-            href: route("achievement"),
-            icon: "/img/icons/achievement-icon.png",
-            label: "達成率",
         },
         {
             href: route("logout"),
@@ -262,11 +255,6 @@ function ResponsiveNavigation({ showing }) {
                     {user.nickname} <br /> ({user.login_id})
                 </>
             ),
-        },
-        {
-            href: "/schedule",
-            icon: "/img/icons/schedule-icon.png",
-            label: "本日の予定",
         },
         {
             href: route("weather"),

@@ -11,11 +11,14 @@ class Achievement extends Model
 
     protected $fillable = [
         'event_id',
+        'user_id',
         'title',
         'start_time',
         'end_time',
         'achieved_at',
     ];
+
+    public $timestamps = false; // タイムスタンプの自動設定を無効にする
 
     public function event()
     {
