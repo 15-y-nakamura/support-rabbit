@@ -5,7 +5,7 @@ export default function ConfirmDeleteModal({
     isOpen,
     onClose,
     onConfirm,
-    relatedEvents,
+    relatedEvents = [], // デフォルト値を空の配列に設定
     allSelected,
 }) {
     const [isDeleting, setIsDeleting] = useState(false);
@@ -16,6 +16,7 @@ export default function ConfirmDeleteModal({
         setIsDeleting(true);
         if (relatedEvents.length === 0 || allSelected) {
             await onConfirm();
+            window.location.href = "/user/calendar"; // 削除後にリダイレクト
         }
         setIsDeleting(false);
         onClose();

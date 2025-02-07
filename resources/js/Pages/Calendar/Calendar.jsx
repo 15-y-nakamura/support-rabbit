@@ -11,6 +11,7 @@ import TagSelectModal from "./Partials/Modals/TagSelectModal";
 import DeleteEventModal from "./Partials/Modals/DeleteEventModal";
 import SearchModal from "./Partials/Modals/SearchModal";
 import EventList from "./Partials/UI/EventList";
+import ConfirmDeleteModal from "./Partials/Modals/ConfirmDeleteModal"; // ConfirmDeleteModalのインポート
 
 export default function Calendar() {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -28,6 +29,7 @@ export default function Calendar() {
     const [isTagSelectModalOpen, setIsTagSelectModalOpen] = useState(false);
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     useEffect(() => {
         fetchEvents();
@@ -120,6 +122,11 @@ export default function Calendar() {
     const handleEventDeleted = (deletedEventId) => {
         fetchEvents(); // イベントを再取得
         setNotification("イベントが削除されました。");
+    };
+
+    const handleEventTagDeleted = () => {
+        fetchEvents(); // イベントを再取得
+        setNotification("タグが削除されました。");
     };
 
     const handleEventAchieved = (achievedEventId) => {
@@ -395,6 +402,11 @@ export default function Calendar() {
                 isOpen={isTagSelectModalOpen}
                 onClose={() => setIsTagSelectModalOpen(false)}
                 onTagSelected={handleTagSelected}
+            />
+            <ConfirmDeleteModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleEventTagDeleted} // handleEventTagDeleted関数を渡す
             />
         </HeaderSidebarLayout>
     );

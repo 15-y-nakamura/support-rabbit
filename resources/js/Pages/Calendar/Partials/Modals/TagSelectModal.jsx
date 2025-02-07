@@ -12,10 +12,21 @@ const getAuthToken = () => {
     return token;
 };
 
+const pastelColors = [
+    "#FFB3BA", // パステルピンク
+    "#FFDFBA", // パステルオレンジ
+    "#FFFFBA", // パステルイエロー
+    "#BAFFC9", // パステルグリーン
+    "#BAE1FF", // パステルブルー
+    "#E1BAFF", // パステルパープル
+    "#FFCBA4", // パステルコーラル
+    "#FFB3E1", // パステルマゼンタ
+];
+
 export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
     const [tags, setTags] = useState([]);
     const [newTagName, setNewTagName] = useState("");
-    const [newTagColor, setNewTagColor] = useState("#000000");
+    const [newTagColor, setNewTagColor] = useState(pastelColors[0]);
     const [selectedTag, setSelectedTag] = useState(null);
     const [loadingTags, setLoadingTags] = useState(false);
     const [errors, setErrors] = useState({});
@@ -87,7 +98,7 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
             );
             setTags(updatedTags);
             setNewTagName("");
-            setNewTagColor("#000000");
+            setNewTagColor(pastelColors[0]);
             setErrors({});
         } catch (error) {
             if (error.response && error.response.data.errors) {
@@ -162,14 +173,14 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
                                             onClick={() => handleTagClick(tag)}
                                             className={`p-2 border border-gray-300 rounded-lg cursor-pointer transition-colors duration-300 ${
                                                 selectedTag?.id === tag.id
-                                                    ? "border-2 border-customBlue"
+                                                    ? "border-4 border-gray-500"
                                                     : ""
                                             }`}
                                             style={{
                                                 backgroundColor: tag.color,
                                                 borderColor:
                                                     selectedTag?.id === tag.id
-                                                        ? "customBlue"
+                                                        ? "gray"
                                                         : "gray",
                                             }}
                                         >
@@ -212,36 +223,18 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
                         )}
 
                         <div className="flex items-center space-x-2">
-                            <input
-                                type="color"
-                                value={newTagColor}
-                                onChange={(e) => setNewTagColor(e.target.value)}
-                                className="hidden"
-                                id="colorPicker"
-                            />
-                            <div
-                                className="flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded shadow-md cursor-pointer"
-                                onClick={() =>
-                                    document
-                                        .getElementById("colorPicker")
-                                        .click()
-                                }
-                            >
-                                <label
-                                    htmlFor="colorPicker"
-                                    className="w-8 h-8 cursor-pointer"
-                                    style={{
-                                        backgroundImage:
-                                            "url('/img/icons/palette-icon.png')",
-                                        backgroundSize: "cover",
-                                    }}
-                                ></label>
-                                <span className="text-gray-700">色を作成</span>
-                            </div>
-                            <div
-                                className="w-10 h-10 border border-gray-300 rounded"
-                                style={{ backgroundColor: newTagColor }}
-                            ></div>
+                            {pastelColors.map((color, index) => (
+                                <div
+                                    key={index}
+                                    className={`w-10 h-10 border border-gray-300 rounded cursor-pointer ${
+                                        newTagColor === color
+                                            ? "border-4 border-gray-500"
+                                            : ""
+                                    }`}
+                                    style={{ backgroundColor: color }}
+                                    onClick={() => setNewTagColor(color)}
+                                ></div>
+                            ))}
                         </div>
                         {errors.color && (
                             <div className="text-red-500">

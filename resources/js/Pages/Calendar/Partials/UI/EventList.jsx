@@ -22,6 +22,7 @@ export default function EventList({
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [error, setError] = useState(null);
     const [tags, setTags] = useState({});
+    const [missingTags, setMissingTags] = useState([]); // State to handle missing tags
     const [isLoading, setIsLoading] = useState(false); // State to handle loading
 
     useEffect(() => {
@@ -35,15 +36,23 @@ export default function EventList({
             const uniqueTagIds = [...new Set(tagIds)];
 
             const tagPromises = uniqueTagIds.map((tagId) =>
-                axios.get(`/api/v2/calendar/tags/${tagId}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                })
+                axios
+                    .get(`/api/v2/calendar/tags/${tagId}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    })
+                    .catch((error) => {
+                        if (error.response && error.response.status === 404) {
+                            setMissingTags((prev) => [...prev, tagId]);
+                        }
+                    })
             );
 
             try {
                 const tagResponses = await Promise.all(tagPromises);
                 const tagsData = tagResponses.reduce((acc, response) => {
-                    acc[response.data.id] = response.data;
+                    if (response) {
+                        acc[response.data.id] = response.data;
+                    }
                     return acc;
                 }, {});
                 setTags(tagsData);
@@ -218,6 +227,14 @@ export default function EventList({
                                                                 .name
                                                         }
                                                     </div>
+                                                )}
+                                            {event.tag_id &&
+                                                missingTags.includes(
+                                                    event.tag_id
+                                                ) && (
+                                                    <span className="ml-2 text-sm text-gray-500">
+                                                        (タグが削除されています)
+                                                    </span>
                                                 )}
                                         </div>
                                         <div className="flex items-center space-x-2">

@@ -57,7 +57,7 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
     const [link, setLink] = useState(event.link || "");
     const [note, setNote] = useState(event.note || "");
     const [tags, setTags] = useState([]);
-    const [selectedTag, setSelectedTag] = useState(event.tag || null);
+    const [selectedTag, setSelectedTag] = useState(null);
     const [isTagListOpen, setIsTagListOpen] = useState(false);
     const [loadingTags, setLoadingTags] = useState(false);
     const [errors, setErrors] = useState({});
@@ -65,7 +65,10 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
 
     useEffect(() => {
         fetchTags();
-    }, []);
+        if (event.tag_id) {
+            fetchTag(event.tag_id);
+        }
+    }, [event.tag_id]);
 
     const fetchTags = async () => {
         setLoadingTags(true);
@@ -81,6 +84,20 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
             console.error("Error fetching tags:", error);
         } finally {
             setLoadingTags(false);
+        }
+    };
+
+    const fetchTag = async (tagId) => {
+        try {
+            const token = getAuthToken(); // トークンを取得
+            const response = await axios.get(`/api/v2/calendar/tags/${tagId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`, // トークンをヘッダーに追加
+                },
+            });
+            setSelectedTag(response.data);
+        } catch (error) {
+            console.error("Error fetching tag:", error);
         }
     };
 

@@ -6,6 +6,7 @@ export default function EventDetailModal({ event, onEdit, onClose }) {
     const [isEditing, setIsEditing] = useState(false); // State to handle edit mode
     const [tag, setTag] = useState(null); // State to store tag information
     const [isLoading, setIsLoading] = useState(false); // State to handle loading
+    const [tagNotFound, setTagNotFound] = useState(false); // State to handle tag not found
 
     const handleEditClick = () => {
         setIsEditing(true);
@@ -34,6 +35,7 @@ export default function EventDetailModal({ event, onEdit, onClose }) {
         const fetchTag = async () => {
             if (event.tag_id) {
                 setIsLoading(true);
+                setTagNotFound(false);
                 try {
                     const token = localStorage.getItem("authToken");
                     const response = await axios.get(
@@ -44,7 +46,11 @@ export default function EventDetailModal({ event, onEdit, onClose }) {
                     );
                     setTag(response.data);
                 } catch (error) {
-                    console.error("Error fetching tag:", error);
+                    if (error.response && error.response.status === 404) {
+                        setTagNotFound(true);
+                    } else {
+                        console.error("Error fetching tag:", error);
+                    }
                 } finally {
                     setIsLoading(false);
                 }
@@ -151,6 +157,10 @@ export default function EventDetailModal({ event, onEdit, onClose }) {
                                 >
                                     {tag.name}
                                 </div>
+                            ) : tagNotFound ? (
+                                <p className="p-2 border border-gray-300 rounded text-gray-500">
+                                    (タグが削除されています)
+                                </p>
                             ) : (
                                 <p className="p-2 border border-gray-300 rounded">
                                     タグが選択されていません
