@@ -23,124 +23,160 @@ export default function SearchModal({
         }
     }, [searchType]);
 
+    const getAuthToken = () => {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            console.error("認証トークンがありません");
+        }
+        return token;
+    };
+
     const fetchTags = async () => {
         setIsTagsLoading(true);
         try {
-            const response = await axios.get("/api/v2/calendar/tags");
+            const authToken = getAuthToken();
+            const response = await axios.get("/api/v2/calendar/tags", {
+                headers: { Authorization: `Bearer ${authToken}` },
+            });
             setTags(response.data.tags);
         } catch (error) {
-            console.error("Error fetching tags:", error);
+            console.error("タグの取得中にエラーが発生しました:", error);
         } finally {
             setIsTagsLoading(false);
         }
     };
 
     const handleTitleSearch = async () => {
+        const authToken = getAuthToken();
         const searchResults = await handleSearch(query, "");
-        const [
-            weekdayResults,
-            weekendResults,
-            weeklyResults,
-            monthlyResults,
-            yearlyResults,
-        ] = await Promise.all([
-            axios.get("/api/v2/calendar/weekday-events"),
-            axios.get("/api/v2/calendar/weekend-events"),
-            axios.get("/api/v2/calendar/weekly-events"),
-            axios.get("/api/v2/calendar/monthly-events"),
-            axios.get("/api/v2/calendar/yearly-events"),
-        ]);
+        try {
+            const [
+                weekdayResults,
+                weekendResults,
+                weeklyResults,
+                monthlyResults,
+                yearlyResults,
+            ] = await Promise.all([
+                axios.get("/api/v2/calendar/weekday-events", {
+                    headers: { Authorization: `Bearer ${authToken}` },
+                }),
+                axios.get("/api/v2/calendar/weekend-events", {
+                    headers: { Authorization: `Bearer ${authToken}` },
+                }),
+                axios.get("/api/v2/calendar/weekly-events", {
+                    headers: { Authorization: `Bearer ${authToken}` },
+                }),
+                axios.get("/api/v2/calendar/monthly-events", {
+                    headers: { Authorization: `Bearer ${authToken}` },
+                }),
+                axios.get("/api/v2/calendar/yearly-events", {
+                    headers: { Authorization: `Bearer ${authToken}` },
+                }),
+            ]);
 
-        const filteredResults = searchResults.filter((result) =>
-            result.title.includes(query)
-        );
-        const filteredWeekdayResults = weekdayResults.data.filter((result) =>
-            result.title.includes(query)
-        );
-        const filteredWeekendResults = weekendResults.data.filter((result) =>
-            result.title.includes(query)
-        );
-        const filteredWeeklyResults = weeklyResults.data.filter((result) =>
-            result.title.includes(query)
-        );
-        const filteredMonthlyResults = monthlyResults.data.filter((result) =>
-            result.title.includes(query)
-        );
-        const filteredYearlyResults = yearlyResults.data.filter((result) =>
-            result.title.includes(query)
-        );
+            const filteredResults = searchResults.filter((result) =>
+                result.title.includes(query)
+            );
+            const filteredWeekdayResults = weekdayResults.data.events.filter(
+                (result) => result.title.includes(query)
+            );
+            const filteredWeekendResults = weekendResults.data.events.filter(
+                (result) => result.title.includes(query)
+            );
+            const filteredWeeklyResults = weeklyResults.data.events.filter(
+                (result) => result.title.includes(query)
+            );
+            const filteredMonthlyResults = monthlyResults.data.events.filter(
+                (result) => result.title.includes(query)
+            );
+            const filteredYearlyResults = yearlyResults.data.events.filter(
+                (result) => result.title.includes(query)
+            );
 
-        const combinedResults = [
-            ...filteredResults,
-            ...filteredWeekdayResults,
-            ...filteredWeekendResults,
-            ...filteredWeeklyResults,
-            ...filteredMonthlyResults,
-            ...filteredYearlyResults,
-        ];
-        combinedResults.sort(
-            (a, b) => new Date(a.start_time) - new Date(b.start_time)
-        );
-        setResults(combinedResults);
+            const combinedResults = [
+                ...filteredResults,
+                ...filteredWeekdayResults,
+                ...filteredWeekendResults,
+                ...filteredWeeklyResults,
+                ...filteredMonthlyResults,
+                ...filteredYearlyResults,
+            ];
+            combinedResults.sort(
+                (a, b) => new Date(a.start_time) - new Date(b.start_time)
+            );
+            setResults(combinedResults);
+        } catch (error) {
+            console.error("イベントの取得中にエラーが発生しました:", error);
+        }
     };
 
     const handleTagSearch = async () => {
+        const authToken = getAuthToken();
         const searchResults = await handleSearch("", selectedTag?.id);
-        const [
-            weekdayResults,
-            weekendResults,
-            weeklyResults,
-            monthlyResults,
-            yearlyResults,
-        ] = await Promise.all([
-            axios.get(
-                `/api/v2/calendar/weekday-events?tag_id=${selectedTag?.id}`
-            ),
-            axios.get(
-                `/api/v2/calendar/weekend-events?tag_id=${selectedTag?.id}`
-            ),
-            axios.get(
-                `/api/v2/calendar/weekly-events?tag_id=${selectedTag?.id}`
-            ),
-            axios.get(
-                `/api/v2/calendar/monthly-events?tag_id=${selectedTag?.id}`
-            ),
-            axios.get(
-                `/api/v2/calendar/yearly-events?tag_id=${selectedTag?.id}`
-            ),
-        ]);
+        try {
+            const [
+                weekdayResults,
+                weekendResults,
+                weeklyResults,
+                monthlyResults,
+                yearlyResults,
+            ] = await Promise.all([
+                axios.get(
+                    `/api/v2/calendar/weekday-events?tag_id=${selectedTag?.id}`,
+                    { headers: { Authorization: `Bearer ${authToken}` } }
+                ),
+                axios.get(
+                    `/api/v2/calendar/weekend-events?tag_id=${selectedTag?.id}`,
+                    { headers: { Authorization: `Bearer ${authToken}` } }
+                ),
+                axios.get(
+                    `/api/v2/calendar/weekly-events?tag_id=${selectedTag?.id}`,
+                    { headers: { Authorization: `Bearer ${authToken}` } }
+                ),
+                axios.get(
+                    `/api/v2/calendar/monthly-events?tag_id=${selectedTag?.id}`,
+                    { headers: { Authorization: `Bearer ${authToken}` } }
+                ),
+                axios.get(
+                    `/api/v2/calendar/yearly-events?tag_id=${selectedTag?.id}`,
+                    { headers: { Authorization: `Bearer ${authToken}` } }
+                ),
+            ]);
 
-        const filteredSearchResults = searchResults.filter(
-            (result) => result.tag_id === selectedTag?.id
-        );
-        const filteredWeekdayResults = weekdayResults.data.filter(
-            (result) => result.tag_id === selectedTag?.id
-        );
-        const filteredWeekendResults = weekendResults.data.filter(
-            (result) => result.tag_id === selectedTag?.id
-        );
-        const filteredWeeklyResults = weeklyResults.data.filter(
-            (result) => result.tag_id === selectedTag?.id
-        );
-        const filteredMonthlyResults = monthlyResults.data.filter(
-            (result) => result.tag_id === selectedTag?.id
-        );
-        const filteredYearlyResults = yearlyResults.data.filter(
-            (result) => result.tag_id === selectedTag?.id
-        );
+            const filteredSearchResults = searchResults.filter(
+                (result) => result.tag_id === selectedTag?.id
+            );
+            const filteredWeekdayResults = weekdayResults.data.events.filter(
+                (result) => result.tag_id === selectedTag?.id
+            );
+            const filteredWeekendResults = weekendResults.data.events.filter(
+                (result) => result.tag_id === selectedTag?.id
+            );
+            const filteredWeeklyResults = weeklyResults.data.events.filter(
+                (result) => result.tag_id === selectedTag?.id
+            );
+            const filteredMonthlyResults = monthlyResults.data.events.filter(
+                (result) => result.tag_id === selectedTag?.id
+            );
+            const filteredYearlyResults = yearlyResults.data.events.filter(
+                (result) => result.tag_id === selectedTag?.id
+            );
 
-        const combinedResults = [
-            ...filteredSearchResults,
-            ...filteredWeekdayResults,
-            ...filteredWeekendResults,
-            ...filteredWeeklyResults,
-            ...filteredMonthlyResults,
-            ...filteredYearlyResults,
-        ];
-        combinedResults.sort(
-            (a, b) => new Date(a.start_time) - new Date(b.start_time)
-        );
-        setResults(combinedResults);
+            const combinedResults = [
+                ...filteredSearchResults,
+                ...filteredWeekdayResults,
+                ...filteredWeekendResults,
+                ...filteredWeeklyResults,
+                ...filteredMonthlyResults,
+                ...filteredYearlyResults,
+            ];
+            combinedResults.sort(
+                (a, b) => new Date(a.start_time) - new Date(b.start_time)
+            );
+            setResults(combinedResults);
+        } catch (error) {
+            console.error("イベントの取得中にエラーが発生しました:", error);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -210,7 +246,10 @@ export default function SearchModal({
                     &times;
                 </button>
                 <div className="w-full sm:w-1/2 pr-0 sm:pr-4 border-r-0 sm:border-r border-gray-300">
-                    <div className="bg-cream p-4 rounded-lg">
+                    <div
+                        className="bg-cream p-4 rounded-lg"
+                        style={{ height: "100%", minHeight: "400px" }}
+                    >
                         <h3 className="text-2xl font-bold mb-6 text-center">
                             検索
                         </h3>
@@ -254,7 +293,7 @@ export default function SearchModal({
                                         />
                                         <button
                                             type="submit"
-                                            className="w-full bg-[#80ACCF] text-white py-2 rounded-lg font-semibold transition-colors duration-300 hover:bg-blue-600"
+                                            className="w-full bg-customBlue hover:bg-blue-400 text-white py-2 rounded-lg font-semibold transition-colors duration-300"
                                             disabled={isLoading}
                                         >
                                             {isLoading ? (
@@ -293,7 +332,7 @@ export default function SearchModal({
                                                             className={`p-2 border border-gray-300 rounded-lg cursor-pointer transition-colors duration-300 ${
                                                                 selectedTag?.id ===
                                                                 tag.id
-                                                                    ? "border-2 border-[#80ACCF]"
+                                                                    ? "border-2 border-customBlue"
                                                                     : ""
                                                             }`}
                                                             style={{
@@ -302,7 +341,7 @@ export default function SearchModal({
                                                                 borderColor:
                                                                     selectedTag?.id ===
                                                                     tag.id
-                                                                        ? "#80ACCF"
+                                                                        ? "customBlue"
                                                                         : "gray",
                                                             }}
                                                         >
@@ -312,7 +351,7 @@ export default function SearchModal({
                                                 </div>
                                                 <button
                                                     type="submit"
-                                                    className="w-full bg-[#80ACCF] text-white py-2 rounded-lg font-semibold transition-colors duration-300 hover:bg-blue-600"
+                                                    className="w-full bg-customBlue hover:bg-blue-400 text-white py-2 rounded-lg font-semibold transition-colors duration-300"
                                                     disabled={isLoading}
                                                 >
                                                     {isLoading ? (
@@ -344,6 +383,10 @@ export default function SearchModal({
                                           <div
                                               key={result.id}
                                               className="bg-white shadow-lg rounded-lg p-4 mb-4"
+                                              style={{
+                                                  width: "100%",
+                                                  maxWidth: "300px",
+                                              }}
                                           >
                                               <div>
                                                   <div className="font-bold text-lg">

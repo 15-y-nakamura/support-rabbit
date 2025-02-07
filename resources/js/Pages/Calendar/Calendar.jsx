@@ -1,10 +1,10 @@
+import React, { useState, useEffect } from "react";
 import HeaderSidebarLayout from "@/Layouts/HeaderSidebarLayout";
 import { Head } from "@inertiajs/react";
-import { useState, useEffect } from "react";
 import axios from "axios";
 import CreateEventForm from "./Partials/Forms/CreateEventForm";
 import EditEventForm from "./Partials/Forms/EditEventForm";
-import EventModal from "../../Components/EventModal"; // 修正されたインポートパス
+import EventModal from "../../Components/EventModal";
 import ChangeDateModal from "./Partials/Modals/ChangeDateModal";
 import CalendarGrid from "./Partials/UI/CalendarGrid";
 import TagSelectModal from "./Partials/Modals/TagSelectModal";
@@ -25,8 +25,9 @@ export default function Calendar() {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [isTagSelectModalOpen, setIsTagSelectModalOpen] = useState(false); // 追加
+    const [isTagSelectModalOpen, setIsTagSelectModalOpen] = useState(false);
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date());
 
     useEffect(() => {
         fetchEvents();
@@ -107,23 +108,31 @@ export default function Calendar() {
     const handleEventCreated = (newEvent) => {
         fetchEvents(); // イベントを再取得
         setIsModalOpen(false);
-        setNotification("イベントが正常に作成されました。");
+        setNotification("イベントが作成されました。");
     };
 
     const handleEventUpdated = (updatedEvent) => {
         fetchEvents(); // イベントを再取得
-        setNotification("イベントが正常に更新されました。");
+        setIsModalOpen(false);
+        setNotification("イベントが更新されました。");
     };
 
     const handleEventDeleted = (deletedEventId) => {
         fetchEvents(); // イベントを再取得
-        setNotification("イベントが正常に削除されました。");
+        setNotification("イベントが削除されました。");
+    };
+
+    const handleEventAchieved = (achievedEventId) => {
+        fetchEvents(); // イベントを再取得
+        setNotification("イベントが達成されました。");
     };
 
     const handleSearch = async (query, tagQuery) => {
         try {
+            const authToken = getAuthToken();
             const response = await axios.get("/api/v2/calendar/events", {
                 params: { searchQuery: query, tagId: tagQuery },
+                headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
             });
             return response.data.events;
         } catch (error) {
@@ -137,6 +146,8 @@ export default function Calendar() {
     };
 
     const handleDateClick = (date) => {
+        setSelectedDate(date);
+        setSelectedEvents([]); // 他の日付を選択したときに現在選択されているデータを空にする
         const dayEvents = events.filter((event) => {
             const eventStart = new Date(event.start_time);
             const eventEnd = new Date(event.end_time || event.start_time);
@@ -214,10 +225,10 @@ export default function Calendar() {
 
         return (
             (hasWeekdayEvent && hasNonWeekdayEvent) ||
-            (hasWeekendEvent && hasNonWeekdayEvent) ||
-            (hasWeeklyEvent && hasNonWeekdayEvent) ||
-            (hasMonthlyEvent && hasNonWeekdayEvent) ||
-            (hasYearlyEvent && hasNonWeekdayEvent)
+            (hasWeekendEvent && hasNonWeekendEvent) ||
+            (hasWeeklyEvent && hasNonWeeklyEvent) ||
+            (hasMonthlyEvent && hasNonMonthlyEvent) ||
+            (hasYearlyEvent && hasNonYearlyEvent)
         );
     })();
 
@@ -327,6 +338,8 @@ export default function Calendar() {
                                         handleDeleteSelectedEvents
                                     }
                                     handleEventDetail={handleEventDetail}
+                                    fetchEvents={fetchEvents} // fetchEvents関数を渡す
+                                    handleEventAchieved={handleEventAchieved} // handleEventAchieved関数を渡す
                                 />
                             </div>
                         </div>
@@ -351,7 +364,7 @@ export default function Calendar() {
                 ) : (
                     <CreateEventForm
                         onEventCreated={handleEventCreated}
-                        selectedDate={currentDate.toISOString().slice(0, 16)}
+                        selectedDate={selectedDate}
                     />
                 )}
             </EventModal>
@@ -364,7 +377,7 @@ export default function Calendar() {
                 setSelectedEvents={setSelectedEvents}
                 setShowDeleteConfirmation={setShowDeleteConfirmation}
                 isMixedSelection={isMixedSelection}
-                fetchEvents={fetchEvents} // fetchEvents関数を渡す
+                fetchEvents={fetchEvents}
             />
             <ChangeDateModal
                 isOpen={isDateModalOpen}
@@ -454,7 +467,7 @@ function EventListHeader({
         <div className="flex justify-between items-center">
             <div className="flex items-center space-x-1 max-sm:space-x-1">
                 <button
-                    className="bg-[#FFA742] text-white p-1 rounded-r-md max-sm:p-1 flex items-center"
+                    className="bg-customOrange hover:bg-yellow-600 text-white p-1 rounded-r-md max-sm:p-1 flex items-center"
                     onClick={() => setIsSearchModalOpen(true)} // 検索モーダルを開く
                 >
                     <img
@@ -465,7 +478,7 @@ function EventListHeader({
                     検索
                 </button>
                 <button
-                    className="bg-[#FFA742] text-white p-1 rounded-r-md max-sm:p-1 flex items-center"
+                    className="bg-customOrange hover:bg-yellow-600 text-white p-1 rounded-r-md max-sm:p-1 flex items-center"
                     onClick={() => setIsTagSelectModalOpen(true)} // タグ作成・削除モーダルを開く
                 >
                     <img
@@ -477,7 +490,7 @@ function EventListHeader({
                 </button>
             </div>
             <button
-                className="bg-[#80ACCF] text-white p-1 rounded-full shadow-md max-sm:p-1"
+                className="bg-customBlue hover:bg-blue-400 text-white p-1 rounded-full shadow-md max-sm:p-1"
                 onClick={handleCreateEvent}
                 style={{
                     width: "30px",

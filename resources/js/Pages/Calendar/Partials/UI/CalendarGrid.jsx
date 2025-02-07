@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 
 export default function CalendarGrid({ currentDate, events, handleDateClick }) {
-    const [selectedDate, setSelectedDate] = useState(currentDate);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     useEffect(() => {
         setSelectedDate(currentDate);
@@ -30,7 +32,6 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
 
     const days = [];
 
-    // 前月の日付を表示
     for (let x = firstDayIndex; x > 0; x--) {
         days.push(
             <div
@@ -44,36 +45,39 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
         );
     }
 
-    // 現在の月の日付を表示
     for (let i = 1; i <= daysInMonth; i++) {
         const currentDay = new Date(
             currentDate.getFullYear(),
             currentDate.getMonth(),
             i
         );
-        currentDay.setHours(0, 0, 0, 0); // 時間部分をリセット
+        currentDay.setHours(0, 0, 0, 0);
 
-        // 予定一覧のデータをフィルタリング
         const dayEvents = events.filter((event) => {
             const eventStart = new Date(event.start_time);
             const eventEnd = new Date(event.end_time || event.start_time);
             eventStart.setHours(0, 0, 0, 0);
             eventEnd.setHours(23, 59, 59, 999);
-
             return eventStart <= currentDay && eventEnd >= currentDay;
         });
 
-        // 選択された日付かどうかを判定
         const isSelected =
             selectedDate && selectedDate.getTime() === currentDay.getTime();
+        const isToday = today.getTime() === currentDay.getTime();
+
+        let borderClass = "";
+        if (isSelected) {
+            borderClass = "border-2 border-pink-500";
+        } else if (isToday) {
+            borderClass = "border-2 border-gray-500";
+        }
 
         days.push(
             <div
-                className={`calendar-day text-gray-800 font-bold bg-white hover:bg-gray-200 rounded-md flex flex-col justify-center items-center ${
-                    isSelected ? "border-2 border-pink-500" : ""
-                }`}
+                className={`calendar-day text-gray-800 font-bold bg-white hover:bg-gray-200 rounded-md flex flex-col justify-center items-center ${borderClass}`}
                 key={`current-${currentDate.getMonth()}-${i}`}
                 onClick={() => {
+                    console.log(`Selected date: ${currentDay}`);
                     setSelectedDate(currentDay);
                     handleDateClick(currentDay);
                 }}
@@ -96,7 +100,6 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
         );
     }
 
-    // 次月の日付を表示
     for (let j = 1; j <= 6 - lastDayIndex; j++) {
         days.push(
             <div
@@ -108,5 +111,6 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
         );
     }
 
+    console.log(`Today's date: ${new Date()}`);
     return days;
 }

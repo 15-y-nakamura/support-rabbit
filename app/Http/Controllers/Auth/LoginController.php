@@ -44,7 +44,8 @@ class LoginController extends Controller
 
             Log::info('User logged in successfully', ['user_id' => $user->id, 'token' => $token->token]);
 
-            return redirect()->intended('/user/calendar')->with([
+            // トークンをフロントエンドに返す
+            return Inertia::render('Calendar/Calendar', [
                 'token' => $token->token,
                 'user' => $user,
             ]);

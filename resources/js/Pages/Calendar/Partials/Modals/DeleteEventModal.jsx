@@ -19,6 +19,15 @@ export default function DeleteEventModal({
     // 削除処理中かどうかを保持するステート
     const [isDeleting, setIsDeleting] = useState(false);
 
+    // 認証トークンを取得する関数
+    const getAuthToken = () => {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            console.error("Auth token is missing");
+        }
+        return token;
+    };
+
     // モーダルが開いたときに関連イベントを取得し、全てのチェックボックスにチェックを入れる
     useEffect(() => {
         if (isOpen) {
@@ -35,6 +44,7 @@ export default function DeleteEventModal({
     // 関連イベントを取得する関数
     const fetchRelatedEvents = async () => {
         const related = {};
+        const token = getAuthToken();
         for (let i = 0; i < selectedEvents.length; i++) {
             const eventId = selectedEvents[i];
             const event = events.find((e) => e.id === eventId);
@@ -48,35 +58,47 @@ export default function DeleteEventModal({
                 ] = await Promise.all([
                     axios.get(`/api/v2/calendar/weekday-events`, {
                         params: { event_id: event.event_id },
+                        headers: { Authorization: `Bearer ${token}` },
                     }),
                     axios.get(`/api/v2/calendar/weekend-events`, {
                         params: { event_id: event.event_id },
+                        headers: { Authorization: `Bearer ${token}` },
                     }),
                     axios.get(`/api/v2/calendar/weekly-events`, {
                         params: { event_id: event.event_id },
+                        headers: { Authorization: `Bearer ${token}` },
                     }),
                     axios.get(`/api/v2/calendar/monthly-events`, {
                         params: { event_id: event.event_id },
+                        headers: { Authorization: `Bearer ${token}` },
                     }),
                     axios.get(`/api/v2/calendar/yearly-events`, {
                         params: { event_id: event.event_id },
+                        headers: { Authorization: `Bearer ${token}` },
                     }),
                 ]);
 
+                // レスポンスデータの形式を確認するためのログを追加
+                console.log("weekdayResponse:", weekdayResponse.data);
+                console.log("weekendResponse:", weekendResponse.data);
+                console.log("weeklyResponse:", weeklyResponse.data);
+                console.log("monthlyResponse:", monthlyResponse.data);
+                console.log("yearlyResponse:", yearlyResponse.data);
+
                 related[eventId] = [
-                    ...weekdayResponse.data.filter(
+                    ...weekdayResponse.data.events.filter(
                         (e) => e.event_id === event.event_id && e.id !== eventId
                     ),
-                    ...weekendResponse.data.filter(
+                    ...weekendResponse.data.events.filter(
                         (e) => e.event_id === event.event_id && e.id !== eventId
                     ),
-                    ...weeklyResponse.data.filter(
+                    ...weeklyResponse.data.events.filter(
                         (e) => e.event_id === event.event_id && e.id !== eventId
                     ),
-                    ...monthlyResponse.data.filter(
+                    ...monthlyResponse.data.events.filter(
                         (e) => e.event_id === event.event_id && e.id !== eventId
                     ),
-                    ...yearlyResponse.data.filter(
+                    ...yearlyResponse.data.events.filter(
                         (e) => e.event_id === event.event_id && e.id !== eventId
                     ),
                 ];
@@ -103,8 +125,11 @@ export default function DeleteEventModal({
 
     // イベントを削除する関数
     const deleteEvent = async (url) => {
+        const token = getAuthToken();
         try {
-            await axios.delete(url);
+            await axios.delete(url, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
         } catch (error) {
             console.error("イベントの削除中にエラーが発生しました:", error);
         }
@@ -191,6 +216,7 @@ export default function DeleteEventModal({
 
     // カレンダーイベントを削除する関数
     const deleteCalendarEvents = async (eventsToDelete) => {
+        const token = getAuthToken();
         for (let i = 0; i < eventsToDelete.length; i++) {
             const eventId = eventsToDelete[i];
             const event = events.find((e) => e.id === eventId);
@@ -205,27 +231,32 @@ export default function DeleteEventModal({
             ] = await Promise.all([
                 axios.get(`/api/v2/calendar/weekday-events`, {
                     params: { event_id: event.event_id },
+                    headers: { Authorization: `Bearer ${token}` },
                 }),
                 axios.get(`/api/v2/calendar/weekend-events`, {
                     params: { event_id: event.event_id },
+                    headers: { Authorization: `Bearer ${token}` },
                 }),
                 axios.get(`/api/v2/calendar/weekly-events`, {
                     params: { event_id: event.event_id },
+                    headers: { Authorization: `Bearer ${token}` },
                 }),
                 axios.get(`/api/v2/calendar/monthly-events`, {
                     params: { event_id: event.event_id },
+                    headers: { Authorization: `Bearer ${token}` },
                 }),
                 axios.get(`/api/v2/calendar/yearly-events`, {
                     params: { event_id: event.event_id },
+                    headers: { Authorization: `Bearer ${token}` },
                 }),
             ]);
 
             const remainingRelatedEvents = [
-                ...weekdayEvents.data,
-                ...weekendEvents.data,
-                ...weeklyEvents.data,
-                ...monthlyEvents.data,
-                ...yearlyEvents.data,
+                ...weekdayEvents.data.events,
+                ...weekendEvents.data.events,
+                ...weeklyEvents.data.events,
+                ...monthlyEvents.data.events,
+                ...yearlyEvents.data.events,
             ];
 
             const selectedRelatedEventIds =
@@ -245,7 +276,12 @@ export default function DeleteEventModal({
             console.log(`選択された関連イベントID:`, selectedRelatedEventIds);
             console.log(`全て選択されている: ${allSelected}`);
 
-            if (allSelected) {
+            if (
+                allSelected &&
+                ["weekday", "weekend", "weekly", "monthly", "yearly"].includes(
+                    event.recurrence_type
+                )
+            ) {
                 console.log(
                     `calendar_eventsからイベントを削除します。ID: ${event.event_id}`
                 );
@@ -359,7 +395,10 @@ export default function DeleteEventModal({
     // イベントをレンダリングする関数
     const renderEvent = function (eventId) {
         const event = events.find((e) => e.id === eventId);
-        if (!event) return null;
+        if (!event) {
+            console.error(`イベントID: ${eventId} が見つかりません`);
+            return null;
+        }
 
         const relatedEventCount = relatedEvents[eventId]?.length || 0;
         const hasRelatedEvents =

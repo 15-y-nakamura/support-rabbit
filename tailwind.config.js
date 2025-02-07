@@ -28,6 +28,8 @@ export default {
                     500: "#F78FB3",
                 },
                 customGreen: "#65BC8B",
+                customBlue: "#80ACCF", // 追加
+                customOrange: "#FFA742", // 追加
             },
             // カスタムフォントサイズの設定
             fontSize: {

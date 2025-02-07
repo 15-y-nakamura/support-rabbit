@@ -105,10 +105,6 @@ class EventRequest extends FormRequest
                 "code" => "post_note_max",
                 "description" => "メモは1000文字以内です"
             ]),
-            'is_recurring.boolean' => json_encode([
-                "code" => "post_is_recurring_boolean",
-                "description" => "繰り返し設定のフラグは真偽値である必要があります"
-            ]),
             'recurrence_type.required' => json_encode([
                 "code" => "post_recurrence_type_required",
                 "description" => "繰り返しの種類は必須です"

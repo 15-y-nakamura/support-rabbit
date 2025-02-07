@@ -70,7 +70,12 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
     const fetchTags = async () => {
         setLoadingTags(true);
         try {
-            const response = await axios.get("/api/v2/calendar/tags");
+            const token = getAuthToken(); // トークンを取得
+            const response = await axios.get("/api/v2/calendar/tags", {
+                headers: {
+                    Authorization: `Bearer ${token}`, // トークンをヘッダーに追加
+                },
+            });
             setTags(response.data.tags);
         } catch (error) {
             console.error("Error fetching tags:", error);
@@ -181,7 +186,8 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
                     );
                     break;
             }
-            onEventUpdated(response.data.event);
+            onEventUpdated(response.data.event); // イベントが正常に更新された後に呼び出す
+            window.location.href = "/user/calendar"; // カレンダー画面に戻る
         } catch (error) {
             console.error("Error updating event:", error);
             if (error.response && error.response.data.errors) {
@@ -223,9 +229,9 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
         date.setHours(hours);
         date.setMinutes(minutes);
         if (type === "start") {
-            setStartTime(date.toISOString());
+            setStartTime(date.toISOString().slice(0, 16));
         } else {
-            setEndTime(date.toISOString());
+            setEndTime(date.toISOString().slice(0, 16));
         }
     };
 
@@ -278,7 +284,7 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
                     />
                     <InputError message={errors.start_time} className="mt-2" />
                 </div>
-                <div className="flex flex-col flex-1 space-y-2">
+                <div className="flex flex-col flex-1 space-y-2 mt-4 md:mt-0">
                     <label className="font-bold">終了日時</label>
                     <input
                         type="datetime-local"
@@ -315,7 +321,7 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
                             className="mt-2"
                         />
                     </div>
-                    <div className="flex flex-col flex-1 space-y-2">
+                    <div className="flex flex-col flex-1 space-y-2 mt-4 md:mt-0">
                         <label className="font-bold">終了時間</label>
                         <input
                             type="time"
@@ -390,7 +396,7 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
                             className="p-2 rounded shadow-md"
                         >
                             <img
-                                src="/img/tag-icon.png"
+                                src="/img/icons/tag-icon.png"
                                 alt="タグを表示"
                                 className="w-6 h-6"
                             />
@@ -401,30 +407,40 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
                     <div className="mt-2 p-2 border border-gray-300 rounded">
                         {loadingTags ? (
                             <div className="flex items-center justify-center">
-                                <div className="loader">Loading...</div>
+                                <div className="loader">
+                                    タグを探しています...
+                                </div>
                             </div>
                         ) : (
                             <ul>
-                                {tags.map((tag) => (
-                                    <li
-                                        key={tag.id}
-                                        className="flex items-center space-x-2"
-                                    >
-                                        <div
-                                            className="w-4 h-4 rounded"
-                                            style={{
-                                                backgroundColor: tag.color,
-                                            }}
-                                        ></div>
-                                        <button
-                                            type="button"
-                                            className="text-black underline"
-                                            onClick={() => handleTagSelect(tag)}
-                                        >
-                                            {tag.name}
-                                        </button>
+                                {tags.length === 0 ? (
+                                    <li className="text-gray-500">
+                                        タグが作成されていません
                                     </li>
-                                ))}
+                                ) : (
+                                    tags.map((tag) => (
+                                        <li
+                                            key={`tag-${tag.id}`}
+                                            className="flex items-center space-x-2"
+                                        >
+                                            <div
+                                                className="w-4 h-4 rounded"
+                                                style={{
+                                                    backgroundColor: tag.color,
+                                                }}
+                                            ></div>
+                                            <button
+                                                type="button"
+                                                className="text-black underline"
+                                                onClick={() =>
+                                                    handleTagSelect(tag)
+                                                }
+                                            >
+                                                {tag.name}
+                                            </button>
+                                        </li>
+                                    ))
+                                )}
                             </ul>
                         )}
                     </div>
@@ -442,17 +458,17 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
             </div>
             <div className="flex justify-between mt-4">
                 <button
-                    type="submit"
-                    className="bg-blue-500 text-white p-2 rounded"
-                >
-                    保存
-                </button>
-                <button
                     type="button"
                     onClick={onCancel}
-                    className="bg-gray-500 text-white p-2 rounded"
+                    className="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded"
                 >
                     戻る
+                </button>
+                <button
+                    type="submit"
+                    className="bg-customBlue hover:bg-blue-400 text-white p-2 rounded"
+                >
+                    保存
                 </button>
             </div>
         </form>

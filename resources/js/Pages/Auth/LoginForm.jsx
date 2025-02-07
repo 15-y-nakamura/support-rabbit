@@ -24,8 +24,9 @@ export default function LoginForm() {
     const submit = async (e) => {
         e.preventDefault();
         post(route("login"), {
-            onSuccess: (response) => {
-                localStorage.setItem("authToken", response.data.token);
+            onSuccess: (page) => {
+                const { token } = page.props;
+                localStorage.setItem("authToken", token); // トークンをローカルストレージに保存
                 window.location.href = "/user/calendar";
             },
             onError: (error) => {

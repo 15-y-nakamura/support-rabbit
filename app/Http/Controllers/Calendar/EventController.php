@@ -17,7 +17,7 @@ class EventController extends Controller
         try {
             // トークンを使用してユーザーを認証
             $token = $req->bearerToken();
-            // Log::info('Received Token:', ['token' => $token]);
+            Log::info('Received Token:', ['token' => $token]);
             $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
     
             if (!$userToken) {

@@ -21,18 +21,40 @@ const getUserId = () => {
 
 export default function CreateEventForm({ onEventCreated, selectedDate }) {
     const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
+
     const [startTime, setStartTime] = useState(
-        new Date(selectedDate).toISOString().slice(0, 16)
+        `${
+            new Date(
+                selectedDate.getTime() -
+                    selectedDate.getTimezoneOffset() * 60000
+            )
+                .toISOString()
+                .split("T")[0]
+        }T00:00`
     );
     const [endTime, setEndTime] = useState(
-        new Date(selectedDate).toISOString().slice(0, 16)
+        `${
+            new Date(
+                selectedDate.getTime() -
+                    selectedDate.getTimezoneOffset() * 60000
+            )
+                .toISOString()
+                .split("T")[0]
+        }T23:59`
     );
     const [isRecurring, setIsRecurring] = useState(false);
     const [recurrenceType, setRecurrenceType] = useState("none");
     const [allDay, setAllDay] = useState(false);
-    const [allDayDate, setAllDayDate] = useState(selectedDate.split("T")[0]);
-    const [notification, setNotification] = useState("none");
+    const [allDayDate, setAllDayDate] = useState(
+        `${
+            new Date(
+                selectedDate.getTime() -
+                    selectedDate.getTimezoneOffset() * 60000
+            )
+                .toISOString()
+                .split("T")[0]
+        }`
+    );
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
     const [note, setNote] = useState("");
@@ -95,21 +117,6 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                       recurrence_date: null,
                       recurrence_days: [],
                   };
-
-            console.log("送信データ:", {
-                title,
-                note,
-                start_time: eventStartTime,
-                end_time: eventEndTime,
-                is_recurring: recurrenceType === "none" ? 0 : isRecurring,
-                ...recurrenceData,
-                all_day: allDay,
-                all_day_date: allDay ? allDayDate : null,
-                location,
-                link,
-                note,
-                tag_id: selectedTag ? selectedTag.id : null,
-            });
 
             const response = await axios.post(
                 "/api/v2/calendar/events",
@@ -259,14 +266,12 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
 
             onEventCreated(response.data.event);
             setTitle("");
-            setDescription("");
             setStartTime(new Date(selectedDate).toISOString().slice(0, 16));
             setEndTime(new Date(selectedDate).toISOString().slice(0, 16));
             setIsRecurring(false);
             setRecurrenceType("none");
             setAllDay(false);
-            setAllDayDate(selectedDate.split("T")[0]);
-            setNotification("none");
+            setAllDayDate(new Date(selectedDate).toISOString().split("T")[0]);
             setLocation("");
             setLink("");
             setNote("");
@@ -507,21 +512,24 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                         <div className="flex flex-col space-y-2">
                             <label className="font-bold">日付</label>
                             {recurrenceType === "monthly" ? (
-                                <input
-                                    type="number"
-                                    placeholder="日付"
-                                    value={recurrenceDate}
-                                    onChange={(e) =>
-                                        setRecurrenceDate(e.target.value)
-                                    }
-                                    className="p-2 border border-gray-300 rounded"
-                                    min="1"
-                                    max="31"
-                                />
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        type="number"
+                                        placeholder="0"
+                                        value={recurrenceDate}
+                                        onChange={(e) =>
+                                            setRecurrenceDate(e.target.value)
+                                        }
+                                        className="p-2 border border-gray-300 rounded"
+                                        min="1"
+                                        max="31"
+                                    />
+                                    <span>日</span>
+                                </div>
                             ) : (
                                 <input
                                     type="text"
-                                    placeholder="MM/DD"
+                                    placeholder="月/日"
                                     value={recurrenceDate}
                                     onChange={(e) =>
                                         setRecurrenceDate(e.target.value)
@@ -661,7 +669,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                             className="p-2 rounded shadow-md"
                         >
                             <img
-                                src="/img/tag-icon.png"
+                                src="/img/icons/tag-icon.png"
                                 alt="タグを表示"
                                 className="w-6 h-6"
                             />
@@ -672,30 +680,40 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                     <div className="mt-2 p-2 border border-gray-300 rounded">
                         {loadingTags ? (
                             <div className="flex items-center justify-center">
-                                <div className="loader">Loading...</div>
+                                <div className="loader">
+                                    タグを探しています...
+                                </div>
                             </div>
                         ) : (
                             <ul>
-                                {tags.map((tag) => (
-                                    <li
-                                        key={`tag-${tag.id}`}
-                                        className="flex items-center space-x-2"
-                                    >
-                                        <div
-                                            className="w-4 h-4 rounded"
-                                            style={{
-                                                backgroundColor: tag.color,
-                                            }}
-                                        ></div>
-                                        <button
-                                            type="button"
-                                            className="text-black underline"
-                                            onClick={() => handleTagSelect(tag)}
-                                        >
-                                            {tag.name}
-                                        </button>
+                                {tags.length === 0 ? (
+                                    <li className="text-gray-500">
+                                        タグが作成されていません
                                     </li>
-                                ))}
+                                ) : (
+                                    tags.map((tag) => (
+                                        <li
+                                            key={`tag-${tag.id}`}
+                                            className="flex items-center space-x-2"
+                                        >
+                                            <div
+                                                className="w-4 h-4 rounded"
+                                                style={{
+                                                    backgroundColor: tag.color,
+                                                }}
+                                            ></div>
+                                            <button
+                                                type="button"
+                                                className="text-black underline"
+                                                onClick={() =>
+                                                    handleTagSelect(tag)
+                                                }
+                                            >
+                                                {tag.name}
+                                            </button>
+                                        </li>
+                                    ))
+                                )}
                             </ul>
                         )}
                     </div>

@@ -48,7 +48,7 @@ const Achievement = () => {
         labels: getLastWeekDates(),
         datasets: [
             {
-                label: "アチーブメント数",
+                label: "達成数",
                 data: new Array(7).fill(0), // 初期状態では空のデータ
                 backgroundColor: "rgba(75, 192, 192, 0.2)",
                 borderColor: "rgba(75, 192, 192, 1)",
@@ -91,7 +91,7 @@ const Achievement = () => {
                 labels: updatedData.labels,
                 datasets: [
                     {
-                        label: "アチーブメント数",
+                        label: "達成数",
                         data: updatedData.data,
                         backgroundColor: "rgba(75, 192, 192, 0.2)",
                         borderColor: "rgba(75, 192, 192, 1)",
@@ -118,7 +118,7 @@ const Achievement = () => {
     // 日付と時間単位でアチーブメントをグループ化
     const groupedAchievements = achievements.reduce((acc, achievement) => {
         const date = new Date(achievement.achieved_at).toLocaleDateString();
-        const hour = new Date(achievement.start_time).getHours();
+        const hour = new Date(achievement.achieved_at).getHours();
         if (!acc[date]) {
             acc[date] = {};
         }
@@ -140,15 +140,17 @@ const Achievement = () => {
     return (
         <HeaderSidebarLayout>
             <div className="bg-cream flex items-center justify-center p-4 min-h-screen sm:min-h-[calc(100vh-96px)]">
-                <div className="bg-white rounded-lg shadow-lg p-2 w-full max-w-screen-xl h-[calc(100vh-50px)] sm:h-[calc(100vh-100px)] lg:h-[calc(100vh-150px)] mb-4">
+                <div className="bg-white rounded-lg shadow-lg p-2 max-w-5xl w-full mb-4">
+                    {" "}
+                    {/* 横幅を少し伸ばす */}
                     <div className="font-sans flex flex-col md:flex-row h-full">
-                        <section className="w-1/3 p-2 flex flex-col items-center justify-start">
+                        <section className="w-full md:w-1/2 p-2 flex flex-col items-center justify-start">
                             <div className="flex items-center mb-4">
                                 <h1 className="text-2xl font-bold mr-4">
                                     {formattedDate}
                                 </h1>
                                 <button
-                                    className="bg-blue-500 text-white py-2 px-4 rounded"
+                                    className="bg-customBlue hover:bg-blue-400 text-white py-2 px-4 rounded"
                                     onClick={() => setIsModalOpen(true)} // モーダルを開く
                                 >
                                     移動
@@ -161,9 +163,9 @@ const Achievement = () => {
                                         "linear-gradient(-45deg, rgba(250,215,215,.5) 25%, transparent 25%, transparent 50%, rgba(250,215,215,.5) 50%, rgba(250,215,215,.5) 75%, transparent 75%, transparent 100%), linear-gradient(45deg, rgba(250,215,215,.5) 25%, transparent 25%, transparent 50%, rgba(250,215,215,.5) 50%, rgba(250,215,215,.5) 75%, transparent 75%, transparent 100%)",
                                     backgroundSize: "40px 40px",
                                     transform: "rotate(3deg)",
-                                    width: "30%",
-                                    height: "50px",
-                                    margin: "0 auto -1em auto",
+                                    width: "28%",
+                                    height: "45px",
+                                    margin: "0 auto -16px auto",
                                 }}
                             ></div>
                             <div
@@ -173,8 +175,9 @@ const Achievement = () => {
                                     boxShadow:
                                         "4px 4px 4px rgba(0, 0, 0, 0.15)",
                                     padding: "25px 15px 15px 15px",
-                                    width: "90%",
-                                    height: "350px",
+                                    width: "85%",
+                                    height: "320px",
+                                    overflowY: "auto", // スクロールを追加
                                 }}
                             >
                                 {Object.keys(groupedByWeek).map((date) => (
@@ -186,7 +189,7 @@ const Achievement = () => {
                                             (hour) => (
                                                 <div key={hour}>
                                                     <div className="text-gray-600 font-bold border-b border-gray-300 py-1 mb-2">
-                                                        {`${hour}:00`}
+                                                        {`${hour}:00 (達成した時間)`}
                                                     </div>
                                                     {groupedByWeek[date][
                                                         hour
@@ -242,34 +245,44 @@ const Achievement = () => {
                                 ))}
                             </div>
                         </section>
-                        <section className="w-2/3 p-2">
-                            <div className="h-full">
-                                <Bar
-                                    data={chartData}
-                                    options={{
-                                        maintainAspectRatio: false,
-                                        scales: {
-                                            y: {
-                                                min: 0,
-                                                max: 15,
-                                                ticks: {
-                                                    stepSize: 1,
-                                                    callback: function (value) {
-                                                        if (
-                                                            [
-                                                                0, 1, 3, 5, 10,
-                                                                15,
-                                                            ].includes(value)
+                        <section className="w-full md:w-1/2 p-2 h-full flex items-center justify-center">
+                            <div className="bg-white rounded-lg shadow-lg p-4 h-full w-full">
+                                <div className="relative w-full h-[400px]">
+                                    {" "}
+                                    {/* ここで高さを調整 */}
+                                    <Bar
+                                        data={chartData}
+                                        options={{
+                                            maintainAspectRatio: false,
+                                            responsive: true,
+                                            scales: {
+                                                y: {
+                                                    min: 0,
+                                                    max: 15,
+                                                    ticks: {
+                                                        stepSize: 1,
+                                                        callback: function (
+                                                            value
                                                         ) {
-                                                            return value;
-                                                        }
-                                                        return null;
+                                                            if (
+                                                                [
+                                                                    0, 1, 3, 5,
+                                                                    10, 15,
+                                                                ].includes(
+                                                                    value
+                                                                )
+                                                            ) {
+                                                                return value;
+                                                            }
+                                                            return null;
+                                                        },
                                                     },
                                                 },
                                             },
-                                        },
-                                    }}
-                                />
+                                        }}
+                                        className="w-full h-full"
+                                    />
+                                </div>
                             </div>
                         </section>
                     </div>

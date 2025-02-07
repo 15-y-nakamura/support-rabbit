@@ -186,9 +186,12 @@ const Weather = () => {
                             <div className="flex justify-between items-center w-full mb-4">
                                 <h2 className="text-2xl text-black">
                                     {new Date().toLocaleDateString()}
+                                    <span className="text-gray-700 text-sm ml-2">
+                                        (現在時刻以降)
+                                    </span>
                                 </h2>
                                 <button
-                                    className="bg-[#80ACCF] hover:bg-blue-500 text-white py-2 px-4 rounded"
+                                    className="bg-customBlue hover:bg-blue-400 text-white py-2 px-4 rounded"
                                     onClick={() => setModalIsOpen(true)}
                                 >
                                     5日間の天気情報を見る
