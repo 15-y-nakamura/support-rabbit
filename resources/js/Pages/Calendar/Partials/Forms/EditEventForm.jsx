@@ -106,7 +106,6 @@ export default function EditEventForm({ event, onEventUpdated, onCancel }) {
         const eventData = {
             event_id: event.id, // event_id を追加
             title,
-            note,
             start_time: startTime,
             end_time: endTime,
             is_recurring: isRecurring,

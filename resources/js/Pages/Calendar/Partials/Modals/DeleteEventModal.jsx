@@ -46,67 +46,62 @@ export default function DeleteEventModal({
         const related = {};
         const token = getAuthToken();
         for (let i = 0; i < selectedEvents.length; i++) {
-            const { id: eventId, recurrence_type } = selectedEvents[i];
+            const eventId = selectedEvents[i];
             const event = events.find((e) => e.id === eventId);
             if (event) {
-                let response;
-                switch (recurrence_type) {
-                    case "weekday":
-                        response = await axios.get(
-                            `/api/v2/calendar/weekday-events`,
-                            {
-                                params: { event_id: event.event_id },
-                                headers: { Authorization: `Bearer ${token}` },
-                            }
-                        );
-                        break;
-                    case "weekend":
-                        response = await axios.get(
-                            `/api/v2/calendar/weekend-events`,
-                            {
-                                params: { event_id: event.event_id },
-                                headers: { Authorization: `Bearer ${token}` },
-                            }
-                        );
-                        break;
-                    case "weekly":
-                        response = await axios.get(
-                            `/api/v2/calendar/weekly-events`,
-                            {
-                                params: { event_id: event.event_id },
-                                headers: { Authorization: `Bearer ${token}` },
-                            }
-                        );
-                        break;
-                    case "monthly":
-                        response = await axios.get(
-                            `/api/v2/calendar/monthly-events`,
-                            {
-                                params: { event_id: event.event_id },
-                                headers: { Authorization: `Bearer ${token}` },
-                            }
-                        );
-                        break;
-                    case "yearly":
-                        response = await axios.get(
-                            `/api/v2/calendar/yearly-events`,
-                            {
-                                params: { event_id: event.event_id },
-                                headers: { Authorization: `Bearer ${token}` },
-                            }
-                        );
-                        break;
-                    default:
-                        response = { data: { events: [] } };
-                        break;
-                }
+                const [
+                    weekdayResponse,
+                    weekendResponse,
+                    weeklyResponse,
+                    monthlyResponse,
+                    yearlyResponse,
+                ] = await Promise.all([
+                    axios.get(`/api/v2/calendar/weekday-events`, {
+                        params: { event_id: event.event_id },
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                    axios.get(`/api/v2/calendar/weekend-events`, {
+                        params: { event_id: event.event_id },
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                    axios.get(`/api/v2/calendar/weekly-events`, {
+                        params: { event_id: event.event_id },
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                    axios.get(`/api/v2/calendar/monthly-events`, {
+                        params: { event_id: event.event_id },
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                    axios.get(`/api/v2/calendar/yearly-events`, {
+                        params: { event_id: event.event_id },
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                ]);
 
                 // レスポンスデータの形式を確認するためのログを追加
-                console.log(`${recurrence_type}Response:`, response.data);
+                console.log("weekdayResponse:", weekdayResponse.data);
+                console.log("weekendResponse:", weekendResponse.data);
+                console.log("weeklyResponse:", weeklyResponse.data);
+                console.log("monthlyResponse:", monthlyResponse.data);
+                console.log("yearlyResponse:", yearlyResponse.data);
 
-                related[eventId] = response.data.events.filter(
-                    (e) => e.event_id === event.event_id && e.id !== eventId
-                );
+                related[eventId] = [
+                    ...weekdayResponse.data.events.filter(
+                        (e) => e.event_id === event.event_id && e.id !== eventId
+                    ),
+                    ...weekendResponse.data.events.filter(
+                        (e) => e.event_id === event.event_id && e.id !== eventId
+                    ),
+                    ...weeklyResponse.data.events.filter(
+                        (e) => e.event_id === event.event_id && e.id !== eventId
+                    ),
+                    ...monthlyResponse.data.events.filter(
+                        (e) => e.event_id === event.event_id && e.id !== eventId
+                    ),
+                    ...yearlyResponse.data.events.filter(
+                        (e) => e.event_id === event.event_id && e.id !== eventId
+                    ),
+                ];
             }
         }
         setRelatedEvents(related);
@@ -115,7 +110,7 @@ export default function DeleteEventModal({
     // 全てのチェックボックスにチェックを入れる関数
     const initializeDeleteAll = () => {
         const initialDeleteAll = {};
-        selectedEvents.forEach(({ id: eventId }) => {
+        selectedEvents.forEach((eventId) => {
             initialDeleteAll[eventId] = true;
             if (relatedEvents[eventId]) {
                 relatedEvents[eventId].forEach((relatedEvent) => {
@@ -146,13 +141,13 @@ export default function DeleteEventModal({
         const eventsToDelete = [...selectedEvents];
 
         for (let i = 0; i < selectedEvents.length; i++) {
-            const { id: eventId, recurrence_type } = selectedEvents[i];
+            const eventId = selectedEvents[i];
             if (!deleteAll[eventId]) continue;
 
             const event = events.find((e) => e.id === eventId);
             let url;
 
-            switch (recurrence_type) {
+            switch (event.recurrence_type) {
                 case "weekday":
                     url = `/api/v2/calendar/weekday-events/${eventId}`;
                     break;
@@ -182,7 +177,7 @@ export default function DeleteEventModal({
                 if (deleteAll[`related-${relatedEventId}`]) {
                     let relatedUrl;
 
-                    switch (recurrence_type) {
+                    switch (event.recurrence_type) {
                         case "weekday":
                             relatedUrl = `/api/v2/calendar/weekday-events/${relatedEventId}`;
                             break;
@@ -223,7 +218,7 @@ export default function DeleteEventModal({
     const deleteCalendarEvents = async (eventsToDelete) => {
         const token = getAuthToken();
         for (let i = 0; i < eventsToDelete.length; i++) {
-            const { id: eventId, recurrence_type } = eventsToDelete[i];
+            const eventId = eventsToDelete[i];
             const event = events.find((e) => e.id === eventId);
             if (!event) continue;
 
@@ -279,7 +274,7 @@ export default function DeleteEventModal({
             if (
                 allSelected &&
                 ["weekday", "weekend", "weekly", "monthly", "yearly"].includes(
-                    recurrence_type
+                    event.recurrence_type
                 )
             ) {
                 console.log(
@@ -337,7 +332,7 @@ export default function DeleteEventModal({
     const renderRelatedEvents = function (eventId) {
         return relatedEvents[eventId]?.map((relatedEvent) => (
             <div
-                key={`related-${relatedEvent.id}`}
+                key={relatedEvent.id}
                 className="border p-2 mb-2 rounded shadow-md bg-gray-50"
             >
                 <div className="flex justify-between items-center">
@@ -372,11 +367,16 @@ export default function DeleteEventModal({
     };
 
     // イベントをレンダリングする関数
-    const renderEvent = function (event) {
-        const { id: eventId, recurrence_type } = event;
+    const renderEvent = function (eventId) {
+        const event = events.find((e) => e.id === eventId);
+        if (!event) {
+            console.error(`イベントID: ${eventId} が見つかりません`);
+            return null;
+        }
+
         const relatedEventCount = relatedEvents[eventId]?.length || 0;
         const hasRelatedEvents =
-            recurrence_type !== "none" && relatedEventCount > 0;
+            event.recurrence_type !== "none" && relatedEventCount > 0;
 
         return (
             <div
@@ -439,11 +439,9 @@ export default function DeleteEventModal({
     const sortedSelectedEvents = [...selectedEvents];
     for (let i = 0; i < sortedSelectedEvents.length - 1; i++) {
         for (let j = 0; j < sortedSelectedEvents.length - i - 1; j++) {
-            const eventA = events.find(
-                (e) => e.id === sortedSelectedEvents[j].id
-            );
+            const eventA = events.find((e) => e.id === sortedSelectedEvents[j]);
             const eventB = events.find(
-                (e) => e.id === sortedSelectedEvents[j + 1].id
+                (e) => e.id === sortedSelectedEvents[j + 1]
             );
             const dateA = new Date(eventA.start_time);
             const dateB = new Date(eventB.start_time);

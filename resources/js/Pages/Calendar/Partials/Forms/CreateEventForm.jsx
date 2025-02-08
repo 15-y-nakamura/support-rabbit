@@ -65,6 +65,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
     const [recurrenceDate, setRecurrenceDate] = useState("");
     const [errors, setErrors] = useState({});
     const [errorMessage, setErrorMessage] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         fetchTags();
@@ -93,6 +94,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrorMessage("");
+        setIsSubmitting(true);
         try {
             const authToken = getAuthToken();
             if (!authToken) {
@@ -121,6 +123,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                 "/api/v2/calendar/events",
                 {
                     title,
+                    note,
                     start_time: eventStartTime,
                     end_time: eventEndTime,
                     is_recurring: recurrenceType === "none" ? 0 : isRecurring,
@@ -283,6 +286,8 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
             console.log("エラー詳細:", error.response?.data.errors);
             setErrors(error.response?.data.errors || {});
             setErrorMessage("保存に失敗しました。");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -731,9 +736,13 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                 className={`bg-customPink text-white p-2 rounded shadow-md ${
                     isSubmitDisabled() ? "bg-gray-400 cursor-not-allowed" : ""
                 }`}
-                disabled={isSubmitDisabled()}
+                disabled={isSubmitDisabled() || isSubmitting}
             >
-                作成
+                {isSubmitting ? (
+                    <div className="loader">作成中...</div>
+                ) : (
+                    "作成"
+                )}
             </button>
             {errorMessage && (
                 <div className="text-red-500 mt-2">{errorMessage}</div>

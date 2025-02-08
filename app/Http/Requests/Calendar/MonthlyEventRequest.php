@@ -26,7 +26,26 @@ class MonthlyEventRequest extends FormRequest
             'tag_id' => 'nullable|exists:calendar_tags,id', 
             'note' => 'nullable|string|max:1000', 
             'recurrence_type' => 'required|in:none,weekday,weekend,weekly,monthly,yearly',
-            'recurrence_date' => 'nullable|integer|min:1|max:31', 
+            'recurrence_date' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'max:31',
+                function ($attribute, $value, $fail) {
+                    if ($value) {
+                        $startDate = new \DateTime($this->input('start_time'));
+                        $endDate = new \DateTime($this->input('end_time'));
+                        $recurrenceDate = new \DateTime($startDate->format('Y-m') . '-' . str_pad($value, 2, '0', STR_PAD_LEFT));
+
+                        if ($recurrenceDate < $startDate || $recurrenceDate > $endDate) {
+                            $fail(json_encode([
+                                "code" => "post_recurrence_date_out_of_range",
+                                "description" => "繰り返しの日付は開始日と終了日の範囲内である必要があります"
+                            ]));
+                        }
+                    }
+                },
+            ],
         ];
     }
 
@@ -105,6 +124,22 @@ class MonthlyEventRequest extends FormRequest
                 "code" => "post_recurrence_type_in",
                 "description" => "繰り返しの種類は有効な値である必要があります"
             ]),
+            'recurrence_date.integer' => json_encode([
+                "code" => "post_recurrence_date_integer",
+                "description" => "繰り返しの日付は整数である必要があります"
+            ]),
+            'recurrence_date.min' => json_encode([
+                "code" => "post_recurrence_date_min",
+                "description" => "繰り返しの日付は1以上である必要があります"
+            ]),
+            'recurrence_date.max' => json_encode([
+                "code" => "post_recurrence_date_max",
+                "description" => "繰り返しの日付は31以下である必要があります"
+            ]),
+            'recurrence_date.out_of_range' => json_encode([
+                "code" => "post_recurrence_date_out_of_range",
+                "description" => "繰り返しの日付は開始日と終了日の範囲内である必要があります"
+            ]),
         ];
     }
 
@@ -112,14 +147,14 @@ class MonthlyEventRequest extends FormRequest
     {
         $validationErrors = $validator->errors()->getMessages();
         $formattedErrors = [];
-    
+
         foreach ($validationErrors as $field => $messages) {
             $formattedErrors[$field] = array_map(function ($message) {
                 $decodedMessage = json_decode($message, true);
                 return $decodedMessage['description'] ?? $message;
             }, $messages);
         }
-    
+
         if ($this->expectsJson()) {
             throw new HttpResponseException(
                 response()->json(['errors' => $formattedErrors], 422)
