@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Head } from "@inertiajs/react"; // 追加
+import { Head } from "@inertiajs/react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
@@ -20,11 +20,7 @@ import {
     fetchCurrentLocationWeatherData,
     renderWeatherInfo,
 } from "./Partials/UI/WeatherUtils";
-import {
-    initializeMap,
-    handleCityClick,
-    handleCitySelect,
-} from "./Partials/UI/MapUtils";
+import { initializeMap, handleCitySelect } from "./Partials/UI/MapUtils";
 
 // Leafletのデフォルトアイコンを設定
 delete L.Icon.Default.prototype._getIconUrl;

@@ -10,21 +10,11 @@ use App\Models\User;
 
 class LoginRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
-     */
     public function rules(): array
     {
         return [
@@ -33,11 +23,6 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    /**
-     * Get the error messages for the defined validation rules.
-     *
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return [
@@ -52,30 +37,20 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    /**
-     * Handle a failed validation attempt.
-     *
-     * @param  \Illuminate\Contracts\Validation\Validator  $validator
-     * @return void
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
     protected function failedValidation(Validator $validator)
     {
-        $errors = $validator->errors()->getMessages();
-        $response = [];
+        $validationErrors = $validator->errors()->getMessages();
+        $formattedErrors = [];
 
-        // バリデーションエラーの整形
-        foreach ($errors as $field => $messages) {
-            $response[$field] = array_map(function ($message) {
+        foreach ($validationErrors as $field => $messages) {
+            $formattedErrors[$field] = array_map(function ($message) {
                 $decodedMessage = json_decode($message, true);
                 return $decodedMessage['description'] ?? $message;
             }, $messages);
         }
 
-        // バリデーションエラーをJSON形式で返す
         throw new HttpResponseException(
-            response()->json(['errors' => $response], 422)
+            response()->json(['errors' => $formattedErrors], 422)
         );
     }
 }

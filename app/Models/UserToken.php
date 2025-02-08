@@ -13,7 +13,7 @@ class UserToken extends Model
 {
     use HasFactory;
 
-    const FROZEN_STATUS = 'frozen'; // 定数を追加
+    const FROZEN_STATUS = 'frozen'; 
 
     protected $primaryKey = 'id';
     public $incrementing = false;
@@ -28,7 +28,7 @@ class UserToken extends Model
         'token'
     ];
 
-    protected $appends = ['frozen', 'createdAt']; // アクセサを追加
+    protected $appends = ['frozen', 'createdAt'];
 
     public function user()
     {
@@ -48,7 +48,7 @@ class UserToken extends Model
         $this->expiration_time = now()->addMonth();
         $this->user_id = $user->id;
         $this->saveOrFail();
-        return $this->token; // トークンを返す
+        return $this->token; 
     }
 
     public static function checkToken($token)
@@ -64,7 +64,6 @@ class UserToken extends Model
         }
     }
 
-    // アクセサを追加
     public function getFrozenAttribute()
     {
         return $this->status === self::FROZEN_STATUS;

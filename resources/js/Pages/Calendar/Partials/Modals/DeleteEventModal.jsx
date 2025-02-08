@@ -23,7 +23,7 @@ export default function DeleteEventModal({
     const getAuthToken = () => {
         const token = localStorage.getItem("authToken");
         if (!token) {
-            console.error("Auth token is missing");
+            console.error("認証トークンが見つかりません。");
         }
         return token;
     };
@@ -46,62 +46,67 @@ export default function DeleteEventModal({
         const related = {};
         const token = getAuthToken();
         for (let i = 0; i < selectedEvents.length; i++) {
-            const eventId = selectedEvents[i];
+            const { id: eventId, recurrence_type } = selectedEvents[i];
             const event = events.find((e) => e.id === eventId);
             if (event) {
-                const [
-                    weekdayResponse,
-                    weekendResponse,
-                    weeklyResponse,
-                    monthlyResponse,
-                    yearlyResponse,
-                ] = await Promise.all([
-                    axios.get(`/api/v2/calendar/weekday-events`, {
-                        params: { event_id: event.event_id },
-                        headers: { Authorization: `Bearer ${token}` },
-                    }),
-                    axios.get(`/api/v2/calendar/weekend-events`, {
-                        params: { event_id: event.event_id },
-                        headers: { Authorization: `Bearer ${token}` },
-                    }),
-                    axios.get(`/api/v2/calendar/weekly-events`, {
-                        params: { event_id: event.event_id },
-                        headers: { Authorization: `Bearer ${token}` },
-                    }),
-                    axios.get(`/api/v2/calendar/monthly-events`, {
-                        params: { event_id: event.event_id },
-                        headers: { Authorization: `Bearer ${token}` },
-                    }),
-                    axios.get(`/api/v2/calendar/yearly-events`, {
-                        params: { event_id: event.event_id },
-                        headers: { Authorization: `Bearer ${token}` },
-                    }),
-                ]);
+                let response;
+                switch (recurrence_type) {
+                    case "weekday":
+                        response = await axios.get(
+                            `/api/v2/calendar/weekday-events`,
+                            {
+                                params: { event_id: event.event_id },
+                                headers: { Authorization: `Bearer ${token}` },
+                            }
+                        );
+                        break;
+                    case "weekend":
+                        response = await axios.get(
+                            `/api/v2/calendar/weekend-events`,
+                            {
+                                params: { event_id: event.event_id },
+                                headers: { Authorization: `Bearer ${token}` },
+                            }
+                        );
+                        break;
+                    case "weekly":
+                        response = await axios.get(
+                            `/api/v2/calendar/weekly-events`,
+                            {
+                                params: { event_id: event.event_id },
+                                headers: { Authorization: `Bearer ${token}` },
+                            }
+                        );
+                        break;
+                    case "monthly":
+                        response = await axios.get(
+                            `/api/v2/calendar/monthly-events`,
+                            {
+                                params: { event_id: event.event_id },
+                                headers: { Authorization: `Bearer ${token}` },
+                            }
+                        );
+                        break;
+                    case "yearly":
+                        response = await axios.get(
+                            `/api/v2/calendar/yearly-events`,
+                            {
+                                params: { event_id: event.event_id },
+                                headers: { Authorization: `Bearer ${token}` },
+                            }
+                        );
+                        break;
+                    default:
+                        response = { data: { events: [] } };
+                        break;
+                }
 
                 // レスポンスデータの形式を確認するためのログを追加
-                console.log("weekdayResponse:", weekdayResponse.data);
-                console.log("weekendResponse:", weekendResponse.data);
-                console.log("weeklyResponse:", weeklyResponse.data);
-                console.log("monthlyResponse:", monthlyResponse.data);
-                console.log("yearlyResponse:", yearlyResponse.data);
+                console.log(`${recurrence_type}Response:`, response.data);
 
-                related[eventId] = [
-                    ...weekdayResponse.data.events.filter(
-                        (e) => e.event_id === event.event_id && e.id !== eventId
-                    ),
-                    ...weekendResponse.data.events.filter(
-                        (e) => e.event_id === event.event_id && e.id !== eventId
-                    ),
-                    ...weeklyResponse.data.events.filter(
-                        (e) => e.event_id === event.event_id && e.id !== eventId
-                    ),
-                    ...monthlyResponse.data.events.filter(
-                        (e) => e.event_id === event.event_id && e.id !== eventId
-                    ),
-                    ...yearlyResponse.data.events.filter(
-                        (e) => e.event_id === event.event_id && e.id !== eventId
-                    ),
-                ];
+                related[eventId] = response.data.events.filter(
+                    (e) => e.event_id === event.event_id && e.id !== eventId
+                );
             }
         }
         setRelatedEvents(related);
@@ -110,7 +115,7 @@ export default function DeleteEventModal({
     // 全てのチェックボックスにチェックを入れる関数
     const initializeDeleteAll = () => {
         const initialDeleteAll = {};
-        selectedEvents.forEach((eventId) => {
+        selectedEvents.forEach(({ id: eventId }) => {
             initialDeleteAll[eventId] = true;
             if (relatedEvents[eventId]) {
                 relatedEvents[eventId].forEach((relatedEvent) => {
@@ -141,13 +146,13 @@ export default function DeleteEventModal({
         const eventsToDelete = [...selectedEvents];
 
         for (let i = 0; i < selectedEvents.length; i++) {
-            const eventId = selectedEvents[i];
+            const { id: eventId, recurrence_type } = selectedEvents[i];
             if (!deleteAll[eventId]) continue;
 
             const event = events.find((e) => e.id === eventId);
             let url;
 
-            switch (event.recurrence_type) {
+            switch (recurrence_type) {
                 case "weekday":
                     url = `/api/v2/calendar/weekday-events/${eventId}`;
                     break;
@@ -177,7 +182,7 @@ export default function DeleteEventModal({
                 if (deleteAll[`related-${relatedEventId}`]) {
                     let relatedUrl;
 
-                    switch (event.recurrence_type) {
+                    switch (recurrence_type) {
                         case "weekday":
                             relatedUrl = `/api/v2/calendar/weekday-events/${relatedEventId}`;
                             break;
@@ -218,10 +223,11 @@ export default function DeleteEventModal({
     const deleteCalendarEvents = async (eventsToDelete) => {
         const token = getAuthToken();
         for (let i = 0; i < eventsToDelete.length; i++) {
-            const eventId = eventsToDelete[i];
+            const { id: eventId, recurrence_type } = eventsToDelete[i];
             const event = events.find((e) => e.id === eventId);
             if (!event) continue;
 
+            // 関連するすべてのイベントを取得
             const [
                 weekdayEvents,
                 weekendEvents,
@@ -251,6 +257,7 @@ export default function DeleteEventModal({
                 }),
             ]);
 
+            // 取得したイベントを一つの配列にまとめる
             const remainingRelatedEvents = [
                 ...weekdayEvents.data.events,
                 ...weekendEvents.data.events,
@@ -259,6 +266,7 @@ export default function DeleteEventModal({
                 ...yearlyEvents.data.events,
             ];
 
+            // 削除対象の関連イベントのIDを取得
             const selectedRelatedEventIds =
                 relatedEvents[eventId]?.map((e) => e.id) || [];
             const allSelected =
@@ -267,19 +275,11 @@ export default function DeleteEventModal({
                     (id) => deleteAll[`related-${id}`]
                 );
 
-            // コンソールログを追加
-            console.log(`イベントID: ${eventId}`);
-            console.log(`残っている関連イベント:`, remainingRelatedEvents);
-            console.log(
-                `残っている関連イベントの数: ${remainingRelatedEvents.length}`
-            );
-            console.log(`選択された関連イベントID:`, selectedRelatedEventIds);
-            console.log(`全て選択されている: ${allSelected}`);
-
+            // すべての関連イベントが選択されている場合、イベントを削除
             if (
                 allSelected &&
                 ["weekday", "weekend", "weekly", "monthly", "yearly"].includes(
-                    event.recurrence_type
+                    recurrence_type
                 )
             ) {
                 console.log(
@@ -296,19 +296,10 @@ export default function DeleteEventModal({
         const isChecked = !deleteAll[eventId];
         newDeleteAll[eventId] = isChecked;
 
-        console.log(
-            `イベントID: ${eventId} のチェックボックスが ${
-                isChecked ? "オン" : "オフ"
-            } になりました。`
-        );
-
         // タイトル横のチェックボックスが外れた場合、関連イベントのチェックボックスも外す
         if (!isChecked) {
             relatedEvents[eventId]?.forEach((relatedEvent) => {
                 newDeleteAll[`related-${relatedEvent.id}`] = false;
-                console.log(
-                    `関連イベントID: ${relatedEvent.id} のチェックボックスがオフになりました。`
-                );
             });
             setShowRelated((prevShowRelated) => ({
                 ...prevShowRelated,
@@ -326,29 +317,17 @@ export default function DeleteEventModal({
         newShowRelated[eventId] = newState;
         setShowRelated(newShowRelated);
 
-        console.log(
-            `イベントID: ${eventId} の関連イベントの表示が ${
-                newState ? "オン" : "オフ"
-            } になりました。`
-        );
-
         // 関連イベントのチェックボックスの状態を更新
         const newDeleteAll = { ...deleteAll };
         if (newState) {
             // 関連イベントを表示する場合、関連イベントのチェックボックスをオンにする
             relatedEvents[eventId]?.forEach((relatedEvent) => {
                 newDeleteAll[`related-${relatedEvent.id}`] = true;
-                console.log(
-                    `関連イベントID: ${relatedEvent.id} のチェックボックスがオンになりました。`
-                );
             });
         } else {
             // 関連イベントを非表示にする場合、関連イベントのチェックボックスをオフにする
             relatedEvents[eventId]?.forEach((relatedEvent) => {
                 newDeleteAll[`related-${relatedEvent.id}`] = false;
-                console.log(
-                    `関連イベントID: ${relatedEvent.id} のチェックボックスがオフになりました。`
-                );
             });
         }
         setDeleteAll(newDeleteAll);
@@ -358,7 +337,7 @@ export default function DeleteEventModal({
     const renderRelatedEvents = function (eventId) {
         return relatedEvents[eventId]?.map((relatedEvent) => (
             <div
-                key={relatedEvent.id}
+                key={`related-${relatedEvent.id}`}
                 className="border p-2 mb-2 rounded shadow-md bg-gray-50"
             >
                 <div className="flex justify-between items-center">
@@ -393,16 +372,11 @@ export default function DeleteEventModal({
     };
 
     // イベントをレンダリングする関数
-    const renderEvent = function (eventId) {
-        const event = events.find((e) => e.id === eventId);
-        if (!event) {
-            console.error(`イベントID: ${eventId} が見つかりません`);
-            return null;
-        }
-
+    const renderEvent = function (event) {
+        const { id: eventId, recurrence_type } = event;
         const relatedEventCount = relatedEvents[eventId]?.length || 0;
         const hasRelatedEvents =
-            event.recurrence_type !== "none" && relatedEventCount > 0;
+            recurrence_type !== "none" && relatedEventCount > 0;
 
         return (
             <div
@@ -465,9 +439,11 @@ export default function DeleteEventModal({
     const sortedSelectedEvents = [...selectedEvents];
     for (let i = 0; i < sortedSelectedEvents.length - 1; i++) {
         for (let j = 0; j < sortedSelectedEvents.length - i - 1; j++) {
-            const eventA = events.find((e) => e.id === sortedSelectedEvents[j]);
+            const eventA = events.find(
+                (e) => e.id === sortedSelectedEvents[j].id
+            );
             const eventB = events.find(
-                (e) => e.id === sortedSelectedEvents[j + 1]
+                (e) => e.id === sortedSelectedEvents[j + 1].id
             );
             const dateA = new Date(eventA.start_time);
             const dateB = new Date(eventB.start_time);
@@ -476,7 +452,6 @@ export default function DeleteEventModal({
                 dateA > dateB ||
                 (dateA.getTime() === dateB.getTime() && eventA.id > eventB.id)
             ) {
-                // スワップ
                 const temp = sortedSelectedEvents[j];
                 sortedSelectedEvents[j] = sortedSelectedEvents[j + 1];
                 sortedSelectedEvents[j + 1] = temp;

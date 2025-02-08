@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import EventModal from "../../../Components/EventModal"; // 修正されたインポートパス
+import EventModal from "../../../Components/EventModal";
 
 export default function ChangeDateModal({ isOpen, onClose, onDateChange }) {
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());

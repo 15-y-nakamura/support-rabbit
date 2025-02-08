@@ -21,10 +21,9 @@ class WeekendEvent extends Model
         'link',
         'tag_id',
         'note',
-        'recurrence_type', // 繰り返しの種類
+        'recurrence_type',
     ];
 
-    // Tagリレーションの追加
     public function tag()
     {
         return $this->belongsTo(Tag::class, 'tag_id');

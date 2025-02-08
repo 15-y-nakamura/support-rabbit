@@ -14,8 +14,7 @@ class AchievementRequest extends FormRequest
     public function rules()
     {
         return [
-            // 'user_id' => 'required|integer|exists:users,id',
-            'title' => 'required|string|max:255',
+            'title' => 'required|string|max:30',
             'start_time' => 'required|date_format:Y-m-d H:i:s',
             'end_time' => 'nullable|date_format:Y-m-d H:i:s|after_or_equal:start_time',
         ];

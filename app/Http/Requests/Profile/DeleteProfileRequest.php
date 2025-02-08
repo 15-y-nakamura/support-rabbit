@@ -9,21 +9,11 @@ use Illuminate\Support\Facades\Hash;
 
 class DeleteProfileRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
     public function authorize()
     {
-        return true; // ユーザーがログインしていることを前提とする
+        return true; 
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
     public function rules()
     {
         return [
@@ -31,11 +21,6 @@ class DeleteProfileRequest extends FormRequest
         ];
     }
 
-    /**
-     * Get custom error messages for validation rules.
-     *
-     * @return array
-     */
     public function messages()
     {
         return [
@@ -54,26 +39,20 @@ class DeleteProfileRequest extends FormRequest
         ];
     }
 
-    /**
-     * Handle a failed validation attempt.
-     *
-     * @param Validator $validator
-     * @throws HttpResponseException
-     */
     protected function failedValidation(Validator $validator)
     {
-        $errors = $validator->errors()->getMessages();
-        $response = [];
+        $validationErrors = $validator->errors()->getMessages();
+        $formattedErrors = [];
 
-        foreach ($errors as $field => $messages) {
-            $response[$field] = array_map(function ($message) {
+        foreach ($validationErrors as $field => $messages) {
+            $formattedErrors[$field] = array_map(function ($message) {
                 $decodedMessage = json_decode($message, true);
                 return $decodedMessage['description'] ?? $message;
             }, $messages);
         }
 
         throw new HttpResponseException(
-            response()->json(['errors' => $response], 422)
+            response()->json(['errors' => $formattedErrors], 422)
         );
     }
 }

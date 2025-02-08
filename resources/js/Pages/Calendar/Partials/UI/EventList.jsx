@@ -6,7 +6,7 @@ import EventDetailModal from "../Modals/EventDetailModal";
 const getAuthToken = () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
-        console.error("Auth token is missing");
+        console.error("認証トークンが見つかりません。");
     }
     return token;
 };
@@ -22,8 +22,8 @@ export default function EventList({
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [error, setError] = useState(null);
     const [tags, setTags] = useState({});
-    const [missingTags, setMissingTags] = useState([]); // State to handle missing tags
-    const [isLoading, setIsLoading] = useState(false); // State to handle loading
+    const [missingTags, setMissingTags] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const fetchTags = async () => {
@@ -120,7 +120,7 @@ export default function EventList({
             }
             const event = selectedDateEvents.find((e) => e.id === eventId);
             console.log("Achieving event:", event);
-            const authToken = getAuthToken(); // トークンを取得
+            const authToken = getAuthToken();
             await axios.post(
                 "/api/v2/achievements",
                 {
@@ -130,7 +130,7 @@ export default function EventList({
                     end_time: event.end_time,
                 },
                 {
-                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                    headers: { Authorization: `Bearer ${authToken}` },
                 }
             );
             await axios.delete(url, {

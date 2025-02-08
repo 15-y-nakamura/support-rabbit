@@ -26,7 +26,7 @@ class CreateYearlyEventsTable extends Migration
             $table->foreignId('tag_id')->nullable()->constrained('calendar_tags')->onDelete('set null'); // タグの外部キー
             $table->text('note')->nullable();
             $table->enum('recurrence_type', ['none', 'weekday', 'weekend', 'weekly', 'monthly', 'yearly'])->default('yearly'); // 繰り返しの種類
-            $table->string('recurrence_date')->nullable(); // recurrence_dateカラムを追加
+            $table->string('recurrence_date')->nullable(); 
             $table->timestamps();
         });
     }

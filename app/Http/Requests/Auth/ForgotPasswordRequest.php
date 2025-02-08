@@ -24,15 +24,15 @@ class ForgotPasswordRequest extends FormRequest
     {
         return [
             'email.required' => json_encode([
-                "code" => "post_signup_email_required",
+                "code" => "forgot_password_email_required",
                 "description" => "メールアドレスを入力してください"
             ]),
             'email.email' => json_encode([
-                "code" => "post_signup_email_invalid",
+                "code" => "forgot_password_email_invalid",
                 "description" => "有効なメールアドレスを入力してください"
             ]),
             'email.exists' => json_encode([
-                "code" => "post_signup_email_not_found",
+                "code" => "forgot_password_email_not_found",
                 "description" => "メールアドレスが存在しません"
             ]),
         ];
@@ -40,26 +40,27 @@ class ForgotPasswordRequest extends FormRequest
 
     protected function failedValidation(Validator $validator)
     {
-        // フィールドごとにエラーメッセージを構築
-        $errors = $validator->errors()->getMessages();
-        $response = [];
+        // バリデーションエラーメッセージを取得
+        $validationErrors = $validator->errors()->getMessages();
+        $formattedErrors = [];
     
-        foreach ($errors as $field => $messages) {
-            $response[$field] = array_map(function ($message) {
+        foreach ($validationErrors as $field => $messages) {
+            $formattedErrors[$field] = array_map(function ($message) {
                 $decodedMessage = json_decode($message, true);
                 return $decodedMessage['description'] ?? $message;
             }, $messages);
         }
     
+        // JSONリクエストの場合はエラーレスポンスを返す
         if ($this->expectsJson()) {
             throw new HttpResponseException(
-                response()->json(['errors' => $response], 422)
+                response()->json(['errors' => $formattedErrors], 422)
             );
         }
     
-        // HTMLリクエストの場合のリダイレクト
+        // HTMLリクエストの場合はリダイレクトし、エラーメッセージを表示
         throw new HttpResponseException(
-            back()->withErrors($response)->withInput()
+            back()->withErrors($formattedErrors)->withInput()
         );
     }
 }

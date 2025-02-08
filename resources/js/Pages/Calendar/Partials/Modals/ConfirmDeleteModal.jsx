@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import EventModal from "../../../../Components/EventModal"; // 修正されたインポートパス
 
 export default function ConfirmDeleteModal({
     isOpen,
     onClose,
     onConfirm,
-    relatedEvents = [], // デフォルト値を空の配列に設定
+    relatedEvents = [],
     allSelected,
 }) {
     const [isDeleting, setIsDeleting] = useState(false);
@@ -16,7 +15,7 @@ export default function ConfirmDeleteModal({
         setIsDeleting(true);
         if (relatedEvents.length === 0 || allSelected) {
             await onConfirm();
-            window.location.href = "/user/calendar"; // 削除後にリダイレクト
+            window.location.href = "/user/calendar";
         }
         setIsDeleting(false);
         onClose();

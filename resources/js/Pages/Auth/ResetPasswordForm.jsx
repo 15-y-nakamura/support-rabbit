@@ -60,7 +60,6 @@ export default function ResetPasswordForm({ token, email }) {
             <div className="w-full max-w-xs sm:max-w-md">
                 <div className="bg-white shadow-md rounded-lg overflow-hidden p-4 sm:p-6">
                     <form onSubmit={submit}>
-                        {/* 新しいパスワード */}
                         <PasswordField
                             id="password"
                             label="新しいパスワード"
@@ -76,7 +75,6 @@ export default function ResetPasswordForm({ token, email }) {
                             autoFocus
                         />
 
-                        {/* 新しいパスワード（確認用） */}
                         <PasswordField
                             id="password_confirmation"
                             label="新しいパスワード（確認用）"
@@ -91,20 +89,17 @@ export default function ResetPasswordForm({ token, email }) {
                             }
                         />
 
-                        {/* エラーメッセージ */}
                         <InputError
                             message={errors.token}
                             className="mt-2 text-base sm:text-lg"
                         />
 
-                        {/* 成功メッセージ */}
                         {successMessage && (
                             <div className="mt-2 text-base sm:text-lg text-green-600">
                                 {successMessage}
                             </div>
                         )}
 
-                        {/* 送信ボタン */}
                         <div className="mt-6 flex items-center justify-end">
                             <PrimaryButton
                                 className="ms-4 text-base sm:text-lg"

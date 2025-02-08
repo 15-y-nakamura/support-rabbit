@@ -17,14 +17,14 @@ class WeekdayEventRequest extends FormRequest
     {
         return [
             'event_id' => 'required|integer|exists:calendar_events,id',
-            'title' => 'required|string|max:50', // タイトルは50文字以内
+            'title' => 'required|string|max:30',
             'start_time' => 'required|date_format:Y-m-d\TH:i|before_or_equal:end_time',
             'end_time' => 'nullable|date_format:Y-m-d\TH:i|after_or_equal:start_time',
             'all_day' => 'required|boolean',
-            'location' => 'nullable|string|max:100', // 場所は100文字以内
-            'link' => 'nullable|url|max:500', // リンクは500文字以内
-            'tag_id' => 'nullable|exists:calendar_tags,id', // タグの外部キー
-            'note' => 'nullable|string|max:1000', // 説明は1000文字以内
+            'location' => 'nullable|string|max:100',
+            'link' => 'nullable|url|max:500',
+            'tag_id' => 'nullable|exists:calendar_tags,id',
+            'note' => 'nullable|string|max:1000',
             'recurrence_type' => 'required|in:none,weekday,weekend,weekly,monthly,yearly',
         ];
     }
@@ -42,7 +42,7 @@ class WeekdayEventRequest extends FormRequest
             ]),
             'title.max' => json_encode([
                 "code" => "post_title_max",
-                "description" => "タイトルは50文字以内である必要があります"
+                "description" => "タイトルは30文字以内である必要があります"
             ]),
             'start_time.required' => json_encode([
                 "code" => "post_start_time_required",
@@ -109,12 +109,11 @@ class WeekdayEventRequest extends FormRequest
 
     protected function failedValidation(Validator $validator)
     {
-        // フィールドごとにエラーメッセージを構築
-        $errors = $validator->errors()->getMessages();
-        $response = [];
+        $validationErrors = $validator->errors()->getMessages();
+        $formattedErrors = [];
     
-        foreach ($errors as $field => $messages) {
-            $response[$field] = array_map(function ($message) {
+        foreach ($validationErrors as $field => $messages) {
+            $formattedErrors[$field] = array_map(function ($message) {
                 $decodedMessage = json_decode($message, true);
                 return $decodedMessage['description'] ?? $message;
             }, $messages);
@@ -122,13 +121,12 @@ class WeekdayEventRequest extends FormRequest
     
         if ($this->expectsJson()) {
             throw new HttpResponseException(
-                response()->json(['errors' => $response], 422)
+                response()->json(['errors' => $formattedErrors], 422)
             );
         }
-    
-        // HTMLリクエストの場合のリダイレクト
+
         throw new HttpResponseException(
-            back()->withErrors($response)->withInput()
+            back()->withErrors($formattedErrors)->withInput()
         );
     }
 }

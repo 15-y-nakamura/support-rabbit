@@ -15,8 +15,6 @@ class LoginController extends Controller
 {
     /**
      * ログインフォームの表示
-     *
-     * @return \Inertia\Response
      */
     public function create()
     {
@@ -25,45 +23,36 @@ class LoginController extends Controller
     
     /**
      * ログイン処理
-     *
-     * @param  \App\Http\Requests\Auth\LoginRequest  $request
-     * @return \Inertia\Response
      */
     public function login(LoginRequest $request)
     {
         $credentials = $request->only('login_id', 'password');
 
-        // 認証試行
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            // ユーザーのトークンを管理する処理を追加
+            // 現在のユーザーのトークンを管理（既存のトークンを削除し、新しいトークンを作成）
             $user = Auth::user();
-            $this->deleteExistingToken($user);
-            $token = $this->createUserToken($user);
+            $this->deleteExistingToken($user); // 既存のトークンを削除
+            $token = $this->createUserToken($user); // 新しいトークンを作成
 
-            Log::info('User logged in successfully', ['user_id' => $user->id, 'token' => $token->token]);
 
-            // トークンをフロントエンドに返す
+            // アプリ起動時に最初に表示されるカレンダー画面へ
+            // ユーザー情報と認証トークンを渡して表示する
             return Inertia::render('Calendar/Calendar', [
                 'token' => $token->token,
                 'user' => $user,
             ]);
         }
 
-        // 認証失敗時
         return back()->withErrors(['login' => 'ユーザIDまたはパスワードが違います'])->withInput();
     }
 
     /**
      * APIログイン処理
-     *
-     * @param  \App\Http\Requests\Auth\LoginRequest  $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function apiLogin(LoginRequest $request)
     {
-        // ユーザー取得
         $user = User::where('login_id', $request->login_id)->first();
 
         if (!$user || !Auth::attempt($request->only('login_id', 'password'))) {
@@ -88,9 +77,6 @@ class LoginController extends Controller
 
     /**
      * 既存のユーザートークンを削除
-     *
-     * @param  \App\Models\User  $user
-     * @return void
      */
     private function deleteExistingToken(User $user): void
     {
@@ -101,9 +87,6 @@ class LoginController extends Controller
 
     /**
      * 新しいユーザートークンを作成
-     *
-     * @param  \App\Models\User  $user
-     * @return \App\Models\UserToken
      */
     private function createUserToken(User $user): UserToken
     {

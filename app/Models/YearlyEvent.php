@@ -24,7 +24,6 @@ class YearlyEvent extends Model
         'recurrence_type', 
     ];
 
-    // Tagリレーションの追加
     public function tag()
     {
         return $this->belongsTo(Tag::class, 'tag_id');

@@ -26,7 +26,7 @@ export default function LoginForm() {
         post(route("login"), {
             onSuccess: (page) => {
                 const { token } = page.props;
-                localStorage.setItem("authToken", token); // トークンをローカルストレージに保存
+                localStorage.setItem("authToken", token);
                 window.location.href = "/user/calendar";
             },
             onError: (error) => {
@@ -41,7 +41,6 @@ export default function LoginForm() {
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-[#FFF6EA] pt-6 sm:pt-0">
-            {/* ロゴ */}
             <div className="flex justify-center mb-4">
                 <img
                     src="/img/logos/logo.png"
@@ -51,7 +50,6 @@ export default function LoginForm() {
                 />
             </div>
 
-            {/* タイトル */}
             <div className="text-center mb-4">
                 <h1 className="text-xl sm:text-2xl font-semibold text-gray-700">
                     こんにちは
@@ -61,7 +59,6 @@ export default function LoginForm() {
 
             <div className="w-full max-w-sm sm:max-w-md mx-auto">
                 <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                    {/* タブ切り替え */}
                     <div className="flex justify-center">
                         <button className="w-1/2 py-2 sm:py-4 text-gray-700 font-medium bg-customPink">
                             ログイン
@@ -74,10 +71,8 @@ export default function LoginForm() {
                         </Link>
                     </div>
 
-                    {/* フォーム */}
                     <div className="p-4 sm:p-6">
                         <form onSubmit={submit}>
-                            {/* ユーザID */}
                             <FormField
                                 id="login_id"
                                 label="ユーザID"
@@ -89,7 +84,6 @@ export default function LoginForm() {
                                 error={errors.login_id}
                             />
 
-                            {/* パスワード */}
                             <PasswordField
                                 id="password"
                                 label="パスワード"
@@ -102,13 +96,11 @@ export default function LoginForm() {
                                 toggleVisibility={togglePasswordVisibility}
                             />
 
-                            {/* ログインエラー表示 */}
                             <InputError
                                 message={errors.login}
                                 className="mt-2"
                             />
 
-                            {/* ボタン & リンク */}
                             <div className="mt-4 flex items-center justify-between">
                                 <Link
                                     href={route("password.request")}
@@ -139,7 +131,6 @@ export default function LoginForm() {
     );
 }
 
-// 共通フォームフィールドコンポーネント
 const FormField = ({
     id,
     label,
@@ -165,7 +156,6 @@ const FormField = ({
     </div>
 );
 
-// パスワードフィールドコンポーネント
 const PasswordField = ({
     id,
     label,

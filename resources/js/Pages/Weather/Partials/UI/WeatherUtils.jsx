@@ -17,7 +17,6 @@ export const fetchWeatherData = async (
         setSelectedCityWeather(data);
     } catch (error) {
         console.error("天気データの取得中にエラーが発生しました:", error);
-        setNotification("天気データの取得中にエラーが発生しました。", "error");
     }
 };
 
@@ -35,10 +34,6 @@ export const fetchCityWeatherData = async (
         setSelectedCityWeather(data);
     } catch (error) {
         console.error("都市の天気データの取得中にエラーが発生しました:", error);
-        setNotification(
-            "都市の天気データの取得中にエラーが発生しました。",
-            "error"
-        );
     }
 };
 
@@ -60,10 +55,6 @@ export const fetchCurrentLocationWeatherData = async (
         console.error(
             "現在位置の天気データの取得中にエラーが発生しました:",
             error
-        );
-        setNotification(
-            "現在位置の天気データの取得中にエラーが発生しました。",
-            "error"
         );
     }
 };

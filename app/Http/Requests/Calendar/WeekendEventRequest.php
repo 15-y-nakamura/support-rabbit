@@ -17,8 +17,7 @@ class WeekendEventRequest extends FormRequest
     {
         return [
             'event_id' => 'required|integer|exists:calendar_events,id',
-            // 'user_id' => 'required|integer|exists:users,id',
-            'title' => 'required|string|max:50',
+            'title' => 'required|string|max:30',
             'start_time' => 'required|date_format:Y-m-d\TH:i|before_or_equal:end_time',
             'end_time' => 'nullable|date_format:Y-m-d\TH:i|after_or_equal:start_time',
             'all_day' => 'boolean',
@@ -43,7 +42,7 @@ class WeekendEventRequest extends FormRequest
             ]),
             'title.max' => json_encode([
                 "code" => "post_title_max",
-                "description" => "タイトルは50文字以内である必要があります。"
+                "description" => "タイトルは30文字以内である必要があります。"
             ]),
             'start_time.required' => json_encode([
                 "code" => "post_start_time_required",
@@ -110,12 +109,11 @@ class WeekendEventRequest extends FormRequest
 
     protected function failedValidation(Validator $validator)
     {
-        // フィールドごとにエラーメッセージを構築
-        $errors = $validator->errors()->getMessages();
-        $response = [];
+        $validationErrors = $validator->errors()->getMessages();
+        $formattedErrors = [];
     
-        foreach ($errors as $field => $messages) {
-            $response[$field] = array_map(function ($message) {
+        foreach ($validationErrors as $field => $messages) {
+            $formattedErrors[$field] = array_map(function ($message) {
                 $decodedMessage = json_decode($message, true);
                 return $decodedMessage['description'] ?? $message;
             }, $messages);
@@ -123,13 +121,12 @@ class WeekendEventRequest extends FormRequest
     
         if ($this->expectsJson()) {
             throw new HttpResponseException(
-                response()->json(['errors' => $response], 422)
+                response()->json(['errors' => $formattedErrors], 422)
             );
         }
-    
-        // HTMLリクエストの場合のリダイレクト
+
         throw new HttpResponseException(
-            back()->withErrors($response)->withInput()
+            back()->withErrors($formattedErrors)->withInput()
         );
     }
 }

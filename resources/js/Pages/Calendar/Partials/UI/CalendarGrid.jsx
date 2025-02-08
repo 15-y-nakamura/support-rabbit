@@ -5,25 +5,33 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // currentDateが変更されたときにselectedDateを更新
     useEffect(() => {
         setSelectedDate(currentDate);
     }, [currentDate]);
 
+    // 現在の月の日数を取得
     const daysInMonth = new Date(
         currentDate.getFullYear(),
         currentDate.getMonth() + 1,
         0
     ).getDate();
+
+    // 現在の月の最初の日の曜日インデックスを取得
     const firstDayIndex = new Date(
         currentDate.getFullYear(),
         currentDate.getMonth(),
         1
     ).getDay();
+
+    // 現在の月の最後の日の曜日インデックスを取得
     const lastDayIndex = new Date(
         currentDate.getFullYear(),
         currentDate.getMonth(),
         daysInMonth
     ).getDay();
+
+    // 前月の最後の日の日付を取得
     const prevLastDay = new Date(
         currentDate.getFullYear(),
         currentDate.getMonth(),
@@ -32,6 +40,7 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
 
     const days = [];
 
+    // 前月の日付をカレンダーに追加
     for (let x = firstDayIndex; x > 0; x--) {
         days.push(
             <div
@@ -45,6 +54,7 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
         );
     }
 
+    // 現在の月の日付をカレンダーに追加
     for (let i = 1; i <= daysInMonth; i++) {
         const currentDay = new Date(
             currentDate.getFullYear(),
@@ -53,6 +63,7 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
         );
         currentDay.setHours(0, 0, 0, 0);
 
+        // 現在の日付に関連するイベントをフィルタリング
         const dayEvents = events.filter((event) => {
             const eventStart = new Date(event.start_time);
             const eventEnd = new Date(event.end_time || event.start_time);
@@ -100,6 +111,7 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
         );
     }
 
+    // 次月の日付をカレンダーに追加
     for (let j = 1; j <= 6 - lastDayIndex; j++) {
         days.push(
             <div
@@ -111,6 +123,5 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
         );
     }
 
-    console.log(`Today's date: ${new Date()}`);
     return days;
 }

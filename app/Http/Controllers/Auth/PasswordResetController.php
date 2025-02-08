@@ -32,11 +32,14 @@ class PasswordResetController extends Controller
             'created_at' => Carbon::now(),
         ]);
 
-        // パスワードリセット通知を送信
         $user = User::where('email', $email)->first();
-        if ($user) {
-            $user->notify(new CustomResetPasswordNotification($token));
+
+        if (!$user) {
+            return back()->withErrors(['email' => '該当するユーザーが見つかりません。']);
         }
+        
+        // カスタムメッセージのメールを送信
+        $user->notify(new CustomResetPasswordNotification($token));
 
         return back()->with('status', __('passwords.sent'));
     }
@@ -54,37 +57,32 @@ class PasswordResetController extends Controller
      */
     public function resetPassword(ResetPasswordRequest $request)
     {
-        // トークンを検索
         $passwordReset = DB::table('password_reset_tokens')->where('token', $request->token)->first();
+    
         if (!$passwordReset) {
             return back()->withErrors(['token' => '無効なトークンです']);
-        }
+        }    
 
-        // トークンの有効期限をチェック（60分）
         if (Carbon::parse($passwordReset->created_at)->addMinutes(60)->isPast()) {
             return back()->withErrors(['token' => 'このトークンは有効期限が切れています']);
         }
 
-        // ユーザーを取得
         $user = User::where('email', $passwordReset->email)->first();
         if (!$user) {
             return back()->withErrors(['email' => __('passwords.user')]);
         }
 
-        // 既存のパスワードと異なることを確認
         if (Hash::check($request->password, $user->password)) {
             return back()->withErrors(['password' => '新しいパスワードは現在のパスワードと異なる必要があります']);
         }
 
-        // パスワードを更新
         $user->forceFill([
             'password' => Hash::make($request->password),
             'remember_token' => Str::random(60),
         ])->save();
 
-        // トークンを削除
         DB::table('password_reset_tokens')->where('token', $request->token)->delete();
-
+    
         event(new PasswordReset($user));
 
         return back()->with('status', __('passwords.reset'));

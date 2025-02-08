@@ -16,9 +16,8 @@ class EventRequest extends FormRequest
     public function rules()
     {
         return [
-            // 'user_id' => 'required|integer|exists:users,id', // 削除
-            'title' => 'required|string|max:50',
-            'start_time' => 'required|date_format:Y-m-d\TH:i|before_or_equal:end_time', // 修正
+            'title' => 'required|string|max:30',
+            'start_time' => 'required|date_format:Y-m-d\TH:i|before_or_equal:end_time', 
             'end_time' => 'nullable|date_format:Y-m-d\TH:i|after_or_equal:start_time',
             'all_day' => 'boolean',
             'location' => 'nullable|string|max:100',
@@ -33,25 +32,13 @@ class EventRequest extends FormRequest
     public function messages(): array
     {
         return [
-            // 'user_id.required' => json_encode([
-            //     "code" => "post_user_id_required",
-            //     "description" => "ユーザーIDは必須です"
-            // ]),
-            // 'user_id.integer' => json_encode([
-            //     "code" => "post_user_id_integer",
-            //     "description" => "ユーザーIDは整数である必要があります"
-            // ]),
-            // 'user_id.exists' => json_encode([
-            //     "code" => "post_user_id_exists",
-            //     "description" => "指定されたユーザーIDは存在しません"
-            // ]),
             'title.required' => json_encode([
                 "code" => "post_title_required",
                 "description" => "タイトルは必須です"
             ]),
             'title.max' => json_encode([
                 "code" => "post_title_max",
-                "description" => "タイトルは50文字以内です"
+                "description" => "タイトルは30文字以内です"
             ]),
             'start_time.required' => json_encode([
                 "code" => "post_start_time_required",
@@ -118,12 +105,11 @@ class EventRequest extends FormRequest
 
     protected function failedValidation(Validator $validator)
     {
-        // フィールドごとにエラーメッセージを構築
-        $errors = $validator->errors()->getMessages();
-        $response = [];
+        $validationErrors = $validator->errors()->getMessages();
+        $formattedErrors = [];
     
-        foreach ($errors as $field => $messages) {
-            $response[$field] = array_map(function ($message) {
+        foreach ($validationErrors as $field => $messages) {
+            $formattedErrors[$field] = array_map(function ($message) {
                 $decodedMessage = json_decode($message, true);
                 return $decodedMessage['description'] ?? $message;
             }, $messages);
@@ -131,13 +117,12 @@ class EventRequest extends FormRequest
     
         if ($this->expectsJson()) {
             throw new HttpResponseException(
-                response()->json(['errors' => $response], 422)
+                response()->json(['errors' => $formattedErrors], 422)
             );
         }
-    
-        // HTMLリクエストの場合のリダイレクト
+
         throw new HttpResponseException(
-            back()->withErrors($response)->withInput()
+            back()->withErrors($formattedErrors)->withInput()
         );
     }
 }

@@ -3,7 +3,7 @@ import InputError from "@/Components/InputError";
 import PrimaryButton from "@/Components/PrimaryButton";
 import TextInput from "@/Components/TextInput";
 import { Head, useForm, Link } from "@inertiajs/react";
-import CircularProgress from "@mui/material/CircularProgress"; // 追加
+import CircularProgress from "@mui/material/CircularProgress";
 
 export default function ForgotPasswordForm() {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -20,14 +20,13 @@ export default function ForgotPasswordForm() {
                 reset("email");
             },
             onError: () => {
-                setSuccessMessage(""); // 失敗時は成功メッセージをクリア
+                setSuccessMessage("");
             },
         });
     };
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-[#FFF6EA] pt-6 sm:pt-0">
-            {/* タイトル */}
             <div className="text-center mb-6">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-700">
                     パスワードリセット
@@ -37,14 +36,12 @@ export default function ForgotPasswordForm() {
 
             <div className="w-full max-w-sm sm:max-w-lg">
                 <div className="bg-white shadow-md rounded-lg overflow-hidden p-4 sm:p-6">
-                    {/* 説明文 */}
                     <p className="mb-4 text-base sm:text-lg text-gray-600">
                         登録済みのメールアドレスを入力してください。
                         <br />
                         ユーザIDとパスワードリセット用のリンクを送信します。
                     </p>
 
-                    {/* フォーム */}
                     <form onSubmit={submit}>
                         <div className="mt-3">
                             <TextInput
@@ -65,14 +62,12 @@ export default function ForgotPasswordForm() {
                             />
                         </div>
 
-                        {/* 成功メッセージ */}
                         {successMessage && (
                             <div className="mt-2 text-base sm:text-lg text-green-600">
                                 {successMessage}
                             </div>
                         )}
 
-                        {/* ボタン */}
                         <div className="mt-4 flex items-center justify-between">
                             <Link
                                 href="/login"

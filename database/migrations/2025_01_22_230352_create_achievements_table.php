@@ -19,7 +19,7 @@ class CreateAchievementsTable extends Migration
             $table->string('title');
             $table->dateTime('start_time');
             $table->dateTime('end_time')->nullable();
-            $table->dateTime('achieved_at'); // 達成日時
+            $table->dateTime('achieved_at');
         });
     }
 

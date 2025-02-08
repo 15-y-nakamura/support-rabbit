@@ -16,8 +16,8 @@ class TagRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|max:15', // タイトルは15文字以内
-            'color' => 'nullable|string|max:7', // カラーコードは7文字以内
+            'name' => 'required|string|max:15', 
+            'color' => 'nullable|string|max:7',
         ];
     }
 
@@ -48,12 +48,11 @@ class TagRequest extends FormRequest
     }
     protected function failedValidation(Validator $validator)
     {
-        // フィールドごとにエラーメッセージを構築
-        $errors = $validator->errors()->getMessages();
-        $response = [];
+        $validationErrors = $validator->errors()->getMessages();
+        $formattedErrors = [];
     
-        foreach ($errors as $field => $messages) {
-            $response[$field] = array_map(function ($message) {
+        foreach ($validationErrors as $field => $messages) {
+            $formattedErrors[$field] = array_map(function ($message) {
                 $decodedMessage = json_decode($message, true);
                 return $decodedMessage['description'] ?? $message;
             }, $messages);
@@ -61,13 +60,12 @@ class TagRequest extends FormRequest
     
         if ($this->expectsJson()) {
             throw new HttpResponseException(
-                response()->json(['errors' => $response], 422)
+                response()->json(['errors' => $formattedErrors], 422)
             );
         }
-    
-        // HTMLリクエストの場合のリダイレクト
+
         throw new HttpResponseException(
-            back()->withErrors($response)->withInput()
+            back()->withErrors($formattedErrors)->withInput()
         );
     }
 }

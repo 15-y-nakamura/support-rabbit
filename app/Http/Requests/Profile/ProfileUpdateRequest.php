@@ -11,24 +11,14 @@ use Illuminate\Support\Facades\Auth;
 
 class ProfileUpdateRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
     public function authorize()
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
     public function rules()
     {
-        $user = Auth::user(); // 現在の認証ユーザー
+        $user = Auth::user();
 
         // 入力値と現在の値を比較し、変更がある場合のみバリデーションを適用
         $rules = [];
@@ -117,21 +107,13 @@ class ProfileUpdateRequest extends FormRequest
         ];
     }
 
-    /**
-     * Handle a failed validation attempt.
-     *
-     * @param Validator $validator
-     * @throw HttpResponseException
-     * @see FormRequest::failedValidation()
-     */
     protected function failedValidation(Validator $validator)
     {
-        // フィールドごとにエラーメッセージを構築
-        $errors = $validator->errors()->getMessages();
-        $response = [];
+        $validationErrors = $validator->errors()->getMessages();
+        $formattedErrors = [];
     
-        foreach ($errors as $field => $messages) {
-            $response[$field] = array_map(function ($message) {
+        foreach ($validationErrors as $field => $messages) {
+            $formattedErrors[$field] = array_map(function ($message) {
                 $decodedMessage = json_decode($message, true);
                 return $decodedMessage['description'] ?? $message;
             }, $messages);
@@ -139,13 +121,12 @@ class ProfileUpdateRequest extends FormRequest
     
         if ($this->expectsJson()) {
             throw new HttpResponseException(
-                response()->json(['errors' => $response], 422)
+                response()->json(['errors' => $formattedErrors], 422)
             );
         }
-    
-        // HTMLリクエストの場合のリダイレクト
+
         throw new HttpResponseException(
-            back()->withErrors($response)->withInput()
+            back()->withErrors($formattedErrors)->withInput()
         );
     }
 }

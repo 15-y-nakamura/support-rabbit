@@ -23,9 +23,9 @@ class CreateWeekdayEventsTable extends Migration
             $table->boolean('all_day')->default(false);
             $table->string('location')->nullable();
             $table->string('link')->nullable();
-            $table->foreignId('tag_id')->nullable()->constrained('calendar_tags')->onDelete('set null'); // タグの外部キー
+            $table->foreignId('tag_id')->nullable()->constrained('calendar_tags')->onDelete('set null'); 
             $table->text('note')->nullable();
-            $table->enum('recurrence_type', ['none', 'weekday', 'weekend', 'weekly', 'monthly', 'yearly'])->default('weekday'); // 繰り返しの種類
+            $table->enum('recurrence_type', ['none', 'weekday', 'weekend', 'weekly', 'monthly', 'yearly'])->default('weekday'); 
             $table->timestamps();
         });
     }

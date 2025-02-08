@@ -22,9 +22,9 @@ class MonthlyEvent extends Model
         'tag_id',
         'note',
         'recurrence_type', 
+        'recurrence_date', 
     ];
 
-    // Tagリレーションの追加
     public function tag()
     {
         return $this->belongsTo(Tag::class, 'tag_id');

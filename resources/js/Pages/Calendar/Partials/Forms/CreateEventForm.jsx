@@ -2,11 +2,10 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import InputError from "@/Components/InputError";
 
-// 認証トークンを取得する関数
 const getAuthToken = () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
-        console.error("Auth token is missing");
+        console.error("認証トークンが見つかりません");
     }
     return token;
 };
@@ -14,7 +13,7 @@ const getAuthToken = () => {
 const getUserId = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user) {
-        console.error("User is missing");
+        console.error("認証トークンが見つかりません");
     }
     return user ? user.id : null;
 };
@@ -76,7 +75,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
         try {
             const authToken = getAuthToken();
             if (!authToken) {
-                throw new Error("Auth token is missing");
+                throw new Error("認証トークンが見つかりません");
             }
             const response = await axios.get("/api/v2/calendar/tags", {
                 headers: {
@@ -85,7 +84,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
             });
             setTags(response.data.tags);
         } catch (error) {
-            console.error("タグの取得中にエラーが発生しました:", error);
+            console.error("タグの取得中にエラーが発生しました:");
         } finally {
             setLoadingTags(false);
         }
@@ -93,11 +92,11 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setErrorMessage(""); // リセット
+        setErrorMessage("");
         try {
             const authToken = getAuthToken();
             if (!authToken) {
-                throw new Error("Auth token is missing");
+                throw new Error("認証トークンが見つかりません");
             }
             const eventStartTime = allDay ? `${allDayDate}T00:00` : startTime;
             const eventEndTime = allDay ? `${allDayDate}T23:59` : endTime;
@@ -122,7 +121,6 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                 "/api/v2/calendar/events",
                 {
                     title,
-                    note,
                     start_time: eventStartTime,
                     end_time: eventEndTime,
                     is_recurring: recurrenceType === "none" ? 0 : isRecurring,
@@ -141,7 +139,6 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                 }
             );
 
-            console.log("作成されたイベント:", response.data.event);
             const eventId = response.data.event.id;
 
             if (isRecurring) {
@@ -250,7 +247,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                                 link,
                                 recurrence_type: recurrenceType,
                                 tag_id: selectedTag ? selectedTag.id : null,
-                                recurrence_date: recurrenceDate, // 入力された日付を使用
+                                recurrence_date: recurrenceDate,
                             },
                             {
                                 headers: {

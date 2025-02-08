@@ -37,7 +37,6 @@ export default function RegisterForm() {
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-[#FFF6EA] pt-6 sm:pt-0">
-            {/* ロゴ */}
             <div className="flex justify-center mb-4">
                 <img
                     src="/img/logos/logo.png"
@@ -47,7 +46,6 @@ export default function RegisterForm() {
                 />
             </div>
 
-            {/* タイトル */}
             <div className="text-center mb-4">
                 <h1 className="text-xl sm:text-2xl font-semibold text-gray-700">
                     初めまして
@@ -57,7 +55,6 @@ export default function RegisterForm() {
 
             <div className="w-full max-w-sm sm:max-w-4xl mx-auto">
                 <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                    {/* タブ切り替え */}
                     <div className="flex justify-center">
                         <Link
                             href={route("login")}
@@ -70,11 +67,9 @@ export default function RegisterForm() {
                         </button>
                     </div>
 
-                    {/* フォーム */}
                     <div className="p-4 sm:p-6">
                         <form onSubmit={submit}>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {/* ユーザID */}
                                 <FormField
                                     id="login_id"
                                     label="ユーザID"
@@ -86,7 +81,6 @@ export default function RegisterForm() {
                                     error={errors.login_id}
                                 />
 
-                                {/* ニックネーム */}
                                 <FormField
                                     id="nickname"
                                     label="ニックネーム"
@@ -98,7 +92,6 @@ export default function RegisterForm() {
                                     error={errors.nickname}
                                 />
 
-                                {/* メールアドレス */}
                                 <FormField
                                     id="email"
                                     type="email"
@@ -111,7 +104,6 @@ export default function RegisterForm() {
                                     error={errors.email}
                                 />
 
-                                {/* 生年月日 */}
                                 <FormField
                                     id="birthday"
                                     type="date"
@@ -124,7 +116,6 @@ export default function RegisterForm() {
                                     error={errors.birthday}
                                 />
 
-                                {/* パスワード */}
                                 <PasswordField
                                     id="password"
                                     label="パスワード"
@@ -139,7 +130,6 @@ export default function RegisterForm() {
                                     }
                                 />
 
-                                {/* パスワード確認 */}
                                 <PasswordField
                                     id="password_confirmation"
                                     label="パスワード確認"
@@ -158,7 +148,6 @@ export default function RegisterForm() {
                                 />
                             </div>
 
-                            {/* ボタン */}
                             <div className="mt-4 flex items-center justify-between">
                                 <Link
                                     href={route("login")}

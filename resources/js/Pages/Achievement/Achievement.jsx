@@ -27,7 +27,7 @@ const Achievement = () => {
     const getAuthToken = () => {
         const token = localStorage.getItem("authToken");
         if (!token) {
-            console.error("Auth token is missing");
+            console.error("認証トークンが見つかりません");
         }
         return token;
     };
@@ -49,7 +49,7 @@ const Achievement = () => {
         datasets: [
             {
                 label: "達成数",
-                data: new Array(7).fill(0), // 初期状態では空のデータ
+                data: new Array(7).fill(0),
                 backgroundColor: "rgba(75, 192, 192, 0.2)",
                 borderColor: "rgba(75, 192, 192, 1)",
                 borderWidth: 1,
@@ -70,7 +70,6 @@ const Achievement = () => {
                 },
             });
             setAchievements(response.data.achievements);
-            // グラフのデータを更新
             const updatedData = response.data.achievements.reduce(
                 (acc, achievement) => {
                     const date = new Date(
@@ -115,7 +114,7 @@ const Achievement = () => {
 
     const formattedDate = selectedDate.toLocaleDateString("ja-JP");
 
-    // 日付と時間単位でアチーブメントをグループ化
+    // 日付と時間単位で達成数をグループ化
     const groupedAchievements = achievements.reduce((acc, achievement) => {
         const date = new Date(achievement.achieved_at).toLocaleDateString();
         const hour = new Date(achievement.achieved_at).getHours();
@@ -142,7 +141,6 @@ const Achievement = () => {
             <div className="bg-cream flex items-center justify-center p-4 min-h-screen sm:min-h-[calc(100vh-96px)]">
                 <div className="bg-white rounded-lg shadow-lg p-2 max-w-5xl w-full mb-4">
                     {" "}
-                    {/* 横幅を少し伸ばす */}
                     <div className="font-sans flex flex-col md:flex-row h-full">
                         <section className="w-full md:w-1/2 p-2 flex flex-col items-center justify-start">
                             <div className="flex items-center mb-4">
@@ -151,7 +149,7 @@ const Achievement = () => {
                                 </h1>
                                 <button
                                     className="bg-customBlue hover:bg-blue-400 text-white py-2 px-4 rounded"
-                                    onClick={() => setIsModalOpen(true)} // モーダルを開く
+                                    onClick={() => setIsModalOpen(true)}
                                 >
                                     移動
                                 </button>
@@ -177,7 +175,7 @@ const Achievement = () => {
                                     padding: "25px 15px 15px 15px",
                                     width: "85%",
                                     height: "320px",
-                                    overflowY: "auto", // スクロールを追加
+                                    overflowY: "auto",
                                 }}
                             >
                                 {Object.keys(groupedByWeek).map((date) => (
@@ -249,7 +247,6 @@ const Achievement = () => {
                             <div className="bg-white rounded-lg shadow-lg p-4 h-full w-full">
                                 <div className="relative w-full h-[400px]">
                                     {" "}
-                                    {/* ここで高さを調整 */}
                                     <Bar
                                         data={chartData}
                                         options={{

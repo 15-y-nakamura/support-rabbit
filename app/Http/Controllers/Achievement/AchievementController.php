@@ -6,60 +6,61 @@ use App\Http\Requests\Achievement\AchievementRequest;
 use Illuminate\Http\Request;
 use App\Models\Achievement;
 use App\Models\UserToken;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 
 class AchievementController extends Controller
 {
+    /**
+     * ユーザー認証処理（共通メソッド）
+     */
+    private function authenticateUser(Request $request): UserToken
+    {
+        $token = $request->bearerToken();
+
+        $userToken = UserToken::where('token', $token)
+                              ->where('expiration_time', '>', now())
+                              ->first();
+
+        if (!$userToken) {
+            Log::warning('【達成数】認証失敗: トークンが無効または期限切れ');
+            throw new \Exception('ユーザーが認証されていません');
+        }
+
+        return $userToken;
+    }
+
+    /**
+     * ユーザーのアチーブメントを取得
+     */
     public function index(Request $request)
     {
         try {
-            // トークンを使用してユーザーを認証
-            $token = $request->bearerToken();
-            Log::info('受信したトークン:', ['token' => $token]);
-            $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
+            $userToken = $this->authenticateUser($request);
 
-            if (!$userToken) {
-                throw new \Exception('ユーザーが認証されていません');
-            }
-
-            Log::info('認証されたユーザーID:', ['user_id' => $userToken->user_id]);
-
-            // 認証されたユーザーのアチーブメントを取得
             $achievements = Achievement::where('user_id', $userToken->user_id)->get();
-
-            Log::info('取得されたアチーブメント:', ['achievements' => $achievements]);
 
             return response()->json(['achievements' => $achievements], 200);
         } catch (\Exception $e) {
-            Log::error('アチーブメント取得エラー: ' . $e->getMessage(), ['exception' => $e]);
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => '達成データの取得に失敗しました'], 500);
         }
     }
 
-    public function store(AchievementRequest $req)
+    /**
+     * ユーザーのアチーブメントを保存
+     */
+    public function store(AchievementRequest $request)
     {
         try {
-            // トークンを使用してユーザーを認証
-            $token = $req->bearerToken();
-            Log::info('受信したトークン:', ['token' => $token]);
-            $userToken = UserToken::where('token', $token)->where('expiration_time', '>', now())->first();
+            $userToken = $this->authenticateUser($request);
 
-            if (!$userToken) {
-                throw new \Exception('ユーザーが認証されていません');
-            }
+            $validated = $request->validated();
 
-            Log::info('認証されたユーザーID:', ['user_id' => $userToken->user_id]);
-
-            $validated = $req->validated();
-            Log::info('バリデーション済みデータ:', $validated);
-
-            // achieved_at を現在の日時に設定
+            //データベースのフォーマットに合わせて日時を変換
             $validated['achieved_at'] = Carbon::now()->format('Y-m-d H:i:s');
 
-            // achievementsテーブルにデータを保存
             $achievement = Achievement::create([
                 'user_id' => $userToken->user_id,
                 'title' => $validated['title'],
@@ -68,15 +69,11 @@ class AchievementController extends Controller
                 'achieved_at' => $validated['achieved_at'],
             ]);
 
-            Log::info('作成されたアチーブメント:', ['achievement' => $achievement]);
-
             return response()->json(['message' => 'イベントが達成されました', 'achievement' => $achievement], 201);
         } catch (ValidationException $e) {
-            Log::error('バリデーションエラー: ' . $e->getMessage(), ['errors' => $e->errors()]);
-            return response()->json(['error' => $e->errors()], 422);
+            return response()->json(['error' => '入力データに誤りがあります'], 422);
         } catch (\Exception $e) {
-            Log::error('イベント達成エラー: ' . $e->getMessage(), ['exception' => $e]);
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'イベントの達成に失敗しました'], 500);
         }
     }
 }

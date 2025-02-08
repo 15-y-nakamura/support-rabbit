@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import EventModal from "../../../../Components/EventModal"; // 修正されたインポートパス
+import EventModal from "../../../../Components/EventModal";
 
 export default function ChangeDateModal({ isOpen, onClose, onDateChange }) {
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -28,7 +28,7 @@ export default function ChangeDateModal({ isOpen, onClose, onDateChange }) {
                         本日の日付: {new Date().toLocaleDateString("ja-JP")}
                     </div>
                     <button
-                        className="bg-pink-200 p-2 rounded-md text-white font-bold shadow-md"
+                        className="bg-customPink p-2 rounded-md text-white font-bold shadow-md"
                         onClick={handleTodayClick}
                     >
                         本日の日付に移動
@@ -60,7 +60,7 @@ export default function ChangeDateModal({ isOpen, onClose, onDateChange }) {
                         </select>
                     </div>
                     <button
-                        className="bg-pink-200 p-2 rounded-md text-white font-bold shadow-md mt-6"
+                        className="bg-customPink p-2 rounded-md text-white font-bold shadow-md mt-6"
                         onClick={handleDateChange}
                     >
                         移動

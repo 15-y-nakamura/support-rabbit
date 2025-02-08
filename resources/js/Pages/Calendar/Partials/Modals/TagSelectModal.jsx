@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import EventModal from "../../../../Components/EventModal"; // 修正されたインポートパス
-import ConfirmDeleteModal from "./ConfirmDeleteModal"; // 削除確認モーダル
+import EventModal from "../../../../Components/EventModal";
+import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 // 認証トークンを取得する関数
 const getAuthToken = () => {
@@ -63,7 +63,7 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
             );
             setTags(sortedTags);
         } catch (error) {
-            console.error("Error fetching tags:", error);
+            console.error("タグの取得中にエラーが発生しました:", error);
         } finally {
             setLoadingTags(false);
         }
@@ -78,7 +78,7 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
         try {
             const authToken = getAuthToken();
             if (!authToken) {
-                throw new Error("Auth token is missing");
+                throw new Error("認証トークンが見つかりません。");
             }
             const response = await axios.post(
                 "/api/v2/calendar/tags",
@@ -130,7 +130,7 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
             setTags(updatedTags);
             setSelectedTag(null);
         } catch (error) {
-            console.error("Error deleting tag:", error);
+            console.error("タグの削除中にエラーが発生しました:", error);
         }
     };
 
@@ -151,8 +151,6 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
             <EventModal isOpen={isOpen} onClose={onClose}>
                 <div className="flex flex-col space-y-4">
                     <h2 className="text-lg font-bold">タグ一覧</h2>
-
-                    {/* タグ選択レイアウトを修正 */}
                     <div className="grid grid-cols-3 gap-3 mb-4">
                         {loadingTags ? (
                             <div className="col-span-3 flex justify-center items-center">
@@ -193,7 +191,6 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
                         )}
                     </div>
 
-                    {/* ボタンを右寄せし、サイズ調整 */}
                     <div className="flex justify-end">
                         <button
                             type="button"
@@ -244,7 +241,6 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
                             </div>
                         )}
 
-                        {/* ボタンのレイアウトを整え、サイズを統一 */}
                         <div className="flex justify-end">
                             <button
                                 type="button"

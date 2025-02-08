@@ -11,7 +11,7 @@ import TagSelectModal from "./Partials/Modals/TagSelectModal";
 import DeleteEventModal from "./Partials/Modals/DeleteEventModal";
 import SearchModal from "./Partials/Modals/SearchModal";
 import EventList from "./Partials/UI/EventList";
-import ConfirmDeleteModal from "./Partials/Modals/ConfirmDeleteModal"; // ConfirmDeleteModalのインポート
+import ConfirmDeleteModal from "./Partials/Modals/ConfirmDeleteModal";
 
 export default function Calendar() {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -45,9 +45,9 @@ export default function Calendar() {
     };
 
     const fetchEvents = async () => {
-        setIsLoading(true); // ローディング開始
+        setIsLoading(true);
         try {
-            const authToken = getAuthToken(); // トークンを取得
+            const authToken = getAuthToken();
             const [
                 eventsResponse,
                 weekdayResponse,
@@ -58,22 +58,22 @@ export default function Calendar() {
             ] = await Promise.all([
                 axios.get("/api/v2/calendar/events", {
                     params: { searchQuery, tagId: selectedTag },
-                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                    headers: { Authorization: `Bearer ${authToken}` },
                 }),
                 axios.get("/api/v2/calendar/weekday-events", {
-                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                    headers: { Authorization: `Bearer ${authToken}` },
                 }),
                 axios.get("/api/v2/calendar/weekend-events", {
-                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                    headers: { Authorization: `Bearer ${authToken}` },
                 }),
                 axios.get("/api/v2/calendar/weekly-events", {
-                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                    headers: { Authorization: `Bearer ${authToken}` },
                 }),
                 axios.get("/api/v2/calendar/monthly-events", {
-                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                    headers: { Authorization: `Bearer ${authToken}` },
                 }),
                 axios.get("/api/v2/calendar/yearly-events", {
-                    headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                    headers: { Authorization: `Bearer ${authToken}` },
                 }),
             ]);
 
@@ -103,35 +103,35 @@ export default function Calendar() {
         } catch (error) {
             console.error("Error fetching events:", error);
         } finally {
-            setIsLoading(false); // ローディング終了
+            setIsLoading(false);
         }
     };
 
-    const handleEventCreated = (newEvent) => {
-        fetchEvents(); // イベントを再取得
+    // 共通のイベントハンドラー関数
+    const handleEventAction = (message) => {
+        fetchEvents();
         setIsModalOpen(false);
-        setNotification("イベントが作成されました。");
+        setNotification(message);
+    };
+
+    const handleEventCreated = (newEvent) => {
+        handleEventAction("イベントが作成されました。");
     };
 
     const handleEventUpdated = (updatedEvent) => {
-        fetchEvents(); // イベントを再取得
-        setIsModalOpen(false);
-        setNotification("イベントが更新されました。");
+        handleEventAction("イベントが更新されました。");
     };
 
     const handleEventDeleted = (deletedEventId) => {
-        fetchEvents(); // イベントを再取得
-        setNotification("イベントが削除されました。");
+        handleEventAction("イベントが削除されました。");
     };
 
     const handleEventTagDeleted = () => {
-        fetchEvents(); // イベントを再取得
-        setNotification("タグが削除されました。");
+        handleEventAction("タグが削除されました。");
     };
 
     const handleEventAchieved = (achievedEventId) => {
-        fetchEvents(); // イベントを再取得
-        setNotification("イベントが達成されました。");
+        handleEventAction("イベントが達成されました。");
     };
 
     const handleSearch = async (query, tagQuery) => {
@@ -139,22 +139,26 @@ export default function Calendar() {
             const authToken = getAuthToken();
             const response = await axios.get("/api/v2/calendar/events", {
                 params: { searchQuery: query, tagId: tagQuery },
-                headers: { Authorization: `Bearer ${authToken}` }, // トークンをヘッダーに追加
+                headers: { Authorization: `Bearer ${authToken}` },
             });
             return response.data.events;
         } catch (error) {
-            console.error("Error searching events:", error);
+            console.error("イベントの検索中にエラーが発生しました:", error);
             return [];
         }
     };
 
+    // タグが選択されたときに呼び出される関数
     const handleTagSelected = (tagId) => {
         setSelectedTag(tagId);
     };
 
+    // 日付がクリックされたときに呼び出される関数
     const handleDateClick = (date) => {
         setSelectedDate(date);
         setSelectedEvents([]); // 他の日付を選択したときに現在選択されているデータを空にする
+
+        // クリックされた日付に関連するイベントをフィルタリング
         const dayEvents = events.filter((event) => {
             const eventStart = new Date(event.start_time);
             const eventEnd = new Date(event.end_time || event.start_time);
@@ -167,6 +171,7 @@ export default function Calendar() {
         setSelectedDateEvents(dayEvents);
     };
 
+    // イベントが選択されたときに呼び出される関数
     const handleEventSelect = (eventId) => {
         setSelectedEvents((prevSelected) =>
             prevSelected.includes(eventId)
@@ -175,10 +180,13 @@ export default function Calendar() {
         );
     };
 
+    // 選択されたイベントを削除するための関数
     const handleDeleteSelectedEvents = () => {
         setShowDeleteConfirmation(true);
     };
+
     // 選択されたイベントが weekday イベントとそれ以外のイベントが混在しているかどうかを判定
+    // これは、異なる種類の繰り返しイベントが混在している場合に、特定の処理を行うために使用されます。
     const isMixedSelection = (() => {
         let hasWeekdayEvent = false;
         let hasWeekendEvent = false;
@@ -191,6 +199,7 @@ export default function Calendar() {
         let hasNonMonthlyEvent = false;
         let hasNonYearlyEvent = false;
 
+        // 選択されたイベントをループして、各イベントの recurrence_type を確認
         for (let i = 0; i < selectedEvents.length; i++) {
             const eventId = selectedEvents[i];
             const event = events.find((event) => event.id === eventId);
@@ -230,6 +239,7 @@ export default function Calendar() {
             }
         }
 
+        // 最後に、混在しているかどうかを判定して返す
         return (
             (hasWeekdayEvent && hasNonWeekdayEvent) ||
             (hasWeekendEvent && hasNonWeekendEvent) ||
@@ -239,16 +249,19 @@ export default function Calendar() {
         );
     })();
 
+    // イベントの詳細を表示するための関数
     const handleEventDetail = (event) => {
         setSelectedEvent(event);
         setIsModalOpen(true);
     };
 
+    // 新しいイベントを作成するための関数
     const handleCreateEvent = () => {
         setSelectedEvent(null);
         setIsModalOpen(true);
     };
 
+    // 前の月を表示するための関数
     const handlePrevMonth = () => {
         setCurrentDate(
             new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
@@ -256,6 +269,7 @@ export default function Calendar() {
         setSelectedDateEvents([]); // 他の月を選択したときにリセット
     };
 
+    // 次の月を表示するための関数
     const handleNextMonth = () => {
         setCurrentDate(
             new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)

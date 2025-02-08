@@ -26,7 +26,7 @@ class CreateWeeklyEventsTable extends Migration
             $table->foreignId('tag_id')->nullable()->constrained('calendar_tags')->onDelete('set null'); // タグの外部キー
             $table->text('note')->nullable();
             $table->enum('recurrence_type', ['none', 'weekday', 'weekend', 'weekly', 'monthly', 'yearly'])->default('weekly'); // 繰り返しの種類
-            $table->json('recurrence_days')->nullable(); // 繰り返しの曜日
+            $table->json('recurrence_days')->nullable(); 
             $table->timestamps();
         });
     }

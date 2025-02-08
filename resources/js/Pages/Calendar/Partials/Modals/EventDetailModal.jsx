@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import EditEventForm from "../Forms/EditEventForm"; // Import the EditEventForm component
+import EditEventForm from "../Forms/EditEventForm";
 
 export default function EventDetailModal({ event, onEdit, onClose }) {
-    const [isEditing, setIsEditing] = useState(false); // State to handle edit mode
-    const [tag, setTag] = useState(null); // State to store tag information
-    const [isLoading, setIsLoading] = useState(false); // State to handle loading
-    const [tagNotFound, setTagNotFound] = useState(false); // State to handle tag not found
+    const [isEditing, setIsEditing] = useState(false);
+    const [tag, setTag] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [tagNotFound, setTagNotFound] = useState(false);
 
     const handleEditClick = () => {
         setIsEditing(true);
