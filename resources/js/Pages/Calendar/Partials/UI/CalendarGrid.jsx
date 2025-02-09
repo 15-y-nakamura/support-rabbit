@@ -1,14 +1,62 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+const getAuthToken = () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+        console.error("認証トークンが見つかりません。");
+    }
+    return token;
+};
 
 export default function CalendarGrid({ currentDate, events, handleDateClick }) {
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [userBirthday, setUserBirthday] = useState(null);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
+    useEffect(() => {
+        const fetchUserBirthday = async () => {
+            const token = getAuthToken();
+            try {
+                const response = await axios.get("/api/v2/profile", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const birthday = new Date(response.data.user.birthday);
+                // UTCからJSTに変換
+                const jstBirthday = new Date(
+                    birthday.getTime() + 9 * 60 * 60 * 1000
+                );
+                setUserBirthday({
+                    month: jstBirthday.getMonth() + 1,
+                    day: jstBirthday.getDate(),
+                });
+            } catch (error) {
+                console.error(
+                    "ユーザー情報の取得中にエラーが発生しました:",
+                    error
+                );
+            }
+        };
+
+        fetchUserBirthday();
+    }, []);
 
     // currentDateが変更されたときにselectedDateを更新
     useEffect(() => {
         setSelectedDate(currentDate);
     }, [currentDate]);
+
+    const isBirthday = (date) => {
+        if (!userBirthday) return false;
+        const dateJST = new Date(
+            date.toLocaleString("en-US", { timeZone: "Asia/Tokyo" })
+        );
+        return (
+            dateJST.getMonth() + 1 === userBirthday.month &&
+            dateJST.getDate() === userBirthday.day
+        );
+    };
 
     // 現在の月の日数を取得
     const daysInMonth = new Date(
@@ -75,6 +123,7 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
         const isSelected =
             selectedDate && selectedDate.getTime() === currentDay.getTime();
         const isToday = today.getTime() === currentDay.getTime();
+        const isBirthdayToday = isBirthday(currentDay);
 
         let borderClass = "";
         if (isSelected) {
@@ -99,7 +148,16 @@ export default function CalendarGrid({ currentDate, events, handleDateClick }) {
                     width: "calc(100% - 4px)",
                 }}
             >
-                <div className="text-sm">{i}</div>
+                <div className="text-sm flex items-center">
+                    {i}
+                    {isBirthdayToday && (
+                        <img
+                            src="/img/icons/birthday-icon.png"
+                            alt="誕生日アイコン"
+                            className="w-4 h-4 ml-1"
+                        />
+                    )}
+                </div>
                 {dayEvents.length > 0 && (
                     <img
                         src="/img/icons/event_icon.png"

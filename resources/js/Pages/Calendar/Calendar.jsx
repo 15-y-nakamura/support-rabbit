@@ -39,7 +39,7 @@ export default function Calendar() {
     const getAuthToken = () => {
         const token = localStorage.getItem("authToken");
         if (!token) {
-            console.error("Auth token is missing");
+            console.error("認証トークンが見つかりません");
         }
         return token;
     };

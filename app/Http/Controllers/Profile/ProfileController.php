@@ -9,8 +9,10 @@ use App\Http\Requests\Profile\ProfileUpdateRequest;
 use App\Http\Requests\Profile\PasswordUpdateRequest;
 use App\Http\Requests\Profile\DeleteProfileRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
+use App\Models\UserToken;
 
 class ProfileController extends Controller
 {
@@ -25,19 +27,38 @@ class ProfileController extends Controller
     }
 
     /**
-     * ユーザープロフィールを取得（API用）
+     * ユーザー認証処理（共通メソッド）
+     */
+    private function authenticateUser(Request $request): UserToken
+    {
+        $token = $request->bearerToken();
+        $userToken = UserToken::where('token', $token)
+                              ->where('expiration_time', '>', now())
+                              ->first();
+
+        if (!$userToken) {
+            Log::warning('【プロフィール】認証失敗: トークンが無効または期限切れ');
+            throw new \Exception('ユーザーが認証されていません');
+        }
+
+        return $userToken;
+    }
+
+    /**
+     * ユーザープロフィールを取得
      */
     public function show(ProfileShowRequest $request)
     {
-        $user = $request->user();
+        try {
+            $userToken = $this->authenticateUser($request);
+            $user = $userToken->user;
 
-        if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json([
+                'user' => $user->user_info()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'ユーザが見つかりません'], 401);
         }
-
-        return response()->json([
-            'user' => $user->user_info()
-        ]);
     }
 
     /**
