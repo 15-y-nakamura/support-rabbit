@@ -18,6 +18,7 @@ export default function DeleteEventModal({
     const [showRelated, setShowRelated] = useState({});
     // 削除処理中かどうかを保持するステート
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isFetching, setIsFetching] = useState(false); // データ取得中かどうかを保持するステート
 
     // 認証トークンを取得する関数
     const getAuthToken = () => {
@@ -31,7 +32,8 @@ export default function DeleteEventModal({
     // モーダルが開いたときに関連イベントを取得し、全てのチェックボックスにチェックを入れる
     useEffect(() => {
         if (isOpen) {
-            fetchRelatedEvents();
+            setIsFetching(true); // データ取得開始
+            fetchRelatedEvents().finally(() => setIsFetching(false)); // データ取得終了
         }
     }, [isOpen]);
 
@@ -77,13 +79,6 @@ export default function DeleteEventModal({
                         headers: { Authorization: `Bearer ${token}` },
                     }),
                 ]);
-
-                // レスポンスデータの形式を確認するためのログを追加
-                console.log("weekdayResponse:", weekdayResponse.data);
-                console.log("weekendResponse:", weekendResponse.data);
-                console.log("weeklyResponse:", weeklyResponse.data);
-                console.log("monthlyResponse:", monthlyResponse.data);
-                console.log("yearlyResponse:", yearlyResponse.data);
 
                 related[eventId] = [
                     ...weekdayResponse.data.events.filter(
@@ -464,17 +459,27 @@ export default function DeleteEventModal({
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded shadow-lg relative max-w-md w-full max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-                <button
-                    type="button"
-                    onClick={onClose}
-                    className="absolute top-0 right-0 mt-2 mr-2 text-gray-600"
-                >
-                    &times;
-                </button>
+                {!isDeleting && (
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="absolute top-0 right-0 mt-2 mr-2 text-gray-600"
+                    >
+                        &times;
+                    </button>
+                )}
                 <div className="space-y-4">
-                    {isDeleting ? (
-                        <div className="flex justify-center items-center">
+                    {isFetching ? (
+                        <div className="flex flex-col justify-center items-center">
                             <div className="w-16 h-16 border-8 border-gray-200 border-t-pink-400 rounded-full animate-spin"></div>
+                            <p className="mt-4 text-gray-700">
+                                データを取得中...
+                            </p>
+                        </div>
+                    ) : isDeleting ? (
+                        <div className="flex flex-col justify-center items-center">
+                            <div className="w-16 h-16 border-8 border-gray-200 border-t-pink-400 rounded-full animate-spin"></div>
+                            <p className="mt-4 text-red-700">削除中...</p>
                         </div>
                     ) : (
                         <>

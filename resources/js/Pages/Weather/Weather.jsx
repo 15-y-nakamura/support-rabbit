@@ -53,24 +53,6 @@ const cities = [
     { name: "京都", lat: 35.0211, lon: 135.7556 },
 ];
 
-const Notification = ({ message, type, onClose }) => {
-    return (
-        <div
-            className={`fixed bottom-0 left-0 right-0 p-4 ${
-                type === "error" ? "bg-red-600" : "bg-green-600"
-            } text-white text-center`}
-        >
-            {message}
-            <button
-                className="ml-4 bg-transparent border-none text-white"
-                onClick={onClose}
-            >
-                &times;
-            </button>
-        </div>
-    );
-};
-
 const Weather = () => {
     const [weatherData, setWeatherData] = useState(null);
     const [currentLocation, setCurrentLocation] = useState(null);
@@ -79,7 +61,6 @@ const Weather = () => {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [map, setMap] = useState(null);
     const [markers, setMarkers] = useState([]);
-    const [notification, setNotification] = useState({ message: "", type: "" });
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(
@@ -91,8 +72,7 @@ const Weather = () => {
                     longitude,
                     setWeatherData,
                     setSelectedCityWeather,
-                    apiKey,
-                    (message, type) => setNotification({ message, type })
+                    apiKey
                 );
                 initializeMap(
                     latitude,
@@ -147,12 +127,7 @@ const Weather = () => {
                                             setSelectedCityWeather,
                                             map,
                                             cities,
-                                            apiKey,
-                                            (message, type) =>
-                                                setNotification({
-                                                    message,
-                                                    type,
-                                                })
+                                            apiKey
                                         )
                                     }
                                 >
@@ -206,13 +181,6 @@ const Weather = () => {
                 selectedCityWeather={selectedCityWeather}
                 selectedCity={selectedCity}
             />
-            {notification.message && (
-                <Notification
-                    message={notification.message}
-                    type={notification.type}
-                    onClose={() => setNotification({ message: "", type: "" })}
-                />
-            )}
         </HeaderSidebarLayout>
     );
 };

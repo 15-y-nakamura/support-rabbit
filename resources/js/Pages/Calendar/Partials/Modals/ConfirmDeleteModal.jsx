@@ -15,7 +15,6 @@ export default function ConfirmDeleteModal({
         setIsDeleting(true);
         if (relatedEvents.length === 0 || allSelected) {
             await onConfirm();
-            window.location.href = "/user/calendar";
         }
         setIsDeleting(false);
         onClose();

@@ -123,7 +123,6 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                 "/api/v2/calendar/events",
                 {
                     title,
-                    note,
                     start_time: eventStartTime,
                     end_time: eventEndTime,
                     is_recurring: recurrenceType === "none" ? 0 : isRecurring,
@@ -731,21 +730,30 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                 />
                 <InputError message={errors.note} className="mt-2" />
             </div>
-            <button
-                type="submit"
-                className={`bg-customPink text-white p-2 rounded shadow-md ${
-                    isSubmitDisabled() ? "bg-gray-400 cursor-not-allowed" : ""
-                }`}
-                disabled={isSubmitDisabled() || isSubmitting}
-            >
-                {isSubmitting ? (
-                    <div className="loader">作成中...</div>
-                ) : (
-                    "作成"
-                )}
-            </button>
+            <div className="text-right">
+                <button
+                    type="submit"
+                    className={`bg-customPink text-white p-2 rounded shadow-md ${
+                        isSubmitDisabled()
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : ""
+                    }`}
+                    disabled={isSubmitDisabled() || isSubmitting}
+                >
+                    {isSubmitting ? (
+                        <div className="flex items-center">
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                            作成中...
+                        </div>
+                    ) : (
+                        "作成"
+                    )}
+                </button>
+            </div>
             {errorMessage && (
-                <div className="text-red-500 mt-2">{errorMessage}</div>
+                <div className="text-red-500 mt-2 text-right">
+                    {errorMessage}
+                </div>
             )}
         </form>
     );

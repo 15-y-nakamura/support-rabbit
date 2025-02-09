@@ -101,7 +101,7 @@ export default function Calendar() {
             });
             setSelectedDateEvents(dayEvents);
         } catch (error) {
-            console.error("Error fetching events:", error);
+            console.error("イベントの取得中にエラーが発生しました:", error);
         } finally {
             setIsLoading(false);
         }
@@ -114,15 +114,11 @@ export default function Calendar() {
         setNotification(message);
     };
 
-    const handleEventCreated = (newEvent) => {
+    const handleEventCreated = () => {
         handleEventAction("イベントが作成されました。");
     };
 
-    const handleEventUpdated = (updatedEvent) => {
-        handleEventAction("イベントが更新されました。");
-    };
-
-    const handleEventDeleted = (deletedEventId) => {
+    const handleEventDeleted = () => {
         handleEventAction("イベントが削除されました。");
     };
 
@@ -130,9 +126,20 @@ export default function Calendar() {
         handleEventAction("タグが削除されました。");
     };
 
-    const handleEventAchieved = (achievedEventId) => {
+    const handleEventAchieved = () => {
         handleEventAction("イベントが達成されました。");
     };
+
+    // 通知メッセージの表示時間を設定
+    useEffect(() => {
+        if (notification) {
+            const timer = setTimeout(() => {
+                setNotification("");
+            }, 5000); // 5秒後に非表示にする
+
+            return () => clearTimeout(timer);
+        }
+    }, [notification]);
 
     const handleSearch = async (query, tagQuery) => {
         try {
@@ -359,35 +366,34 @@ export default function Calendar() {
                                         handleDeleteSelectedEvents
                                     }
                                     handleEventDetail={handleEventDetail}
-                                    fetchEvents={fetchEvents} // fetchEvents関数を渡す
-                                    handleEventAchieved={handleEventAchieved} // handleEventAchieved関数を渡す
+                                    fetchEvents={fetchEvents}
+                                    handleEventAchieved={handleEventAchieved}
                                 />
                             </div>
                         </div>
                     </div>
-                    {notification && (
-                        <div className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded shadow-md">
-                            {notification}
-                        </div>
-                    )}
+                    <div>
+                        {notification && (
+                            <div className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded shadow-md flex items-center">
+                                <img
+                                    src="/img/icons/rabbit-icon.png"
+                                    alt="アイコン"
+                                    className="w-6 h-6 mr-2"
+                                />
+                                {notification}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
             <EventModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
             >
-                {selectedEvent ? (
-                    <EditEventForm
-                        event={selectedEvent}
-                        onEventUpdated={handleEventUpdated}
-                        onEventDeleted={handleEventDeleted}
-                    />
-                ) : (
-                    <CreateEventForm
-                        onEventCreated={handleEventCreated}
-                        selectedDate={selectedDate}
-                    />
-                )}
+                <CreateEventForm
+                    onEventCreated={handleEventCreated}
+                    selectedDate={selectedDate}
+                />
             </EventModal>
             <DeleteEventModal
                 isOpen={showDeleteConfirmation}
@@ -420,7 +426,7 @@ export default function Calendar() {
             <ConfirmDeleteModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
-                onConfirm={handleEventTagDeleted} // handleEventTagDeleted関数を渡す
+                onConfirm={handleEventTagDeleted}
             />
         </HeaderSidebarLayout>
     );

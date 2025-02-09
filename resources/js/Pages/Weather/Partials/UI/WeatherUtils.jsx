@@ -6,8 +6,7 @@ export const fetchWeatherData = async (
     lon,
     setWeatherData,
     setSelectedCityWeather,
-    apiKey,
-    setNotification
+    apiKey
 ) => {
     const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=ja&appid=${apiKey}`;
     try {
@@ -24,8 +23,7 @@ export const fetchCityWeatherData = async (
     lat,
     lon,
     setSelectedCityWeather,
-    apiKey,
-    setNotification
+    apiKey
 ) => {
     const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=ja&appid=${apiKey}`;
     try {
@@ -42,8 +40,7 @@ export const fetchCurrentLocationWeatherData = async (
     lon,
     setWeatherData,
     setSelectedCityWeather,
-    apiKey,
-    setNotification
+    apiKey
 ) => {
     const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=ja&appid=${apiKey}`;
     try {

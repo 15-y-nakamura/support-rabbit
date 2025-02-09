@@ -25,6 +25,19 @@ export default function EventList({
     const [missingTags, setMissingTags] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    const getFormattedDate = () => {
+        if (selectedDateEvents.length > 0) {
+            const date = new Date(selectedDateEvents[0].start_time);
+            return date.toLocaleDateString("ja-JP", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                weekday: "long",
+            });
+        }
+        return "";
+    };
+
     useEffect(() => {
         const fetchTags = async () => {
             setIsLoading(true);
@@ -57,7 +70,7 @@ export default function EventList({
                 }, {});
                 setTags(tagsData);
             } catch (error) {
-                console.error("Error fetching tags:", error);
+                console.error("タグの取得中にエラーが発生しました:", error);
             } finally {
                 setIsLoading(false);
             }
@@ -119,7 +132,6 @@ export default function EventList({
                     break;
             }
             const event = selectedDateEvents.find((e) => e.id === eventId);
-            console.log("Achieving event:", event);
             const authToken = getAuthToken();
             await axios.post(
                 "/api/v2/achievements",
@@ -141,7 +153,7 @@ export default function EventList({
             fetchEvents(); // イベントを再取得
             handleEventAchieved(eventId); // イベント達成時の関数を呼び出す
         } catch (error) {
-            console.error("Error achieving event:", error);
+            console.error("イベントの達成処理中にエラーが発生しました:", error);
         }
     };
 
@@ -156,6 +168,9 @@ export default function EventList({
                 <>
                     <div className="flex justify-between items-center mb-2">
                         <h2 className="text-lg font-bold">予定一覧</h2>
+                        <span className="text-gray-600">
+                            {getFormattedDate()}
+                        </span>
                         <button
                             className={`${
                                 selectedEvents.length === 0

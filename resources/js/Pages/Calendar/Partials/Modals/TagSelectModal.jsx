@@ -129,6 +129,7 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
             const updatedTags = tags.filter((tag) => tag.id !== selectedTag.id);
             setTags(updatedTags);
             setSelectedTag(null);
+            onTagSelected(null); // タグが削除されたことを通知
         } catch (error) {
             console.error("タグの削除中にエラーが発生しました:", error);
         }
@@ -250,7 +251,8 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
                             >
                                 {isCreating ? (
                                     <div className="flex justify-center">
-                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                                        作成中...
                                     </div>
                                 ) : (
                                     "作成"
@@ -266,6 +268,7 @@ export default function TagSelectModal({ isOpen, onClose, onTagSelected }) {
                 onConfirm={() => {
                     handleTagDelete();
                     closeConfirmDeleteModal();
+                    onClose();
                 }}
             />
         </>
