@@ -10,9 +10,6 @@ class LogoutController extends Controller
 {
     /**
      * Webログアウト処理
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function logout(Request $request)
     {
@@ -27,9 +24,6 @@ class LogoutController extends Controller
 
     /**
      * APIログアウト処理
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function apiLogout(Request $request)
     {

@@ -17,17 +17,35 @@ class YearlyEventRequest extends FormRequest
     {
         return [
             'event_id' => 'required|integer|exists:calendar_events,id',
-            // 'user_id' => 'required|integer|exists:users,id',
-            'title' => 'required|string|max:50', // タイトルは50文字以内
+            'title' => 'required|string|max:30',
             'start_time' => 'required|date_format:Y-m-d\TH:i|before_or_equal:end_time',
             'end_time' => 'nullable|date_format:Y-m-d\TH:i|after_or_equal:start_time',
             'all_day' => 'required|boolean',
-            'notification' => 'nullable|string|max:100', // 通知は100文字以内
-            'location' => 'nullable|string|max:100', // 場所は100文字以内
-            'link' => 'nullable|url|max:500', // リンクは500文字以内
-            'tag_id' => 'nullable|exists:calendar_tags,id', // タグの外部キー
-            'description' => 'nullable|string|max:1000', // 説明は1000文字以内
+            'location' => 'nullable|string|max:100',
+            'link' => 'nullable|url|max:500',
+            'tag_id' => 'nullable|exists:calendar_tags,id',
+            'note' => 'nullable|string|max:1000',
             'recurrence_type' => 'required|in:none,weekday,weekend,weekly,monthly,yearly',
+            'recurrence_date' => [
+                'nullable',
+                'string',
+                'regex:/^\d{1,2}\/\d{1,2}$/',
+                function ($attribute, $value, $fail) {
+                    if ($value) {
+                        $startDate = new \DateTime($this->input('start_time'));
+                        $endDate = new \DateTime($this->input('end_time'));
+                        list($month, $day) = explode('/', $value);
+                        $recurrenceDate = \DateTime::createFromFormat('Y-m-d', $startDate->format('Y') . '-' . $month . '-' . $day);
+
+                        if ($recurrenceDate < $startDate || $recurrenceDate > $endDate) {
+                            $fail(json_encode([
+                                "code" => "post_recurrence_date_out_of_range",
+                                "description" => "繰り返しの日付は開始日と終了日の範囲内である必要があります"
+                            ]));
+                        }
+                    }
+                },
+            ],
         ];
     }
 
@@ -44,7 +62,7 @@ class YearlyEventRequest extends FormRequest
             ]),
             'title.max' => json_encode([
                 "code" => "post_title_max",
-                "description" => "タイトルは50文字以内である必要があります"
+                "description" => "タイトルは30文字以内である必要があります"
             ]),
             'start_time.required' => json_encode([
                 "code" => "post_start_time_required",
@@ -70,14 +88,6 @@ class YearlyEventRequest extends FormRequest
                 "code" => "post_all_day_boolean",
                 "description" => "終日フラグは真偽値である必要があります"
             ]),
-            'notification.string' => json_encode([
-                "code" => "post_notification_string",
-                "description" => "通知は文字列である必要があります"
-            ]),
-            'notification.max' => json_encode([
-                "code" => "post_notification_max",
-                "description" => "通知は100文字以内である必要があります"
-            ]),
             'location.string' => json_encode([
                 "code" => "post_location_string",
                 "description" => "場所は文字列である必要があります"
@@ -98,13 +108,13 @@ class YearlyEventRequest extends FormRequest
                 "code" => "post_tag_id_exists",
                 "description" => "指定されたタグIDは存在しません"
             ]),
-            'description.string' => json_encode([
-                "code" => "post_description_string",
-                "description" => "説明は文字列である必要があります"
+            'note.string' => json_encode([
+                "code" => "post_note_string",
+                "description" => "メモは文字列である必要があります"
             ]),
-            'description.max' => json_encode([
-                "code" => "post_description_max",
-                "description" => "説明は1000文字以内である必要があります"
+            'note.max' => json_encode([
+                "code" => "post_note_max",
+                "description" => "メモは1000文字以内である必要があります"
             ]),
             'recurrence_type.required' => json_encode([
                 "code" => "post_recurrence_type_required",
@@ -114,31 +124,41 @@ class YearlyEventRequest extends FormRequest
                 "code" => "post_recurrence_type_in",
                 "description" => "繰り返しの種類は有効な値である必要があります"
             ]),
+            'recurrence_date.string' => json_encode([
+                "code" => "post_recurrence_date_string",
+                "description" => "繰り返しの日付は文字列である必要があります"
+            ]),
+            'recurrence_date.regex' => json_encode([
+                "code" => "post_recurrence_date_regex",
+                "description" => "繰り返しの日付はMM/DD形式である必要があります"
+            ]),
+            'recurrence_date.out_of_range' => json_encode([
+                "code" => "post_recurrence_date_out_of_range",
+                "description" => "繰り返しの日付は開始日と終了日の範囲内である必要があります"
+            ]),
         ];
     }
 
     protected function failedValidation(Validator $validator)
     {
-        // フィールドごとにエラーメッセージを構築
-        $errors = $validator->errors()->getMessages();
-        $response = [];
-    
-        foreach ($errors as $field => $messages) {
-            $response[$field] = array_map(function ($message) {
+        $validationErrors = $validator->errors()->getMessages();
+        $formattedErrors = [];
+
+        foreach ($validationErrors as $field => $messages) {
+            $formattedErrors[$field] = array_map(function ($message) {
                 $decodedMessage = json_decode($message, true);
                 return $decodedMessage['description'] ?? $message;
             }, $messages);
         }
-    
+
         if ($this->expectsJson()) {
             throw new HttpResponseException(
-                response()->json(['errors' => $response], 422)
+                response()->json(['errors' => $formattedErrors], 422)
             );
         }
-    
-        // HTMLリクエストの場合のリダイレクト
+
         throw new HttpResponseException(
-            back()->withErrors($response)->withInput()
+            back()->withErrors($formattedErrors)->withInput()
         );
     }
 }

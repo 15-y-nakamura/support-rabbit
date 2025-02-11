@@ -7,47 +7,36 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import CircularProgress from "@mui/material/CircularProgress";
-import axios from "axios";
 
 export default function LoginForm() {
-    const { data, setData, processing, errors, setError, reset } = useForm({
+    const { data, setData, errors, setError, post, processing } = useForm({
         login_id: "",
         password: "",
     });
 
-    const [passwordType, setPasswordType] = useState("password");
+    const [showPassword, setShowPassword] = useState(false);
 
+    // パスワードの可視化トグル
     const togglePasswordVisibility = () => {
-        setPasswordType((prevType) =>
-            prevType === "password" ? "text" : "password"
-        );
+        setShowPassword((prev) => !prev);
     };
 
-    const login = async (loginData) => {
-        try {
-            const response = await axios.post(route("login"), loginData);
-            const { token } = response.data;
-            localStorage.setItem("authToken", token); // トークンをローカルストレージに保存
-            console.log("Logged in successfully:", response.data);
-            reset("password");
-            window.location.href = "/user/calendar"; // ログイン成功後にカレンダーにリダイレクト
-        } catch (error) {
-            console.error("Error logging in:", error);
-            if (error.response && error.response.data.errors) {
-                setError(
-                    "login",
-                    error.response.data.errors.login ||
-                        "ログインに失敗しました。"
-                );
-            } else {
-                setError("login", "ログインに失敗しました。");
-            }
-        }
-    };
-
-    const submit = (e) => {
+    const submit = async (e) => {
         e.preventDefault();
-        login(data);
+        post(route("login"), {
+            onSuccess: (page) => {
+                const { token } = page.props;
+                localStorage.setItem("authToken", token);
+                window.location.href = "/user/calendar";
+            },
+            onError: (error) => {
+                if (error.response && error.response.data.errors) {
+                    Object.keys(error.response.data.errors).forEach((field) => {
+                        setError(field, error.response.data.errors[field]);
+                    });
+                }
+            },
+        });
     };
 
     return (
@@ -60,12 +49,14 @@ export default function LoginForm() {
                     style={{ width: "125px", height: "125px" }}
                 />
             </div>
+
             <div className="text-center mb-4">
                 <h1 className="text-xl sm:text-2xl font-semibold text-gray-700">
                     こんにちは
                 </h1>
             </div>
             <Head title="ログイン" />
+
             <div className="w-full max-w-sm sm:max-w-md mx-auto">
                 <div className="bg-white shadow-md rounded-lg overflow-hidden">
                     <div className="flex justify-center">
@@ -79,81 +70,36 @@ export default function LoginForm() {
                             新規登録
                         </Link>
                     </div>
+
                     <div className="p-4 sm:p-6">
                         <form onSubmit={submit}>
-                            <div className="mt-2">
-                                <InputLabel
-                                    htmlFor="login_id"
-                                    value="ユーザID"
-                                />
-                                <TextInput
-                                    id="login_id"
-                                    name="login_id"
-                                    value={data.login_id}
-                                    className="mt-1 block w-full"
-                                    autoComplete="username"
-                                    onChange={(e) =>
-                                        setData("login_id", e.target.value)
-                                    }
-                                    required
-                                    placeholder="ユーザID"
-                                />
-                                <InputError
-                                    message={errors.login_id}
-                                    className="mt-2"
-                                />
-                            </div>
+                            <FormField
+                                id="login_id"
+                                label="ユーザID"
+                                placeholder="ユーザID"
+                                value={data.login_id}
+                                onChange={(e) =>
+                                    setData("login_id", e.target.value)
+                                }
+                                error={errors.login_id}
+                            />
 
-                            <div className="mt-4">
-                                <InputLabel
-                                    htmlFor="password"
-                                    value="パスワード"
-                                />
-                                <div className="relative">
-                                    <TextInput
-                                        id="password"
-                                        type={passwordType}
-                                        name="password"
-                                        value={data.password}
-                                        className="mt-1 block w-full"
-                                        autoComplete="current-password"
-                                        onChange={(e) =>
-                                            setData("password", e.target.value)
-                                        }
-                                        required
-                                        placeholder="パスワード"
-                                    />
-                                    <div
-                                        className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-                                        onClick={togglePasswordVisibility}
-                                        style={{
-                                            width: "32px",
-                                            height: "100%",
-                                        }}
-                                    >
-                                        {passwordType === "password" ? (
-                                            <VisibilityOffIcon
-                                                style={{ fontSize: 24 }}
-                                            />
-                                        ) : (
-                                            <VisibilityIcon
-                                                style={{ fontSize: 24 }}
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-                                <InputError
-                                    message={errors.password}
-                                    className="mt-2"
-                                />
-                            </div>
+                            <PasswordField
+                                id="password"
+                                label="パスワード"
+                                value={data.password}
+                                onChange={(e) =>
+                                    setData("password", e.target.value)
+                                }
+                                error={errors.password}
+                                isVisible={showPassword}
+                                toggleVisibility={togglePasswordVisibility}
+                            />
 
-                            {/* 認証エラーを個別に表示 */}
-                            {errors.login && (
-                                <div className="text-red-500 text-sm mt-2">
-                                    {errors.login}
-                                </div>
-                            )}
+                            <InputError
+                                message={errors.login}
+                                className="mt-2"
+                            />
 
                             <div className="mt-4 flex items-center justify-between">
                                 <Link
@@ -184,3 +130,63 @@ export default function LoginForm() {
         </div>
     );
 }
+
+const FormField = ({
+    id,
+    label,
+    type = "text",
+    placeholder,
+    value,
+    onChange,
+    error,
+}) => (
+    <div className="mt-4">
+        <InputLabel htmlFor={id} value={label} />
+        <TextInput
+            id={id}
+            type={type}
+            name={id}
+            value={value}
+            className="mt-1 block w-full"
+            onChange={onChange}
+            required
+            placeholder={placeholder}
+        />
+        <InputError message={error} className="mt-2" />
+    </div>
+);
+
+const PasswordField = ({
+    id,
+    label,
+    value,
+    onChange,
+    error,
+    isVisible,
+    toggleVisibility,
+}) => (
+    <div className="mt-4">
+        <InputLabel htmlFor={id} value={label} />
+        <div className="relative">
+            <TextInput
+                id={id}
+                type={isVisible ? "text" : "password"}
+                name={id}
+                value={value}
+                className="mt-1 block w-full"
+                autoComplete="current-password"
+                onChange={onChange}
+                required
+                placeholder={label}
+            />
+            <div
+                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                onClick={toggleVisibility}
+                style={{ fontSize: 24, height: "100%" }}
+            >
+                {isVisible ? <VisibilityIcon /> : <VisibilityOffIcon />}
+            </div>
+        </div>
+        <InputError message={error} className="mt-2" />
+    </div>
+);

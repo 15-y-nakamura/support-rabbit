@@ -13,8 +13,7 @@ use App\Http\Controllers\Calendar\WeekendEventsController;
 use App\Http\Controllers\Calendar\WeeklyEventsController;
 use App\Http\Controllers\Calendar\MonthlyEventsController;
 use App\Http\Controllers\Calendar\YearlyEventsController;
-use App\Http\Controllers\Notice\NoticeController;
-use App\Http\Controllers\Achievement\AchievementController; // 正しい名前空間を指定
+use App\Http\Controllers\Achievement\AchievementController; 
 
 Route::prefix('v2/auth')->middleware('guest')->group(function () {
     Route::post('register', [RegisterController::class, 'signup']);
@@ -28,7 +27,7 @@ Route::prefix('v2')->group(function () {
 
     //プロフィール API
     Route::controller(ProfileController::class)->prefix('profile')->group(function () {
-        Route::get('/', 'show'); // API でプロフィール取得
+        Route::get('/', 'show'); 
     });
 
     //カレンダーイベント API
@@ -50,57 +49,57 @@ Route::prefix('v2')->group(function () {
         Route::delete('{id}', 'destroy');
     });
 
-    //Weekday イベント API
+    //平日 イベント API
     Route::controller(WeekdayEventsController::class)->prefix('calendar/weekday-events')->group(function () {
         Route::get('/', 'index');
         Route::get('{id}', 'show');
         Route::post('/', 'store'); 
-        Route::put('{id}', 'update'); // update ルートを追加
+        Route::put('{id}', 'update');
         Route::delete('{id}', 'destroy');
         Route::delete('{id}/all', 'destroyAll');
     });
 
-    //Weekend イベント API
+    //週末 イベント API
     Route::controller(WeekendEventsController::class)->prefix('calendar/weekend-events')->group(function () {
         Route::get('/', 'index');
         Route::get('{id}', 'show');
         Route::post('/', 'store'); 
-        Route::put('{id}', 'update'); // update ルートを追加
+        Route::put('{id}', 'update');
         Route::delete('{id}', 'destroy');
         Route::delete('{id}/all', 'destroyAll');
     });
 
-    //Weekly イベント API
+    //毎週 イベント API
     Route::controller(WeeklyEventsController::class)->prefix('calendar/weekly-events')->group(function () {
         Route::get('/', 'index');
         Route::get('{id}', 'show');
         Route::post('/', 'store'); 
-        Route::put('{id}', 'update'); // update ルートを追加
+        Route::put('{id}', 'update');
         Route::delete('{id}', 'destroy');
         Route::delete('{id}/all', 'destroyAll');
     });
 
-    //Monthly イベント API
+    //毎月 イベント API
     Route::controller(MonthlyEventsController::class)->prefix('calendar/monthly-events')->group(function () {
         Route::get('/', 'index');
         Route::get('{id}', 'show');
         Route::post('/', 'store'); 
-        Route::put('{id}', 'update'); // update ルートを追加
+        Route::put('{id}', 'update');
         Route::delete('{id}', 'destroy');
         Route::delete('{id}/all', 'destroyAll');
     });
 
-    //Yearly イベント API
+    //毎年 イベント API
     Route::controller(YearlyEventsController::class)->prefix('calendar/yearly-events')->group(function () {
         Route::get('/', 'index');
         Route::get('{id}', 'show');
         Route::post('/', 'store'); 
-        Route::put('{id}', 'update'); // update ルートを追加
+        Route::put('{id}', 'update');
         Route::delete('{id}', 'destroy');
         Route::delete('{id}/all', 'destroyAll');
     });
 
-    // 実績 API
+    // 達成数 API
     Route::controller(AchievementController::class)->prefix('achievements')->group(function () {
         Route::get('/', 'index');
         Route::post('/', 'store');

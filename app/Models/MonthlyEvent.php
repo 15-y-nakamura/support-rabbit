@@ -17,15 +17,14 @@ class MonthlyEvent extends Model
         'start_time',
         'end_time',
         'all_day',
-        'notification',
         'location',
         'link',
         'tag_id',
-        'description',
+        'note',
         'recurrence_type', 
+        'recurrence_date', 
     ];
 
-    // Tagリレーションの追加
     public function tag()
     {
         return $this->belongsTo(Tag::class, 'tag_id');

@@ -40,7 +40,7 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        Log::info('User registered and logged in successfully', ['user_id' => $user->id]);
+        Log::info('ユーザー登録が正常に完了しました', ['user_id' => $user->id]);
 
         return Inertia::render('Auth/RegisterForm', [
             'registrationSuccess' => true,
@@ -53,7 +53,6 @@ class RegisterController extends Controller
     public function signup(RegisterRequest $request)
     {
         try {
-            // 新しいユーザーを作成
             $user = $this->createUser($request);
 
             // 登録イベントを発生させる
@@ -61,7 +60,6 @@ class RegisterController extends Controller
 
             return response()->json(['message' => '登録が完了しました', 'user' => $user], 201);
         } catch (Exception $e) {
-            Log::error('Signup failed', ['error' => $e->getMessage()]);
             return response()->json(['error' => '登録中にエラーが発生しました'], 500);
         }
     }

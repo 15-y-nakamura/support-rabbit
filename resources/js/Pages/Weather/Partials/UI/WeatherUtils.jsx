@@ -6,8 +6,7 @@ export const fetchWeatherData = async (
     lon,
     setWeatherData,
     setSelectedCityWeather,
-    apiKey,
-    setNotification
+    apiKey
 ) => {
     const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=ja&appid=${apiKey}`;
     try {
@@ -17,7 +16,6 @@ export const fetchWeatherData = async (
         setSelectedCityWeather(data);
     } catch (error) {
         console.error("天気データの取得中にエラーが発生しました:", error);
-        setNotification("天気データの取得中にエラーが発生しました。", "error");
     }
 };
 
@@ -25,8 +23,7 @@ export const fetchCityWeatherData = async (
     lat,
     lon,
     setSelectedCityWeather,
-    apiKey,
-    setNotification
+    apiKey
 ) => {
     const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=ja&appid=${apiKey}`;
     try {
@@ -35,10 +32,6 @@ export const fetchCityWeatherData = async (
         setSelectedCityWeather(data);
     } catch (error) {
         console.error("都市の天気データの取得中にエラーが発生しました:", error);
-        setNotification(
-            "都市の天気データの取得中にエラーが発生しました。",
-            "error"
-        );
     }
 };
 
@@ -47,8 +40,7 @@ export const fetchCurrentLocationWeatherData = async (
     lon,
     setWeatherData,
     setSelectedCityWeather,
-    apiKey,
-    setNotification
+    apiKey
 ) => {
     const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=ja&appid=${apiKey}`;
     try {
@@ -60,10 +52,6 @@ export const fetchCurrentLocationWeatherData = async (
         console.error(
             "現在位置の天気データの取得中にエラーが発生しました:",
             error
-        );
-        setNotification(
-            "現在位置の天気データの取得中にエラーが発生しました。",
-            "error"
         );
     }
 };

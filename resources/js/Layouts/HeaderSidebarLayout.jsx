@@ -28,9 +28,9 @@ export default function HeaderSidebarLayout({ header, children }) {
     // 現在のURLに基づいてページ名を決定
     const pageNames = {
         "/user/calendar": "カレンダー",
-        "/weather": "天気",
-        "/achievement": "達成率",
-        "/profile": "プロフィール",
+        "/user/weather": "天気",
+        "/user/achievement": "達成数",
+        "/user/profile/edit": "プロフィール",
     };
     const currentPageName = pageNames[currentUrl] || "カレンダー";
 
@@ -66,7 +66,7 @@ export default function HeaderSidebarLayout({ header, children }) {
                                 <NavItem
                                     href={route("achievement")}
                                     icon="/img/icons/achievement-icon.png"
-                                    label="達成率"
+                                    label="達成数"
                                 />
                                 <VerticalDivider />
                                 <NavItem
@@ -147,7 +147,7 @@ function UserDropdown({ user }) {
                 <>
                     {user.nickname} <br /> ({user.login_id})
                 </>
-            ), // ユーザーのニックネームとログインIDを表示
+            ),
         },
         {
             href: route("calendar"),
@@ -269,7 +269,7 @@ function ResponsiveNavigation({ showing }) {
         {
             href: route("achievement"),
             icon: "/img/icons/achievement-icon.png",
-            label: "達成率",
+            label: "達成数",
         },
         {
             href: route("logout"),

@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('nickname', 15);
             $table->string('login_id', 15)->unique();
             $table->string('email', 255)->unique();
-            $table->timestamp('email_verified_at')->nullable();
             $table->string('password', 255);
             $table->date('birthday')->nullable();
             $table->integer('status')->default(1);

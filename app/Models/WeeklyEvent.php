@@ -17,17 +17,21 @@ class WeeklyEvent extends Model
         'start_time',
         'end_time',
         'all_day',
-        'notification',
         'location',
         'link',
         'tag_id',
-        'description',
+        'note',
         'recurrence_type',
+        'recurrence_days', 
     ];
 
-    // Tagリレーションの追加
     public function tag()
     {
         return $this->belongsTo(Tag::class, 'tag_id');
+    }
+
+    public function getRecurrenceDaysAttribute($value)
+    {
+        return json_decode($value, true);
     }
 }

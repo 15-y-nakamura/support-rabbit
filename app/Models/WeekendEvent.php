@@ -17,15 +17,13 @@ class WeekendEvent extends Model
         'start_time',
         'end_time',
         'all_day',
-        'notification',
         'location',
         'link',
         'tag_id',
-        'description',
-        'recurrence_type', // 繰り返しの種類
+        'note',
+        'recurrence_type',
     ];
 
-    // Tagリレーションの追加
     public function tag()
     {
         return $this->belongsTo(Tag::class, 'tag_id');

@@ -16,11 +16,10 @@ class CalendarEvent extends Model
         'start_time',
         'end_time',
         'all_day',
-        'notification',
         'location',
         'link',
         'tag_id',
-        'description',
+        'note',
         'is_recurring',
         'recurrence_type',
     ];

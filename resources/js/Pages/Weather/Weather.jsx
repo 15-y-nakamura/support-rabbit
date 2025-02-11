@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Head } from "@inertiajs/react"; // 追加
+import { Head } from "@inertiajs/react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
@@ -20,11 +20,7 @@ import {
     fetchCurrentLocationWeatherData,
     renderWeatherInfo,
 } from "./Partials/UI/WeatherUtils";
-import {
-    initializeMap,
-    handleCityClick,
-    handleCitySelect,
-} from "./Partials/UI/MapUtils";
+import { initializeMap, handleCitySelect } from "./Partials/UI/MapUtils";
 
 // Leafletのデフォルトアイコンを設定
 delete L.Icon.Default.prototype._getIconUrl;
@@ -57,24 +53,6 @@ const cities = [
     { name: "京都", lat: 35.0211, lon: 135.7556 },
 ];
 
-const Notification = ({ message, type, onClose }) => {
-    return (
-        <div
-            className={`fixed bottom-0 left-0 right-0 p-4 ${
-                type === "error" ? "bg-red-600" : "bg-green-600"
-            } text-white text-center`}
-        >
-            {message}
-            <button
-                className="ml-4 bg-transparent border-none text-white"
-                onClick={onClose}
-            >
-                &times;
-            </button>
-        </div>
-    );
-};
-
 const Weather = () => {
     const [weatherData, setWeatherData] = useState(null);
     const [currentLocation, setCurrentLocation] = useState(null);
@@ -83,7 +61,6 @@ const Weather = () => {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [map, setMap] = useState(null);
     const [markers, setMarkers] = useState([]);
-    const [notification, setNotification] = useState({ message: "", type: "" });
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(
@@ -95,8 +72,7 @@ const Weather = () => {
                     longitude,
                     setWeatherData,
                     setSelectedCityWeather,
-                    apiKey,
-                    (message, type) => setNotification({ message, type })
+                    apiKey
                 );
                 initializeMap(
                     latitude,
@@ -151,12 +127,7 @@ const Weather = () => {
                                             setSelectedCityWeather,
                                             map,
                                             cities,
-                                            apiKey,
-                                            (message, type) =>
-                                                setNotification({
-                                                    message,
-                                                    type,
-                                                })
+                                            apiKey
                                         )
                                     }
                                 >
@@ -186,9 +157,12 @@ const Weather = () => {
                             <div className="flex justify-between items-center w-full mb-4">
                                 <h2 className="text-2xl text-black">
                                     {new Date().toLocaleDateString()}
+                                    <span className="text-gray-700 text-sm ml-2">
+                                        (現在時刻以降)
+                                    </span>
                                 </h2>
                                 <button
-                                    className="bg-[#80ACCF] hover:bg-blue-500 text-white py-2 px-4 rounded"
+                                    className="bg-customBlue hover:bg-blue-400 text-white py-2 px-4 rounded"
                                     onClick={() => setModalIsOpen(true)}
                                 >
                                     5日間の天気情報を見る
@@ -207,13 +181,6 @@ const Weather = () => {
                 selectedCityWeather={selectedCityWeather}
                 selectedCity={selectedCity}
             />
-            {notification.message && (
-                <Notification
-                    message={notification.message}
-                    type={notification.type}
-                    onClose={() => setNotification({ message: "", type: "" })}
-                />
-            )}
         </HeaderSidebarLayout>
     );
 };

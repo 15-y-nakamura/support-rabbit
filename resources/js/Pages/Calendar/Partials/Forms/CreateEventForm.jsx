@@ -2,11 +2,10 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import InputError from "@/Components/InputError";
 
-// 認証トークンを取得する関数
 const getAuthToken = () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
-        console.error("Auth token is missing");
+        console.error("認証トークンが見つかりません");
     }
     return token;
 };
@@ -14,25 +13,47 @@ const getAuthToken = () => {
 const getUserId = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user) {
-        console.error("User is missing");
+        console.error("認証トークンが見つかりません");
     }
     return user ? user.id : null;
 };
 
 export default function CreateEventForm({ onEventCreated, selectedDate }) {
     const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
+
     const [startTime, setStartTime] = useState(
-        new Date(selectedDate).toISOString().slice(0, 16)
+        `${
+            new Date(
+                selectedDate.getTime() -
+                    selectedDate.getTimezoneOffset() * 60000
+            )
+                .toISOString()
+                .split("T")[0]
+        }T00:00`
     );
     const [endTime, setEndTime] = useState(
-        new Date(selectedDate).toISOString().slice(0, 16)
+        `${
+            new Date(
+                selectedDate.getTime() -
+                    selectedDate.getTimezoneOffset() * 60000
+            )
+                .toISOString()
+                .split("T")[0]
+        }T23:59`
     );
     const [isRecurring, setIsRecurring] = useState(false);
     const [recurrenceType, setRecurrenceType] = useState("none");
     const [allDay, setAllDay] = useState(false);
-    const [allDayDate, setAllDayDate] = useState(selectedDate.split("T")[0]);
-    const [notification, setNotification] = useState("none");
+    const [allDayDate, setAllDayDate] = useState(
+        `${
+            new Date(
+                selectedDate.getTime() -
+                    selectedDate.getTimezoneOffset() * 60000
+            )
+                .toISOString()
+                .split("T")[0]
+        }`
+    );
     const [location, setLocation] = useState("");
     const [link, setLink] = useState("");
     const [note, setNote] = useState("");
@@ -44,6 +65,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
     const [recurrenceDate, setRecurrenceDate] = useState("");
     const [errors, setErrors] = useState({});
     const [errorMessage, setErrorMessage] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         fetchTags();
@@ -54,7 +76,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
         try {
             const authToken = getAuthToken();
             if (!authToken) {
-                throw new Error("Auth token is missing");
+                throw new Error("認証トークンが見つかりません");
             }
             const response = await axios.get("/api/v2/calendar/tags", {
                 headers: {
@@ -63,7 +85,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
             });
             setTags(response.data.tags);
         } catch (error) {
-            console.error("タグの取得中にエラーが発生しました:", error);
+            console.error("タグの取得中にエラーが発生しました:");
         } finally {
             setLoadingTags(false);
         }
@@ -71,11 +93,12 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setErrorMessage(""); // リセット
+        setErrorMessage("");
+        setIsSubmitting(true);
         try {
             const authToken = getAuthToken();
             if (!authToken) {
-                throw new Error("Auth token is missing");
+                throw new Error("認証トークンが見つかりません");
             }
             const eventStartTime = allDay ? `${allDayDate}T00:00` : startTime;
             const eventEndTime = allDay ? `${allDayDate}T23:59` : endTime;
@@ -96,34 +119,16 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                       recurrence_days: [],
                   };
 
-            console.log("送信データ:", {
-                title,
-                description,
-                start_time: eventStartTime,
-                end_time: eventEndTime,
-                is_recurring: recurrenceType === "none" ? 0 : isRecurring,
-                ...recurrenceData,
-                all_day: allDay,
-                all_day_date: allDay ? allDayDate : null,
-                notification,
-                location,
-                link,
-                note,
-                tag_id: selectedTag ? selectedTag.id : null,
-            });
-
             const response = await axios.post(
                 "/api/v2/calendar/events",
                 {
                     title,
-                    description,
                     start_time: eventStartTime,
                     end_time: eventEndTime,
                     is_recurring: recurrenceType === "none" ? 0 : isRecurring,
                     ...recurrenceData,
                     all_day: allDay,
                     all_day_date: allDay ? allDayDate : null,
-                    notification,
                     location,
                     link,
                     note,
@@ -136,7 +141,6 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                 }
             );
 
-            console.log("作成されたイベント:", response.data.event);
             const eventId = response.data.event.id;
 
             if (isRecurring) {
@@ -147,13 +151,12 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                             {
                                 event_id: eventId,
                                 title,
-                                description,
+                                note,
                                 start_time: eventStartTime,
                                 end_time: eventEndTime,
                                 all_day: allDay,
                                 location,
                                 link,
-                                notification,
                                 recurrence_type: recurrenceType,
                                 tag_id: selectedTag ? selectedTag.id : null,
                             },
@@ -170,13 +173,12 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                             {
                                 event_id: eventId,
                                 title,
-                                description,
+                                note,
                                 start_time: eventStartTime,
                                 end_time: eventEndTime,
                                 all_day: allDay,
                                 location,
                                 link,
-                                notification,
                                 recurrence_type: recurrenceType,
                                 tag_id: selectedTag ? selectedTag.id : null,
                             },
@@ -193,13 +195,12 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                             {
                                 event_id: eventId,
                                 title,
-                                description,
+                                note,
                                 start_time: eventStartTime,
                                 end_time: eventEndTime,
                                 all_day: allDay,
                                 location,
                                 link,
-                                notification,
                                 recurrence_type: recurrenceType,
                                 tag_id: selectedTag ? selectedTag.id : null,
                                 recurrence_days: recurrenceDays,
@@ -217,13 +218,12 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                             {
                                 event_id: eventId,
                                 title,
-                                description,
+                                note,
                                 start_time: eventStartTime,
                                 end_time: eventEndTime,
                                 all_day: allDay,
                                 location,
                                 link,
-                                notification,
                                 recurrence_type: recurrenceType,
                                 tag_id: selectedTag ? selectedTag.id : null,
                                 recurrence_date: recurrenceDate,
@@ -241,16 +241,15 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                             {
                                 event_id: eventId,
                                 title,
-                                description,
+                                note,
                                 start_time: eventStartTime,
                                 end_time: eventEndTime,
                                 all_day: allDay,
                                 location,
                                 link,
-                                notification,
                                 recurrence_type: recurrenceType,
                                 tag_id: selectedTag ? selectedTag.id : null,
-                                recurrence_date: recurrenceDate, // 入力された日付を使用
+                                recurrence_date: recurrenceDate,
                             },
                             {
                                 headers: {
@@ -266,14 +265,12 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
 
             onEventCreated(response.data.event);
             setTitle("");
-            setDescription("");
             setStartTime(new Date(selectedDate).toISOString().slice(0, 16));
             setEndTime(new Date(selectedDate).toISOString().slice(0, 16));
             setIsRecurring(false);
             setRecurrenceType("none");
             setAllDay(false);
-            setAllDayDate(selectedDate.split("T")[0]);
-            setNotification("none");
+            setAllDayDate(new Date(selectedDate).toISOString().split("T")[0]);
             setLocation("");
             setLink("");
             setNote("");
@@ -288,6 +285,8 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
             console.log("エラー詳細:", error.response?.data.errors);
             setErrors(error.response?.data.errors || {});
             setErrorMessage("保存に失敗しました。");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -514,21 +513,24 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                         <div className="flex flex-col space-y-2">
                             <label className="font-bold">日付</label>
                             {recurrenceType === "monthly" ? (
-                                <input
-                                    type="number"
-                                    placeholder="日付"
-                                    value={recurrenceDate}
-                                    onChange={(e) =>
-                                        setRecurrenceDate(e.target.value)
-                                    }
-                                    className="p-2 border border-gray-300 rounded"
-                                    min="1"
-                                    max="31"
-                                />
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        type="number"
+                                        placeholder="0"
+                                        value={recurrenceDate}
+                                        onChange={(e) =>
+                                            setRecurrenceDate(e.target.value)
+                                        }
+                                        className="p-2 border border-gray-300 rounded"
+                                        min="1"
+                                        max="31"
+                                    />
+                                    <span>日</span>
+                                </div>
                             ) : (
                                 <input
                                     type="text"
-                                    placeholder="MM/DD"
+                                    placeholder="月/日"
                                     value={recurrenceDate}
                                     onChange={(e) =>
                                         setRecurrenceDate(e.target.value)
@@ -618,19 +620,6 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                     )}
                 </div>
             </div>
-            <div className="flex flex-col space-y-2">
-                <label className="font-bold">通知</label>
-                <select
-                    value={notification}
-                    onChange={(e) => setNotification(e.target.value)}
-                    className="p-2 border border-gray-300 rounded w-32"
-                >
-                    <option value="none">なし</option>
-                    <option value="10minutes">10分前</option>
-                    <option value="1hour">1時間前</option>
-                </select>
-                <InputError message={errors.notification} className="mt-2" />
-            </div>
             <hr className="my-4" />
             <div className="flex flex-col space-y-2">
                 <label className="font-bold">場所</label>
@@ -681,7 +670,7 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                             className="p-2 rounded shadow-md"
                         >
                             <img
-                                src="/img/tag-icon.png"
+                                src="/img/icons/tag-icon.png"
                                 alt="タグを表示"
                                 className="w-6 h-6"
                             />
@@ -692,30 +681,40 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                     <div className="mt-2 p-2 border border-gray-300 rounded">
                         {loadingTags ? (
                             <div className="flex items-center justify-center">
-                                <div className="loader">Loading...</div>
+                                <div className="loader">
+                                    タグを探しています...
+                                </div>
                             </div>
                         ) : (
                             <ul>
-                                {tags.map((tag) => (
-                                    <li
-                                        key={`tag-${tag.id}`}
-                                        className="flex items-center space-x-2"
-                                    >
-                                        <div
-                                            className="w-4 h-4 rounded"
-                                            style={{
-                                                backgroundColor: tag.color,
-                                            }}
-                                        ></div>
-                                        <button
-                                            type="button"
-                                            className="text-black underline"
-                                            onClick={() => handleTagSelect(tag)}
-                                        >
-                                            {tag.name}
-                                        </button>
+                                {tags.length === 0 ? (
+                                    <li className="text-gray-500">
+                                        タグが作成されていません
                                     </li>
-                                ))}
+                                ) : (
+                                    tags.map((tag) => (
+                                        <li
+                                            key={`tag-${tag.id}`}
+                                            className="flex items-center space-x-2"
+                                        >
+                                            <div
+                                                className="w-4 h-4 rounded"
+                                                style={{
+                                                    backgroundColor: tag.color,
+                                                }}
+                                            ></div>
+                                            <button
+                                                type="button"
+                                                className="text-black underline"
+                                                onClick={() =>
+                                                    handleTagSelect(tag)
+                                                }
+                                            >
+                                                {tag.name}
+                                            </button>
+                                        </li>
+                                    ))
+                                )}
                             </ul>
                         )}
                     </div>
@@ -731,17 +730,30 @@ export default function CreateEventForm({ onEventCreated, selectedDate }) {
                 />
                 <InputError message={errors.note} className="mt-2" />
             </div>
-            <button
-                type="submit"
-                className={`bg-customPink text-white p-2 rounded shadow-md ${
-                    isSubmitDisabled() ? "bg-gray-400 cursor-not-allowed" : ""
-                }`}
-                disabled={isSubmitDisabled()}
-            >
-                作成
-            </button>
+            <div className="text-right">
+                <button
+                    type="submit"
+                    className={`bg-customPink text-white p-2 rounded shadow-md ${
+                        isSubmitDisabled()
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : ""
+                    }`}
+                    disabled={isSubmitDisabled() || isSubmitting}
+                >
+                    {isSubmitting ? (
+                        <div className="flex items-center">
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                            作成中...
+                        </div>
+                    ) : (
+                        "作成"
+                    )}
+                </button>
+            </div>
             {errorMessage && (
-                <div className="text-red-500 mt-2">{errorMessage}</div>
+                <div className="text-red-500 mt-2 text-right">
+                    {errorMessage}
+                </div>
             )}
         </form>
     );
