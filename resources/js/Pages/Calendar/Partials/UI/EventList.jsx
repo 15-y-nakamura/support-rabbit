@@ -189,92 +189,114 @@ export default function EventList({
                                 <li className="text-gray-600 font-bold border-b border-gray-300 py-1 mb-2">
                                     {`${startHour}:00`}
                                 </li>
-                                {groupedEvents[startHour].map((event) => (
-                                    <li
-                                        key={event.id}
-                                        className="mb-1 flex items-center justify-between"
-                                    >
-                                        <div className="flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedEvents.includes(
-                                                    event.id
-                                                )}
-                                                onChange={() =>
-                                                    handleEventSelect(event.id)
-                                                }
-                                                className="mr-2"
-                                            />
-                                            <span className="font-bold">
-                                                {new Date(
-                                                    event.start_time
-                                                ).toLocaleTimeString("ja-JP", {
-                                                    hour: "numeric",
-                                                    minute: "2-digit",
-                                                })}
-                                                {" ~ "}
-                                                {new Date(
-                                                    event.end_time ||
+                                {groupedEvents[startHour].map(
+                                    (event, index) => (
+                                        <li
+                                            key={event.id || index}
+                                            className="mb-1 flex items-center justify-between"
+                                        >
+                                            <div className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedEvents.some(
+                                                        (selectedEvent) =>
+                                                            selectedEvent.id ===
+                                                                event.id &&
+                                                            selectedEvent.type ===
+                                                                event.recurrence_type
+                                                    )}
+                                                    onChange={(e) => {
+                                                        const isChecked =
+                                                            e.target.checked;
+                                                        handleEventSelect({
+                                                            id: event.id,
+                                                            type: event.recurrence_type,
+                                                        });
+                                                        console.log(
+                                                            `イベントID: ${event.id}, タイプ: ${event.recurrence_type}, チェックボックスの状態: ${isChecked}`
+                                                        );
+                                                    }}
+                                                    className="mr-2"
+                                                />
+                                                <span className="font-bold">
+                                                    {new Date(
                                                         event.start_time
-                                                ).toLocaleTimeString("ja-JP", {
-                                                    hour: "numeric",
-                                                    minute: "2-digit",
-                                                })}
-                                            </span>
-                                            {" 　"}
-                                            <span className="font-bold">
-                                                {event.title}
-                                            </span>
-                                            {event.tag_id &&
-                                                tags[event.tag_id] && (
-                                                    <div
-                                                        className="ml-2 text-sm text-black px-2 py-1 rounded"
-                                                        style={{
-                                                            backgroundColor:
+                                                    ).toLocaleTimeString(
+                                                        "ja-JP",
+                                                        {
+                                                            hour: "numeric",
+                                                            minute: "2-digit",
+                                                        }
+                                                    )}
+                                                    {" ~ "}
+                                                    {new Date(
+                                                        event.end_time ||
+                                                            event.start_time
+                                                    ).toLocaleTimeString(
+                                                        "ja-JP",
+                                                        {
+                                                            hour: "numeric",
+                                                            minute: "2-digit",
+                                                        }
+                                                    )}
+                                                </span>
+                                                {" 　"}
+                                                <span className="font-bold">
+                                                    {event.title}
+                                                </span>
+                                                {event.tag_id &&
+                                                    tags[event.tag_id] && (
+                                                        <div
+                                                            className="ml-2 text-sm text-black px-2 py-1 rounded"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    tags[
+                                                                        event
+                                                                            .tag_id
+                                                                    ].color ||
+                                                                    "#3b82f6", // デフォルトは青
+                                                            }}
+                                                        >
+                                                            {
                                                                 tags[
                                                                     event.tag_id
-                                                                ].color ||
-                                                                "#3b82f6", // デフォルトは青
-                                                        }}
-                                                    >
-                                                        {
-                                                            tags[event.tag_id]
-                                                                .name
-                                                        }
-                                                    </div>
-                                                )}
-                                            {event.tag_id &&
-                                                missingTags.includes(
-                                                    event.tag_id
-                                                ) && (
-                                                    <span className="ml-2 text-sm text-gray-500">
-                                                        (タグが削除されています)
-                                                    </span>
-                                                )}
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <button
-                                                className="text-blue-500 underline"
-                                                onClick={() =>
-                                                    handleEventDetail(event)
-                                                }
-                                            >
-                                                詳細
-                                            </button>
-                                            <button
-                                                className="bg-green-500 text-white p-1 rounded"
-                                                onClick={() =>
-                                                    handleAchieveEvent(
-                                                        event.id,
-                                                        event.recurrence_type
-                                                    )
-                                                }
-                                            >
-                                                達成
-                                            </button>
-                                        </div>
-                                    </li>
-                                ))}
+                                                                ].name
+                                                            }
+                                                        </div>
+                                                    )}
+                                                {event.tag_id &&
+                                                    missingTags.includes(
+                                                        event.tag_id
+                                                    ) && (
+                                                        <span className="ml-2 text-sm text-gray-500">
+                                                            (タグが削除されています)
+                                                        </span>
+                                                    )}
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <button
+                                                    className="text-blue-500 underline"
+                                                    onClick={() =>
+                                                        handleEventDetail(event)
+                                                    }
+                                                >
+                                                    詳細
+                                                </button>
+                                                <button
+                                                    className="bg-green-500 text-white p-1 rounded"
+                                                    onClick={() =>
+                                                        handleAchieveEvent(
+                                                            event.id,
+                                                            event.recurrence_type
+                                                        )
+                                                    }
+                                                >
+                                                    達成
+                                                </button>
+                                            </div>
+                                        </li>
+                                    )
+                                )}
                             </React.Fragment>
                         ))}
                     </ul>

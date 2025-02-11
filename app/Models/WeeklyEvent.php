@@ -22,11 +22,16 @@ class WeeklyEvent extends Model
         'tag_id',
         'note',
         'recurrence_type',
-        'recurrence_date', 
+        'recurrence_days', 
     ];
 
     public function tag()
     {
         return $this->belongsTo(Tag::class, 'tag_id');
+    }
+
+    public function getRecurrenceDaysAttribute($value)
+    {
+        return json_decode($value, true);
     }
 }

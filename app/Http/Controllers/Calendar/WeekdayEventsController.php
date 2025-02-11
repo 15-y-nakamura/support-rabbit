@@ -85,8 +85,21 @@ class WeekdayEventsController extends Controller
 
             foreach ($period as $date) {
                 if ($date->isWeekday()) {
+                    $startDateTime = (clone $date)->setTime(
+                        $startDate->format('H'),
+                        $startDate->format('i'),
+                        $startDate->format('s')
+                    );
+                    $endDateTime = (clone $date)->setTime(
+                        $endDate->format('H'),
+                        $endDate->format('i'),
+                        $endDate->format('s')
+                    );
+
                     WeekdayEvent::create(array_merge($validatedData, [
                         'user_id' => $userToken->user_id,
+                        'start_time' => $startDateTime->format('Y-m-d H:i:s'),
+                        'end_time' => $endDateTime->format('Y-m-d H:i:s'),
                     ]));
                 }
             }

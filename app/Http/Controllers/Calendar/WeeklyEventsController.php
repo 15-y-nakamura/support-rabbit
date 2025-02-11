@@ -75,23 +75,36 @@ class WeeklyEventsController extends Controller
     {
         try {
             $userToken = $this->authenticateUser($request);
-
+   
             $validatedData = $request->validated();
 
             $startDate = new \DateTime($validatedData['start_time']);
             $endDate = new \DateTime($validatedData['end_time'] ?? $validatedData['start_time']);
             $daysOfWeek = $request->input('recurrence_days', []);
-
+  
             $period = CarbonPeriod::create($startDate, $endDate);
 
             foreach ($period as $date) {
                 if (in_array($date->dayOfWeek, $daysOfWeek)) {
+                    $startDateTime = (clone $date)->setTime(
+                        $startDate->format('H'),
+                        $startDate->format('i'),
+                        $startDate->format('s')
+                    );
+                    $endDateTime = (clone $date)->setTime(
+                        $endDate->format('H'),
+                        $endDate->format('i'),
+                        $endDate->format('s')
+                    );
+    
                     WeeklyEvent::create(array_merge($validatedData, [
                         'user_id' => $userToken->user_id,
+                        'start_time' => $startDateTime->format('Y-m-d H:i:s'),
+                        'end_time' => $endDateTime->format('Y-m-d H:i:s'),
+                        'recurrence_days' => json_encode($daysOfWeek), // 配列をJSON形式に変換
                     ]));
                 }
             }
-
             return response()->json(['message' => 'イベントが作成されました'], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => 'イベントの作成に失敗しました'], 500);

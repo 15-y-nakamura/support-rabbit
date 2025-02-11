@@ -30,7 +30,7 @@ export default function HeaderSidebarLayout({ header, children }) {
         "/user/calendar": "カレンダー",
         "/user/weather": "天気",
         "/user/achievement": "達成数",
-        "/user/profile": "プロフィール",
+        "/user/profile/edit": "プロフィール",
     };
     const currentPageName = pageNames[currentUrl] || "カレンダー";
 

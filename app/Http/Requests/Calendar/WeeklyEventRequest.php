@@ -26,6 +26,8 @@ class WeeklyEventRequest extends FormRequest
             'tag_id' => 'nullable|exists:calendar_tags,id',
             'note' => 'nullable|string|max:1000',
             'recurrence_type' => 'required|in:none,weekday,weekend,weekly,monthly,yearly',
+            'recurrence_days' => 'required|array',
+            'recurrence_days.*' => 'integer|between:0,6',
         ];
     }
 

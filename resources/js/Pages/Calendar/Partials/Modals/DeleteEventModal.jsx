@@ -19,6 +19,7 @@ export default function DeleteEventModal({
     // 削除処理中かどうかを保持するステート
     const [isDeleting, setIsDeleting] = useState(false);
     const [isFetching, setIsFetching] = useState(false); // データ取得中かどうかを保持するステート
+    const [sortedSelectedEvents, setSortedSelectedEvents] = useState([]);
 
     // 認証トークンを取得する関数
     const getAuthToken = () => {
@@ -29,11 +30,50 @@ export default function DeleteEventModal({
         return token;
     };
 
-    // モーダルが開いたときに関連イベントを取得し、全てのチェックボックスにチェックを入れる
+    useEffect(() => {
+        if (isOpen) {
+            const sortedEvents = [...selectedEvents];
+            for (let i = 0; i < sortedEvents.length - 1; i++) {
+                for (let j = 0; j < sortedEvents.length - i - 1; j++) {
+                    const eventA = events.find(
+                        (e) => e.id === sortedEvents[j].id
+                    );
+                    const eventB = events.find(
+                        (e) => e.id === sortedEvents[j + 1].id
+                    );
+
+                    if (!eventA || !eventB) continue;
+
+                    const dateA = eventA.start_time
+                        ? new Date(eventA.start_time)
+                        : new Date(0);
+                    const dateB = eventB.start_time
+                        ? new Date(eventB.start_time)
+                        : new Date(0);
+
+                    if (
+                        dateA > dateB ||
+                        (dateA.getTime() === dateB.getTime() &&
+                            eventA.id > eventB.id)
+                    ) {
+                        const temp = sortedEvents[j];
+                        sortedEvents[j] = sortedEvents[j + 1];
+                        sortedEvents[j + 1] = temp;
+                    }
+                }
+            }
+            setSortedSelectedEvents(sortedEvents);
+            initializeDeleteAll(); // チェックボックスにチェックを入れる
+        }
+    }, [isOpen, selectedEvents, events]);
+
     useEffect(() => {
         if (isOpen) {
             setIsFetching(true); // データ取得開始
-            fetchRelatedEvents().finally(() => setIsFetching(false)); // データ取得終了
+            fetchRelatedEvents().finally(() => {
+                setIsFetching(false); // データ取得終了
+                initializeDeleteAll(); // チェックボックスにチェックを入れる
+            });
         }
     }, [isOpen]);
 
@@ -48,55 +88,72 @@ export default function DeleteEventModal({
         const related = {};
         const token = getAuthToken();
         for (let i = 0; i < selectedEvents.length; i++) {
-            const eventId = selectedEvents[i];
+            const { id: eventId, type: recurrenceType } = selectedEvents[i];
             const event = events.find((e) => e.id === eventId);
-            if (event) {
-                const [
-                    weekdayResponse,
-                    weekendResponse,
-                    weeklyResponse,
-                    monthlyResponse,
-                    yearlyResponse,
-                ] = await Promise.all([
-                    axios.get(`/api/v2/calendar/weekday-events`, {
-                        params: { event_id: event.event_id },
-                        headers: { Authorization: `Bearer ${token}` },
-                    }),
-                    axios.get(`/api/v2/calendar/weekend-events`, {
-                        params: { event_id: event.event_id },
-                        headers: { Authorization: `Bearer ${token}` },
-                    }),
-                    axios.get(`/api/v2/calendar/weekly-events`, {
-                        params: { event_id: event.event_id },
-                        headers: { Authorization: `Bearer ${token}` },
-                    }),
-                    axios.get(`/api/v2/calendar/monthly-events`, {
-                        params: { event_id: event.event_id },
-                        headers: { Authorization: `Bearer ${token}` },
-                    }),
-                    axios.get(`/api/v2/calendar/yearly-events`, {
-                        params: { event_id: event.event_id },
-                        headers: { Authorization: `Bearer ${token}` },
-                    }),
-                ]);
+            if (event && recurrenceType !== "none") {
+                let response;
+                switch (recurrenceType) {
+                    case "weekday":
+                        response = await axios.get(
+                            `/api/v2/calendar/weekday-events`,
+                            {
+                                params: { event_id: event.event_id },
+                                headers: { Authorization: `Bearer ${token}` },
+                            }
+                        );
+                        break;
+                    case "weekend":
+                        response = await axios.get(
+                            `/api/v2/calendar/weekend-events`,
+                            {
+                                params: { event_id: event.event_id },
+                                headers: { Authorization: `Bearer ${token}` },
+                            }
+                        );
+                        break;
+                    case "weekly":
+                        response = await axios.get(
+                            `/api/v2/calendar/weekly-events`,
+                            {
+                                params: { event_id: event.event_id },
+                                headers: { Authorization: `Bearer ${token}` },
+                            }
+                        );
+                        console.log(
+                            `Weekly events response: ${JSON.stringify(
+                                response.data
+                            )}`
+                        );
+                        break;
+                    case "monthly":
+                        response = await axios.get(
+                            `/api/v2/calendar/monthly-events`,
+                            {
+                                params: { event_id: event.event_id },
+                                headers: { Authorization: `Bearer ${token}` },
+                            }
+                        );
+                        break;
+                    case "yearly":
+                        response = await axios.get(
+                            `/api/v2/calendar/yearly-events`,
+                            {
+                                params: { event_id: event.event_id },
+                                headers: { Authorization: `Bearer ${token}` },
+                            }
+                        );
+                        break;
+                    default:
+                        response = await axios.get(`/api/v2/calendar/events`, {
+                            params: { event_id: event.event_id },
+                            headers: { Authorization: `Bearer ${token}` },
+                        });
+                        break;
+                }
 
-                related[eventId] = [
-                    ...weekdayResponse.data.events.filter(
-                        (e) => e.event_id === event.event_id && e.id !== eventId
-                    ),
-                    ...weekendResponse.data.events.filter(
-                        (e) => e.event_id === event.event_id && e.id !== eventId
-                    ),
-                    ...weeklyResponse.data.events.filter(
-                        (e) => e.event_id === event.event_id && e.id !== eventId
-                    ),
-                    ...monthlyResponse.data.events.filter(
-                        (e) => e.event_id === event.event_id && e.id !== eventId
-                    ),
-                    ...yearlyResponse.data.events.filter(
-                        (e) => e.event_id === event.event_id && e.id !== eventId
-                    ),
-                ];
+                related[eventId] = response.data.events.filter(
+                    (e) => e.event_id === event.event_id && e.id !== eventId
+                );
             }
         }
         setRelatedEvents(related);
@@ -105,7 +162,7 @@ export default function DeleteEventModal({
     // 全てのチェックボックスにチェックを入れる関数
     const initializeDeleteAll = () => {
         const initialDeleteAll = {};
-        selectedEvents.forEach((eventId) => {
+        selectedEvents.forEach(({ id: eventId }) => {
             initialDeleteAll[eventId] = true;
             if (relatedEvents[eventId]) {
                 relatedEvents[eventId].forEach((relatedEvent) => {
@@ -133,16 +190,23 @@ export default function DeleteEventModal({
     // 削除ボタンが押されたときの処理
     const handleDelete = async () => {
         setIsDeleting(true);
-        const eventsToDelete = [...selectedEvents];
+        const eventsToDelete = selectedEvents.filter(
+            (event) => deleteAll[event.id]
+        );
 
-        for (let i = 0; i < selectedEvents.length; i++) {
-            const eventId = selectedEvents[i];
-            if (!deleteAll[eventId]) continue;
+        for (let i = 0; i < eventsToDelete.length; i++) {
+            const { id: eventId, type: recurrenceType } = eventsToDelete[i];
 
             const event = events.find((e) => e.id === eventId);
-            let url;
+            if (!event) {
+                console.error(
+                    `削除対象のイベントが見つかりません。イベントID: ${eventId}`
+                );
+                continue;
+            }
 
-            switch (event.recurrence_type) {
+            let url;
+            switch (recurrenceType) {
                 case "weekday":
                     url = `/api/v2/calendar/weekday-events/${eventId}`;
                     break;
@@ -172,7 +236,7 @@ export default function DeleteEventModal({
                 if (deleteAll[`related-${relatedEventId}`]) {
                     let relatedUrl;
 
-                    switch (event.recurrence_type) {
+                    switch (recurrenceType) {
                         case "weekday":
                             relatedUrl = `/api/v2/calendar/weekday-events/${relatedEventId}`;
                             break;
@@ -194,27 +258,35 @@ export default function DeleteEventModal({
                     }
 
                     await deleteEvent(relatedUrl);
-                    eventsToDelete.push(relatedEventId);
                 }
             }
 
             handleEventDeleted(eventId);
         }
 
-        await deleteCalendarEvents(eventsToDelete);
-
         setSelectedEvents([]);
         setShowDeleteConfirmation(false);
         setIsDeleting(false);
         onClose();
+        resetState(); // 状態をリセットする関数を呼び出す
+    };
+
+    // 状態をリセットする関数
+    const resetState = () => {
+        setDeleteAll({});
+        setRelatedEvents({});
+        setShowRelated({});
+        setSortedSelectedEvents([]);
     };
 
     // カレンダーイベントを削除する関数
     const deleteCalendarEvents = async (eventsToDelete) => {
         const token = getAuthToken();
         for (let i = 0; i < eventsToDelete.length; i++) {
-            const eventId = eventsToDelete[i];
-            const event = events.find((e) => e.id === eventId);
+            const { id: eventId, type: recurrenceType } = eventsToDelete[i];
+            const event = events.find(
+                (e) => e.id === eventId && e.recurrence_type === recurrenceType
+            );
             if (!event) continue;
 
             // 関連するすべてのイベントを取得
@@ -325,49 +397,81 @@ export default function DeleteEventModal({
 
     // 関連イベントをレンダリングする関数
     const renderRelatedEvents = function (eventId) {
-        return relatedEvents[eventId]?.map((relatedEvent) => (
-            <div
-                key={relatedEvent.id}
-                className="border p-2 mb-2 rounded shadow-md bg-gray-50"
-            >
-                <div className="flex justify-between items-center">
-                    <div>
-                        <p className="font-bold">{relatedEvent.title}</p>
-                        <p className="text-sm text-gray-600">
-                            {new Date(relatedEvent.start_time).toLocaleString(
-                                "ja-JP",
-                                {
+        const relatedEventsList = relatedEvents[eventId]?.map(
+            (relatedEvent) => (
+                <div
+                    key={relatedEvent.id}
+                    className="border p-2 mb-2 rounded shadow-md bg-gray-50"
+                >
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <p className="font-bold">{relatedEvent.title}</p>
+                            <p className="text-sm text-gray-600">
+                                {new Date(
+                                    relatedEvent.start_time
+                                ).toLocaleString("ja-JP", {
                                     year: "numeric",
                                     month: "numeric",
                                     day: "numeric",
                                     hour: "2-digit",
                                     minute: "2-digit",
-                                }
-                            )}
-                        </p>
+                                })}
+                            </p>
+                        </div>
+                        <input
+                            type="checkbox"
+                            checked={
+                                deleteAll[`related-${relatedEvent.id}`] || false
+                            }
+                            onChange={() =>
+                                handleCheckboxChange(
+                                    `related-${relatedEvent.id}`
+                                )
+                            }
+                            className="ml-2"
+                        />
                     </div>
-                    <input
-                        type="checkbox"
-                        checked={
-                            deleteAll[`related-${relatedEvent.id}`] || false
-                        }
-                        onChange={() =>
-                            handleCheckboxChange(`related-${relatedEvent.id}`)
-                        }
-                        className="ml-2"
-                    />
                 </div>
-            </div>
-        ));
+            )
+        );
+        return relatedEventsList;
     };
 
     // イベントをレンダリングする関数
-    const renderEvent = function (eventId) {
-        const event = events.find((e) => e.id === eventId);
-        if (!event) {
-            console.error(`イベントID: ${eventId} が見つかりません`);
-            return null;
+    const renderEvent = function ({ id: eventId, type: recurrenceType }) {
+        let event;
+        switch (recurrenceType) {
+            case "weekday":
+                event = events.find(
+                    (e) => e.id === eventId && e.recurrence_type === "weekday"
+                );
+                break;
+            case "weekend":
+                event = events.find(
+                    (e) => e.id === eventId && e.recurrence_type === "weekend"
+                );
+                break;
+            case "weekly":
+                event = events.find(
+                    (e) => e.id === eventId && e.recurrence_type === "weekly"
+                );
+                break;
+            case "monthly":
+                event = events.find(
+                    (e) => e.id === eventId && e.recurrence_type === "monthly"
+                );
+                break;
+            case "yearly":
+                event = events.find(
+                    (e) => e.id === eventId && e.recurrence_type === "yearly"
+                );
+                break;
+            default:
+                event = events.find((e) => e.id === eventId);
+                break;
         }
+
+        console.log(`イベントID: ${eventId}, タイプ: ${recurrenceType}`);
 
         const relatedEventCount = relatedEvents[eventId]?.length || 0;
         const hasRelatedEvents =
@@ -429,28 +533,6 @@ export default function DeleteEventModal({
             </div>
         );
     };
-
-    // selectedEventsを時間の古い順にソートし、時間が同じ場合はIDの古い順にソート
-    const sortedSelectedEvents = [...selectedEvents];
-    for (let i = 0; i < sortedSelectedEvents.length - 1; i++) {
-        for (let j = 0; j < sortedSelectedEvents.length - i - 1; j++) {
-            const eventA = events.find((e) => e.id === sortedSelectedEvents[j]);
-            const eventB = events.find(
-                (e) => e.id === sortedSelectedEvents[j + 1]
-            );
-            const dateA = new Date(eventA.start_time);
-            const dateB = new Date(eventB.start_time);
-
-            if (
-                dateA > dateB ||
-                (dateA.getTime() === dateB.getTime() && eventA.id > eventB.id)
-            ) {
-                const temp = sortedSelectedEvents[j];
-                sortedSelectedEvents[j] = sortedSelectedEvents[j + 1];
-                sortedSelectedEvents[j + 1] = temp;
-            }
-        }
-    }
 
     const isDeleteDisabled = !Object.values(deleteAll).some(
         (checked) => checked

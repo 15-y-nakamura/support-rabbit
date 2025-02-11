@@ -170,10 +170,13 @@ class EventController extends Controller
                 return response(['error' => 'イベントが見つかりません'], 404);
             }
 
+            Log::info('【カレンダーイベント】削除処理を開始します', ['event_id' => $id]);
             $event->delete();
+            Log::info('【カレンダーイベント】削除処理が完了しました', ['event_id' => $id]);
 
             return response()->json(['message' => 'イベントが削除されました'], 200);
         } catch (\Exception $e) {
+            Log::error('【カレンダーイベント】削除処理中にエラーが発生しました', ['event_id' => $id, 'error' => $e->getMessage()]);
             return response(['error' => 'イベントの削除に失敗しました'], 500);
         }
     }
@@ -185,22 +188,24 @@ class EventController extends Controller
     {
         try {
             $event = CalendarEvent::find($id);
-            if (!$event) return response(['error' => 'イベントが見つかりません'], 404);
+            if (!$event) {
+                Log::warning('【カレンダーイベント】削除失敗: イベントが見つかりません', ['event_id' => $id]);
+                return response(['error' => 'イベントが見つかりません'], 404);
+            }
 
+            Log::info('【カレンダーイベント】すべての関連イベントの削除処理を開始します', ['event_id' => $id]);
+
+            // 繰り返しイベントを含むすべての関連イベントを削除
             CalendarEvent::where('recurrence_type', $event->recurrence_type)
                 ->where('recurrence_dates', $event->recurrence_dates)
                 ->delete();
 
-            // 関連する繰り返しイベントも削除
-            app('App\Http\Controllers\Calendar\WeekdayEventsController')->destroyAll($event->id);
-            app('App\Http\Controllers\Calendar\WeekendEventsController')->destroyAll($event->id);
-            app('App\Http\Controllers\Calendar\WeeklyEventsController')->destroyAll($event->id);
-            app('App\Http\Controllers\Calendar\MonthlyEventsController')->destroyAll($event->id);
-            app('App\Http\Controllers\Calendar\YearlyEventsController')->destroyAll($event->id);
+            Log::info('【カレンダーイベント】すべての関連イベントの削除処理が完了しました', ['event_id' => $id]);
 
             return response()->json(['message' => 'すべての関連イベントが削除されました'], 200);
         } catch (\Exception $e) {
-            return response(['error' => $e->getMessage()], 500);
+            Log::error('【カレンダーイベント】すべての関連イベントの削除処理中にエラーが発生しました', ['event_id' => $id, 'error' => $e->getMessage()]);
+            return response(['error' => 'すべての関連イベントの削除に失敗しました'], 500);
         }
     }
 }

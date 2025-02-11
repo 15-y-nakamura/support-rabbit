@@ -179,12 +179,23 @@ export default function Calendar() {
     };
 
     // イベントが選択されたときに呼び出される関数
-    const handleEventSelect = (eventId) => {
-        setSelectedEvents((prevSelected) =>
-            prevSelected.includes(eventId)
-                ? prevSelected.filter((id) => id !== eventId)
-                : [...prevSelected, eventId]
-        );
+    const handleEventSelect = (event) => {
+        setSelectedEvents((prevSelectedEvents) => {
+            const isSelected = prevSelectedEvents.some(
+                (selectedEvent) =>
+                    selectedEvent.id === event.id &&
+                    selectedEvent.type === event.type
+            );
+            if (isSelected) {
+                return prevSelectedEvents.filter(
+                    (selectedEvent) =>
+                        selectedEvent.id !== event.id ||
+                        selectedEvent.type !== event.type
+                );
+            } else {
+                return [...prevSelectedEvents, event];
+            }
+        });
     };
 
     // 選択されたイベントを削除するための関数
