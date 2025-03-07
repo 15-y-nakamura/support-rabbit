@@ -2,7 +2,7 @@
 - 「サポートラビット」は、日々の予定管理や達成状況を可視化し、モチベーションを向上させることを目的としたアプリです。
 - 可愛らしいデザインとシンプルな操作性を兼ね備え、特に10代・20代の女性ユーザーをターゲットにしています。
 - カレンダーとタスク管理を組み合わせることで、予定を楽しく管理できるよう設計しました。
----
+
 ## コンセプト
 ### **■ 目的**
 - 日々の予定管理や達成状況を視覚化し、モチベーションを高めることを目的としています。
@@ -15,7 +15,7 @@
 - 要件定義や設計の段階で、実際に他の人から意見をもらいながら開発を進めました。
 ### **■ 補足**
 - どこかで見たことのあるアプリのように感じるかもしれませんが、 温かい目でご覧いただければ幸いです。
----
+
 ## アプリ概要
 「サポートラビット」は、以下の機能を備えています。
 ### ログイン・ユーザー管理
@@ -46,7 +46,7 @@
 - **達成数画面**
   - 一週間単位で達成状況をグラフ表示
   - 達成したデータの一覧表示
----
+
 ## デモ動画
 
 
@@ -60,7 +60,7 @@ https://github.com/user-attachments/assets/9e058464-610f-4d66-8d31-58b01a18ba7b
 ### アプリで使用した画像
 - **アイコン・モノクロ素材:** [icooon mono](https://icooon-mono.com/)
 - **水彩テクスチャ:** [Sui-Sai](https://sui-sai.jp/info/)
----
+
 ## 環境
 - **開発言語:**
   - フロントエンド: JavaScript (React 18.2.0)
@@ -95,7 +95,6 @@ https://github.com/user-attachments/assets/9e058464-610f-4d66-8d31-58b01a18ba7b
 git clone https://github.com/15-y-nakamura/support-rabbit.git
 cd support-rabbit
 ```
----
 ### 2. 環境変数の設定
 `.env` ファイルを作成し、必要な環境変数を設定します。
 ```bash
@@ -105,7 +104,6 @@ cp .env.example .env
 ```
 API_KEY=your_openweathermap_api_key
 ```
----
 ### 3. Laravel Sail の起動
 以下のコマンドを実行して、**Laravel Sail** を使用してDockerコンテナをビルドし、起動します。
 ```bash
@@ -117,23 +115,22 @@ API_KEY=your_openweathermap_api_key
 ./vendor/bin/sail composer install
 ./vendor/bin/sail artisan migrate --seed
 ```
----
 ### 4. フロントエンドのセットアップ
 React の依存関係をインストールし、開発サーバーを起動します。
 ```bash
 ./vendor/bin/sail npm install
 ./vendor/bin/sail npm run dev
 ```
----
+
 ### 5. アプリケーションの使用
 ブラウザで以下のURLにアクセスすると、アプリケーションを使用できます。
 - フロントエンド: **http://localhost:3000**
 - バックエンド（APIサーバー）: **http://localhost**
----
+
 ## 今後の実装予定の機能
 - **チームやグループでの共有**
 - **プッシュ通知やリマインダー機能**
----
+
 ## おわりに
 React、Laravel学習者のアウトプットとして、リポジトリ公開させていただきました。 
 
