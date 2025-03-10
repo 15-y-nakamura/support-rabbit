@@ -40,25 +40,16 @@ class ForgotPasswordRequest extends FormRequest
 
     protected function failedValidation(Validator $validator)
     {
-        // バリデーションエラーメッセージを取得
         $validationErrors = $validator->errors()->getMessages();
         $formattedErrors = [];
     
         foreach ($validationErrors as $field => $messages) {
             $formattedErrors[$field] = array_map(function ($message) {
                 $decodedMessage = json_decode($message, true);
-                return $decodedMessage['description'] ?? $message;
+                return $decodedMessage['description'];
             }, $messages);
         }
     
-        // JSONリクエストの場合はエラーレスポンスを返す
-        if ($this->expectsJson()) {
-            throw new HttpResponseException(
-                response()->json(['errors' => $formattedErrors], 422)
-            );
-        }
-    
-        // HTMLリクエストの場合はリダイレクトし、エラーメッセージを表示
         throw new HttpResponseException(
             back()->withErrors($formattedErrors)->withInput()
         );
