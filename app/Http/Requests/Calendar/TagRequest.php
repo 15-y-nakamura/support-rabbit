@@ -54,16 +54,10 @@ class TagRequest extends FormRequest
         foreach ($validationErrors as $field => $messages) {
             $formattedErrors[$field] = array_map(function ($message) {
                 $decodedMessage = json_decode($message, true);
-                return $decodedMessage['description'] ?? $message;
+                return $decodedMessage['description'];
             }, $messages);
         }
     
-        if ($this->expectsJson()) {
-            throw new HttpResponseException(
-                response()->json(['errors' => $formattedErrors], 422)
-            );
-        }
-
         throw new HttpResponseException(
             back()->withErrors($formattedErrors)->withInput()
         );

@@ -41,16 +41,16 @@ class LoginRequest extends FormRequest
     {
         $validationErrors = $validator->errors()->getMessages();
         $formattedErrors = [];
-
+    
         foreach ($validationErrors as $field => $messages) {
             $formattedErrors[$field] = array_map(function ($message) {
                 $decodedMessage = json_decode($message, true);
-                return $decodedMessage['description'] ?? $message;
+                return $decodedMessage['description'];
             }, $messages);
         }
-
+    
         throw new HttpResponseException(
-            response()->json(['errors' => $formattedErrors], 422)
+            back()->withErrors($formattedErrors)->withInput()
         );
     }
 }

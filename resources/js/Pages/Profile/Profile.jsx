@@ -6,7 +6,7 @@ import DeleteProfileForm from "./Partials/Forms/DeleteProfileForm";
 import UpdatePasswordForm from "./Partials/Forms/UpdatePasswordForm";
 import UpdateProfileForm from "./Partials/Forms/UpdateProfileForm";
 
-export default function Edit() {
+export default function Profile() {
     const { auth } = usePage().props;
     const [profile, setProfile] = useState(auth.user);
     const [mustVerifyEmail, setMustVerifyEmail] = useState(false);
@@ -24,7 +24,7 @@ export default function Edit() {
     const handleUpdateProfile = (nickname, email, birthday, login_id) => {
         const token = localStorage.getItem("token");
         if (!token) {
-            setError("No authentication token found");
+            setError("認証トークンが見つかりません");
             return;
         }
 
@@ -41,10 +41,10 @@ export default function Edit() {
             )
             .then((response) => {
                 setProfile(response.data.user);
-                setStatus("Profile updated successfully");
+                setStatus("プロフィールが正常に更新されました");
             })
             .catch((error) => {
-                setError("There was an error updating the profile!");
+                setError("プロフィールの更新中にエラーが発生しました！");
                 console.error(error);
             });
     };
@@ -52,7 +52,7 @@ export default function Edit() {
     const handleUpdatePassword = (currentPassword, newPassword) => {
         const token = localStorage.getItem("token");
         if (!token) {
-            setError("No authentication token found");
+            setError("認証トークンが見つかりません");
             return;
         }
 
@@ -68,10 +68,10 @@ export default function Edit() {
                 }
             )
             .then((response) => {
-                setStatus("Password updated successfully");
+                setStatus("パスワードが正常に更新されました");
             })
             .catch((error) => {
-                setError("There was an error updating the password!");
+                setError("パスワードの更新中にエラーが発生しました！");
                 console.error(error);
             });
     };
@@ -79,7 +79,7 @@ export default function Edit() {
     const handleDeleteAccount = (password) => {
         const token = localStorage.getItem("token");
         if (!token) {
-            setError("No authentication token found");
+            setError("認証トークンが見つかりません");
             return;
         }
 
@@ -92,10 +92,10 @@ export default function Edit() {
                 },
             })
             .then((response) => {
-                setStatus("Account deleted successfully");
+                setStatus("アカウントが正常に削除されました");
             })
             .catch((error) => {
-                setError("There was an error deleting the account!");
+                setError("アカウントの削除中にエラーが発生しました！");
                 console.error(error);
             });
     };
