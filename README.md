@@ -50,7 +50,8 @@
 ## デモ動画
 
 
-https://github.com/user-attachments/assets/9e058464-610f-4d66-8d31-58b01a18ba7b
+https://github.com/user-attachments/assets/428adce4-89d8-4d62-929b-a54b1a47262a
+
 
 ### 使用ツール・BGM
 - **動画編集:** [ゆっくりムービーメーカー4 Lite](https://manjubox.net/ymm4/)
@@ -124,8 +125,7 @@ React の依存関係をインストールし、開発サーバーを起動し�
 
 ### 5. アプリケーションの使用
 ブラウザで以下のURLにアクセスすると、アプリケーションを使用できます。
-- フロントエンド: **http://localhost:3000**
-- バックエンド（APIサーバー）: **http://localhost**
+- http://localhost/login
 
 ## 今後の実装予定の機能
 - **チームやグループでの共有**
