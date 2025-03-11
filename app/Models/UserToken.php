@@ -73,4 +73,18 @@ class UserToken extends Model
     {
         return Carbon::parse($value)->format('Y/m/d H:i');
     }
+
+    public static function deleteExistingToken(User $user): void
+    {
+        if ($user->user_token) {
+            $user->user_token->delete();
+        }
+    }
+
+    public static function createUserToken(User $user): UserToken
+    {
+        $token = new UserToken();
+        $token->createToken($user);
+        return $token;
+    }
 }
