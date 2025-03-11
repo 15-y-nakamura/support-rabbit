@@ -80,15 +80,17 @@ https://github.com/user-attachments/assets/428adce4-89d8-4d62-929b-a54b1a47262a
 2. **OpenStreetMap Tile API**
 - **用途:** 地図の描画
 - **エンドポイント:** `https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`
-3. **Leaflet.js API**
-- **用途:** 地図操作・マーカー表示
-- **使用機能:** `L.map()`, `L.marker()`, `L.popup()` など
-4. **Chart.js API**
-- **用途:** 気温・降水確率のグラフ表示
-5. **OpenWeatherMap Weather Icons API**
+3. **OpenWeatherMap Weather Icons API**
 - **用途:** 天気アイコンの取得
 - **エンドポイント:** `http://openweathermap.org/img/wn/{icon}.png`
----
+
+### **使用ライブラリ一覧**
+1. **Leaflet.js**
+   - **用途:** 地図操作・マーカー表示
+   - **使用機能:** `L.map()`, `L.marker()`, `L.popup()` など
+2. **Chart.js**
+   - **用途:** 気温・降水確率のグラフ表示
+
 ## 利用方法
 ### 1. GitHubリポジトリのクローン
 まず、GitHubリポジトリのURLを使用してプロジェクトをクローンします。
