@@ -1,11 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\LogoutController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\PasswordResetController;
-use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Calendar\EventController;
 use App\Http\Controllers\Calendar\TagController;
 use App\Http\Controllers\Calendar\WeekdayEventsController;
@@ -15,21 +10,8 @@ use App\Http\Controllers\Calendar\MonthlyEventsController;
 use App\Http\Controllers\Calendar\YearlyEventsController;
 use App\Http\Controllers\Achievement\AchievementController; 
 
-Route::prefix('v2/auth')->middleware('guest')->group(function () {
-    Route::post('register', [RegisterController::class, 'signup']);
-    Route::post('login', [LoginController::class, 'login']);
-    Route::post('forgot-password', [PasswordResetController::class, 'sendPasswordResetLink']);
-    Route::post('reset-password', [PasswordResetController::class, 'resetPassword']);
-});
 
 Route::prefix('v2')->group(function () {
-    Route::post('logout', [LogoutController::class, 'logout']);
-
-    //プロフィール API
-    Route::controller(ProfileController::class)->prefix('profile')->group(function () {
-        Route::get('/', 'show'); 
-    });
-
     //カレンダーイベント API
     Route::controller(EventController::class)->prefix('calendar/events')->group(function () {
         Route::get('/', 'index');
