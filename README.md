@@ -55,8 +55,6 @@ https://github.com/user-attachments/assets/428adce4-89d8-4d62-929b-a54b1a47262a
 
 ### 使用ツール・BGM
 - **動画編集:** [ゆっくりムービーメーカー4 Lite](https://manjubox.net/ymm4/)
-- **音声:** [VOICEVOX:ずんだもん](https://voicevox.hiroshiba.jp/)
-- **BGM:** ["Good Morning Sunshine" written by modus](https://dova-s.jp/bgm/play12645.html) （DOVA-SYNDROME）
 
 ### アプリで使用した画像
 - **アイコン・モノクロ素材:** [icooon mono](https://icooon-mono.com/)
